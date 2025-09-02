@@ -1,0 +1,108 @@
+{% extends 'generic/object_edit.html' %}
+{% load helpers %}
+{% load i18n %}
+{% load buttons %}
+{% load plugins %}
+{% load static %}
+
+{% block content %}
+  {{ block.super }}
+
+  <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("DOM ready");
+
+            var schedulefields = document.getElementById("id_schedule_type");
+            
+            var starttimefield = document.getElementById("id_start_time");
+            var stoptimefield = document.getElementById("id_end_time")
+
+            var recurrencefield = document.getElementById("id_recurrence_type")
+
+            var weekdaysfield = document.getElementById("id_weekdays")
+            var monthdaysfield = document.getElementById("id_monthdays")
+
+            var specialordinal = document.getElementById("id_special_ordinal")
+            
+
+            const recurenceContainer = recurrencefield.closest(".row.mb-3");
+            const startContainer = starttimefield.closest(".row.mb-3");
+            const stopContainer = stoptimefield.closest(".row.mb-3");
+
+            const weekdayContainer = weekdaysfield.closest(".row.mb-3");
+            const monthdayContainer = monthdaysfield.closest(".row.mb-3");
+            
+            const specialordinalContainer = specialordinal.closest(".row.mb-3")
+
+
+            console.log(recurenceContainer.style)
+            startContainer.style.display = 'none'
+            stopContainer.style.display = 'none'
+            recurenceContainer.style.display = 'none'
+
+            weekdayContainer.style.display = 'none'
+            monthdayContainer.style.display = 'none'
+
+            specialordinalContainer.style.display = 'none'
+
+        function updateVisibility() {
+            const scheduleValue = schedulefields.value;
+            const recurrenceValue = recurrencefield.value;
+
+            // schedule_type abhängige Felder
+            if (scheduleValue === "recurring") {
+                recurenceContainer.style.display = '';
+            } else {
+                recurenceContainer.style.display = 'none';
+            }
+
+            if (scheduleValue === "one_time") {
+                startContainer.style.display = '';
+                stopContainer.style.display = '';
+            } else {
+                startContainer.style.display = 'none';
+                stopContainer.style.display = 'none';
+            }
+
+            // recurrence_type abhängige Felder (nur wenn "recurring" aktiv)
+            if (scheduleValue === "recurring") {
+                if (recurrenceValue === "weekly") {
+                    weekdayContainer.style.display = '';
+                } else {
+                    weekdayContainer.style.display = 'none';
+                }
+
+                if (recurrenceValue === "monthly") {
+                    monthdayContainer.style.display = '';
+                } else {
+                    monthdayContainer.style.display = 'none';
+                }
+
+                if (
+                    recurrenceValue === "weekday_occurrence" ||
+                    recurrenceValue === "workday_occurrence"
+                ) {
+                    specialordinalContainer.style.display = '';
+                } else {
+                    specialordinalContainer.style.display = 'none';
+                }
+            } else {
+                // Alle recurrence-Felder ausblenden, wenn nicht "recurring"
+                weekdayContainer.style.display = 'none';
+                monthdayContainer.style.display = 'none';
+                specialordinalContainer.style.display = 'none';
+            }
+        }
+
+        // Event-Listener
+        schedulefields.addEventListener("change", updateVisibility);
+        recurrencefield.addEventListener("change", updateVisibility);
+
+        // Initiale Sichtbarkeit setzen
+        updateVisibility();
+
+            
+
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,197 @@
+from django.db import models as django_models
+from django.urls import reverse
+from netbox.models import NetBoxModel
+from utilities.choices import ChoiceSet
+from tenancy.models import *
+from dcim.models import *
+from virtualization.models import *
+from django.utils.translation import gettext_lazy as _
+from django import forms
+from django.contrib.postgres.fields import ArrayField 
+from datetime import timedelta
+
+
+__all__ = (
+    'MaintenanceWindows',
+    'Weekday',
+    'ScheduleTypeModeChoices',
+    'RecurrenceTypeChoices',
+    'HOLIDAYS',
+    'Weekday',
+    
+)
+
+class HOLIDAYS(ChoiceSet):
+    Neujahr = "01-01",  # Neujahr
+    Tag_der_Arbeit = "05-01",  # Tag der Arbeit
+    Deutsche_Einheit = "10-03",  # Tag der Deutschen Einheit
+    Weihnachten = "12-25",  # Weihnachten
+    ZweiterWeihnachtstag = "12-26",  # 2. Weihnachtstag
+
+    CHOICES = [
+            (Neujahr, '01-01'),
+            (Tag_der_Arbeit, '05-01'),
+            (Deutsche_Einheit, '10-03'),
+            (Weihnachten, '12-25'),
+            (ZweiterWeihnachtstag, '12-26'),
+        ]
+
+class RecurrenceTypeChoices(ChoiceSet):
+
+        DAILY = 'daily'
+        WEEKLY = 'weekly'
+        MONTHLY = 'monthly'
+        WEEKDAY_OCCURRENCE = 'weekday_occurrence'
+        WORKDAY_OCCURRENCE = 'workday_occurrence'
+
+        CHOICES = [
+            (DAILY, 'Daily'),
+            (WEEKLY, 'Weekly'),
+            (MONTHLY, 'Monthly'),
+            (WEEKDAY_OCCURRENCE, 'x.  weekday of the month'),
+            (WORKDAY_OCCURRENCE, 'x. workday of the month'),
+        ]
+class Weekday(ChoiceSet):
+        key = 'weekday'
+        
+        MON = 'monday'
+        TUE = 'tuesday'
+        WED = 'wednesday'
+        THU = 'thursday'
+        FRI = 'friday'
+        SAT = 'saturday'
+        SUN = 'sunday'
+
+        CHOICES = [
+            (MON, 'Monday'),      
+            (TUE, 'Tuesday'),     
+            (WED, 'Wednesday'),   
+            (THU, 'Thursday'),    
+            (FRI, 'Friday'),      
+            (SAT, 'Saturday'),    
+            (SUN, 'Sunday'),      
+        ]
+        
+class Workday(ChoiceSet):
+        key = 'weekday'
+        
+        MON = 'monday'
+        TUE = 'tuesday'
+        WED = 'wednesday'
+        THU = 'thursday'
+        FRI = 'friday'
+
+        CHOICES = [
+            (MON, 'Monday'),      
+            (TUE, 'Tuesday'),     
+            (WED, 'Wednesday'),   
+            (THU, 'Thursday'),    
+            (FRI, 'Friday'),            
+        ]
+        
+class ScheduleTypeModeChoices(ChoiceSet):
+
+        key = 'schedule_type_mode'
+
+        SELECT_File = 'select'
+        RECURRING = 'recurring'
+        ONE_TIME = 'one_time'
+
+        CHOICES = [
+            (SELECT_File, 'Select'),
+            (RECURRING, _('Recurring')),
+            (ONE_TIME, _('One-time')),
+        ]
+    
+class MaintenanceWindows(NetBoxModel):
+
+    comments = django_models.TextField(
+        blank=True
+    )
+    
+    name = django_models.CharField(
+        max_length=150
+    )
+    
+    description = django_models.CharField(
+        max_length=500,
+        blank = True
+    )
+        
+    schedule_type = django_models.CharField(max_length=20, choices=ScheduleTypeModeChoices, null=False, blank=False, default=ScheduleTypeModeChoices.SELECT_File)
+    
+    start_time = django_models.DateField(
+        blank=True,
+        null=True,
+    )
+    
+    end_time = django_models.DateField(
+        blank=True,
+        null=True,
+    )
+
+    recurrence_type =django_models.CharField(
+        max_length=20,
+        choices=RecurrenceTypeChoices,
+        blank=True,
+        null=True
+    )
+    
+    weekdays =django_models.CharField(
+        max_length=50, 
+        choices=Weekday.CHOICES,
+        blank=True,
+        null=True,
+        help_text="Weekly"
+    )
+
+    monthdays = django_models.DateField(
+        blank=True,
+        null=True,
+    )
+
+    special_ordinal = django_models.CharField(
+        blank=True,
+        null=True,
+        help_text="Describe the monthly pattern, e.g.: 'every 2nd Wednesday', 'last Friday of the month', or 'first workday'"
+    )
+    
+    
+    def count_workdays(self) -> int:
+        """
+        Zählt die Werktage (Mo–Fr) zwischen start_time und end_time, inkl. Feiertagsprüfung.
+        """
+        if not self.start_time or not self.end_time:
+            return 0
+
+        begin_date = self.start_time
+        end_date = self.end_time
+
+        diff = end_date - begin_date
+        workday_count = 0
+
+        for i in range(diff.days + 1):  # Python 3 statt xrange
+            actual_day = begin_date + timedelta(days=i)
+            if (
+                actual_day.strftime("%m-%d") not in HOLIDAYS and
+                actual_day.weekday() in Workday
+            ):
+                workday_count += 1
+
+        return workday_count
+
+    
+    def __str__(self):
+        return f"{self.get_recurrence_type_display()}"
+
+    class Meta:
+        verbose_name_plural = "Maintenance Windows"
+        verbose_name = 'Maintenance Window'
+
+    def get_absolute_url(self):
+        return reverse('plugins:adestis_netbox_maintenance_management:maintenancewindows', args=[self.pk])
+
+    def __str__(self):
+        return self.name 
+    
+    
