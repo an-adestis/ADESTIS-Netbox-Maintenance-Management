@@ -116,7 +116,7 @@ class MaintenanceActionsBulkEditForm(NetBoxModelBulkEditForm):
     model = MaintenanceActions
 
     fieldsets = (
-        FieldSet('name', 'maintenance_window', 'description', 'tags', 'comments', name=_('Maintenance Plans')),
+        FieldSet('name', 'maintenance_window', 'description', 'tags', 'comments', name=_('Maintenance Actions')),
         FieldSet('device', name=_("Device")),
         FieldSet('virtual_machine', name=_("Virtue Machine")),
     )
