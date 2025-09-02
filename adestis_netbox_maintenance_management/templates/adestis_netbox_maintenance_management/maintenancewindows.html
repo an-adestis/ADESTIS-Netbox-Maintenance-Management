@@ -1,0 +1,146 @@
+{% extends 'generic/object.html' %}
+{% load buttons %}
+{% load static %}
+{% load helpers %}
+{% load plugins %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block extra_controls %}
+{% endblock %}
+
+{% block content %}
+  <div class="row my-3">
+    <div class="col col-md-6">
+      <div class="card">
+        <h5 class="card-header">Maintenance Windows</h5>
+        <div class="card-body">
+          <table class="table table-hover attr-table">
+            <tr>
+              <th scope='row'>{% trans "Name" %}</th>
+              <td>{% if object.name %}
+                {{ object.name|markdown }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
+
+            <tr>
+              <th scope='row'>{% trans "Description" %}</th>
+              <td>{% if object.description %}
+                {{ object.description|markdown }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
+
+            <tr>
+              <th scope='row'>{% trans "Schedule Type" %}</th>
+              <td>{% if object.schedule_type %}
+                {{ object.get_schedule_type_display }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+      
+    <div class="col col-md-6">
+      {% include 'inc/panels/custom_fields.html' %}
+      {% include 'inc/panels/tags.html' %}
+      {% include 'inc/panels/comments.html' %}
+    </div>
+
+    <div class="col col-md-6">
+        <div class="card">
+          <h5 class="card-header">One Time</h5>
+          <div class="card-body">
+            <table class="table table-hover attr-table">
+              {% if object.schedule_type == 'one_time' and object.start_time %}
+                <tr>
+                  <th scope='row'>{% trans "Start Time" %}</th>
+                  <td>{% if object.start_time %}
+                    {{ object.start_time }}
+                  {% else %}
+                    <span class="text-muted">{% trans "None" %}</span>
+                  {% endif %}</td>
+                </tr>
+              {% endif %}
+              {% if object.schedule_type == 'one_time' and object.end_time %}
+                <tr>
+                  <th scope='row'>{% trans "End Time" %}</th>
+                  <td>{% if object.end_time %}
+                    {{ object.end_time }}
+                  {% else %}
+                    <span class="text-muted">{% trans "None" %}</span>
+                  {% endif %}</td>
+                </tr>
+              {% endif %}
+          </table>
+        </div>
+      </div>
+    </div>
+  
+    <div class="row mb-3">
+        <div class="col col-md-6">
+          <div class="card">
+            <h5 class="card-header">Recurring</h5>
+            <div class="card-body">
+              <table class="table table-hover attr-table">
+              {% if object.schedule_type == 'recurring' and object.recurrence_type %}
+                <tr>
+                  <th scope='row'>{% trans "Recurrence Type" %}</th>
+                  <td>{% if object.recurrence_type %}
+                    {{ object.get_recurrence_type_display }}
+                  {% else %}
+                    <span class="text-muted">{% trans "None" %}</span>
+                  {% endif %}</td>
+                </tr>
+              {% endif %}
+              {% if object.schedule_type == 'recurring'%}
+                {% if object.recurrence_type == 'weekly' and object.weekdays %}
+                  <tr>
+                    <th scope='row'>{% trans "Weekdays" %}</th>
+                    <td>{% if object.weekdays %}
+                      {{ object.get_weekdays_display }}
+                    {% else %}
+                      <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}</td>
+                  </tr>
+                {% endif %}
+              {% endif %}
+              {% if object.schedule_type == 'recurring'%}
+                {% if object.recurrence_type == 'monthly' and object.monthdays %}
+                  <tr>
+                    <th scope='row'>{% trans "Monthdays" %}</th>
+                    <td>{% if object.monthdays %}
+                      {{ object.monthdays }}
+                    {% else %}
+                      <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}</td>
+                  </tr>
+                {% endif %}
+              {% endif %}
+              {% if object.schedule_type == 'recurring'%}
+                {% if object.recurrence_type == 'weekday_occurrence' or object.recurrence_type == 'workday_occurrence' %}
+                  {% if object.special_ordinal %}
+                  <tr>
+                    <th scope='row'>{% trans "Special Ordinal" %}</th>
+                    <td>{% if object.special_ordinal %}
+                      {{ object.special_ordinal }}
+                    {% else %}
+                      <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}</td>
+                  </tr>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

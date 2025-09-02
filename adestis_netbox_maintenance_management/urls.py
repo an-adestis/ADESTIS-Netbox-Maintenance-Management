@@ -1,0 +1,55 @@
+from django.urls import path
+from netbox.views.generic import ObjectChangeLogView
+from adestis_netbox_maintenance_management.models import *
+from adestis_netbox_maintenance_management.views import *
+from django.urls import include
+from utilities.urls import get_model_urls
+
+urlpatterns = (
+
+    # Maintenance Window
+    path('maintenancewindows/', MaintenanceWindowsListView.as_view(),
+         name='maintenancewindows_list'),
+    path('maintenancewindows/add/', MaintenanceWindowsEditView.as_view(),
+         name='maintenancewindows_add'),
+    path('maintenancewindows/delete/', MaintenanceWindowsBulkDeleteView.as_view(),
+         name='maintenancewindows_bulk_delete'),
+    path('maintenancewindows/edit/', MaintenanceWindowsBulkEditView.as_view(),
+         name='maintenancewindows_bulk_edit'),
+    path('maintenancewindows/import/', MaintenanceWindowsBulkImportView.as_view(),
+         name='maintenancewindows_bulk_import'),
+    path('maintenancewindows/<int:pk>/',
+         MaintenanceWindowsView.as_view(), name='maintenancewindows'),
+    path('maintenancewindows/<int:pk>/',
+         include(get_model_urls("adestis_netbox_maintenance_management", "maintenancewindows"))),
+    path('maintenancewindows/<int:pk>/edit/',
+         MaintenanceWindowsEditView.as_view(), name='maintenancewindows_edit'),
+    path('maintenancewindows/<int:pk>/delete/',
+         MaintenanceWindowsDeleteView.as_view(), name='maintenancewindows_delete'),
+    path('maintenancewindows/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancewindows_changelog', kwargs={
+        'model': MaintenanceWindows
+    }),
+    
+    path('maintenanceactions/', MaintenanceActionsListView.as_view(),
+         name='maintenanceactions_list'),
+    path('maintenanceactions/add/', MaintenanceActionsEditView.as_view(),
+         name='maintenanceactions_add'),
+    path('maintenanceactions/delete/', MaintenanceActionsBulkDeleteView.as_view(),
+         name='maintenanceactions_bulk_delete'),
+    path('maintenanceactions/edit/', MaintenanceActionsBulkEditView.as_view(),
+         name='maintenanceactions_bulk_edit'),
+    path('maintenanceactions/import/', MaintenanceActionsBulkImportView.as_view(),
+         name='maintenanceactions_bulk_import'),
+    path('maintenanceactions/<int:pk>/',
+         MaintenanceActionsView.as_view(), name='maintenanceactions'),
+    path('maintenanceactions/<int:pk>/',
+         include(get_model_urls("adestis_netbox_maintenance_management", "maintenanceactions"))),
+    path('maintenanceactions/<int:pk>/edit/',
+         MaintenanceActionsEditView.as_view(), name='maintenanceactions_edit'),
+    path('maintenanceactions/<int:pk>/delete/',
+         MaintenanceActionsDeleteView.as_view(), name='maintenanceactions_delete'),
+    path('maintenanceactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceactions_changelog', kwargs={
+        'model': MaintenanceActions
+    }),
+
+)

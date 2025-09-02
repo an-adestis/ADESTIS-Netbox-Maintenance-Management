@@ -1,0 +1,16 @@
+ARG FROM_IMAGE=netboxcommunity/netbox
+ARG FROM_TAG=v4.2-3.2.1
+ARG FROM=${FROM_IMAGE}:${FROM_TAG}
+FROM ${FROM}
+
+ENV VIRTUAL_ENV=/opt/netbox/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY ./adestis_netbox_maintenance_management /source/adestis-netbox-maintenance/adestis_netbox_maintenance_management/
+COPY ./setup.py /source/adestis-netbox-maintenance/
+COPY ./MANIFEST.in /source/adestis-netbox-maintenance/
+COPY ./README.md /source/adestis-netbox-maintenance/
+COPY ./docker/requirements-container.txt /source/adestis-netbox-maintenance/
+COPY ./docker/configuration/configuration.py /etc/netbox/config/configuration.py
+RUN /usr/local/bin/uv pip install /source/adestis-netbox-maintenance/
+RUN /usr/local/bin/uv pip install -r /source/adestis-netbox-maintenance/requirements-container.txt
