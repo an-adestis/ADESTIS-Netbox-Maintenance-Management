@@ -51,5 +51,11 @@ urlpatterns = (
     path('maintenanceactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceactions_changelog', kwargs={
         'model': MaintenanceActions
     }),
+    
+    path('maintenanceactions/devices/', DeviceAffectedMaintenanceActionsView.as_view(),
+         name='maintenanceactionsdevices_list'),
+    
+    path('maintenanceactions/virtualmachines/', VirtualMachineAffectedMaintenanceActionsView.as_view(),
+         name='maintenanceactionsvirtualmachines_list'),
 
 )
