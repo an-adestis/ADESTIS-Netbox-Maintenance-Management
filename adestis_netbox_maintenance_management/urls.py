@@ -30,6 +30,7 @@ urlpatterns = (
         'model': MaintenanceWindows
     }),
     
+    # Maintenance Actions
     path('maintenanceactions/', MaintenanceActionsListView.as_view(),
          name='maintenanceactions_list'),
     path('maintenanceactions/add/', MaintenanceActionsEditView.as_view(),
@@ -50,6 +51,35 @@ urlpatterns = (
          MaintenanceActionsDeleteView.as_view(), name='maintenanceactions_delete'),
     path('maintenanceactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceactions_changelog', kwargs={
         'model': MaintenanceActions
+    }),
+    
+    path('maintenanceactions/devices/', DeviceAffectedMaintenanceActionsView.as_view(),
+         name='maintenanceactionsdevices_list'),
+    
+    path('maintenanceactions/virtualmachines/', VirtualMachineAffectedMaintenanceActionsView.as_view(),
+         name='maintenanceactionsvirtualmachines_list'),
+    
+    # Maintenance Plans
+    path('maintenanceplans/', MaintenancePlansListView.as_view(),
+         name='maintenanceplans_list'),
+    path('maintenanceplans/add/', MaintenancePlansEditView.as_view(),
+         name='maintenanceplans_add'),
+    path('maintenanceplans/delete/', MaintenancePlansBulkDeleteView.as_view(),
+         name='maintenanceplans_bulk_delete'),
+    path('maintenanceplans/edit/', MaintenancePlansBulkEditView.as_view(),
+         name='maintenanceplans_bulk_edit'),
+    path('maintenanceplans/import/', MaintenancePlansBulkImportView.as_view(),
+         name='maintenanceplans_bulk_import'),
+    path('maintenanceplans/<int:pk>/',
+         MaintenancePlansView.as_view(), name='maintenanceplans'),
+    path('maintenanceplans/<int:pk>/',
+         include(get_model_urls("adestis_netbox_maintenance_management", "maintenanceplans"))),
+    path('maintenanceplans/<int:pk>/edit/',
+         MaintenancePlansEditView.as_view(), name='maintenanceplans_edit'),
+    path('maintenanceplans/<int:pk>/delete/',
+         MaintenancePlansDeleteView.as_view(), name='maintenanceplans_delete'),
+    path('maintenanceplans/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplans_changelog', kwargs={
+        'model': MaintenancePlans
     }),
 
 )
