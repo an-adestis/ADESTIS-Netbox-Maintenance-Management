@@ -104,9 +104,9 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
     )
     
     maintenance_action_id = DynamicModelMultipleChoiceField(
-        queryset=MaintenancePlans.objects.all(),
+        queryset=MaintenanceActions.objects.all(),
         required=False,
-        label=_('Maintenance Plans')
+        label=_('Maintenance Actions')
     )
     
     model = MaintenancePlans

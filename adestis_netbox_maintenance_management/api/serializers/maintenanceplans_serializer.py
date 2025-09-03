@@ -10,7 +10,7 @@ from virtualization.api.serializers import *
 class MaintenancePlansSerializer(NetBoxModelSerializer):
 
     class Meta:
-        model = MaintenanceActions
+        model = MaintenancePlans
         fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
                   'custom_field_data', 'description', 'maintenance_action', 'tenant')
         brief_fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
