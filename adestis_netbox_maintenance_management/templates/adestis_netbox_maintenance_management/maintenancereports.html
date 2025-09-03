@@ -1,0 +1,15 @@
+{% comment %} {% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<h2>Maintenance Reports</h2>
+
+<a href="{% url 'plugins:adestis_netbox_maintenance_management:report_pdf_adestis' %}" class="btn btn-primary">
+    PDF für ADESTIS
+</a>
+
+<a href="{% url 'plugins:adestis_netbox_maintenance_management:report_pdf_kunde' tenant_id=1 %}" class="btn btn-secondary">
+    PDF für Kunde
+</a>
+{% endblock %} {% endcomment %}
