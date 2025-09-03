@@ -116,7 +116,7 @@ class MaintenanceActionsBulkEditForm(NetBoxModelBulkEditForm):
     model = MaintenanceActions
 
     fieldsets = (
-        FieldSet('name', 'maintenance_window', 'description', 'tags', 'comments', name=_('Maintenance Windows')),
+        FieldSet('name', 'maintenance_window', 'description', 'tags', 'comments', name=_('Maintenance Plans')),
         FieldSet('device', name=_("Device")),
         FieldSet('virtual_machine', name=_("Virtue Machine")),
     )
@@ -149,7 +149,7 @@ class MaintenanceActionsFilterForm(NetBoxModelFilterSetForm):
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'maintenance_window_id', 'tag',  name=_('Maintenanc Windows')),
+        FieldSet('name', 'maintenance_window_id', 'tag',  name=_('Maintenanc Actions')),
         FieldSet('device', name=_("Device")),
         FieldSet('virtual_machine', name=_("Virtue Machine")),
     )

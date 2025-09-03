@@ -40,7 +40,7 @@ class MaintenanceActionsFilterSet(NetBoxModelFilterSet):
     maintenance_window = django_filters.ModelMultipleChoiceFilter(
         queryset=MaintenanceWindows.objects.all(),
         required = False,
-        field_name='maintenance_window__name',
+        field_name='maintenance_window',
         label=_('Maintenance Window (name)'),
     )
     
