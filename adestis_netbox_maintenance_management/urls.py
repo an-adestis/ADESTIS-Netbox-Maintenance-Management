@@ -85,10 +85,12 @@ urlpatterns = (
     # Maintenance Reports
     path('maintenancereports/', MaintenanceReportsListView.as_view(),
          name='maintenancereports_list'),
+    path('maintenancereports/add/', MaintenanceReportsEditView.as_view(),
+         name='maintenancereports_add'),
+    path('maintenanceplans/<int:pk>/edit/',
+         MaintenanceReportsEditView.as_view(), name='maintenanceplans_edit'),
 
-    # Optional: PDF-Export-URLs
-    path('maintenancereports/pdf/adestis/', report_pdf_adestis, name='report_pdf_adestis'),
-    path('maintenancereports/pdf/kunde/<int:tenant_id>/', report_pdf_kunde, name='report_pdf_kunde'),
+
 
 
 
