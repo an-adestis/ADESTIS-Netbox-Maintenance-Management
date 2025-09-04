@@ -35,13 +35,13 @@
                     </td>
                 </tr>
                 <tr>
-                <th scope='row'>Tenant</th>
-                <td>{% if object.tenant %}
-                    <a href="{% url 'tenancy:tenant' object.tenant.id %}"> {{ object.tenant.name|markdown }} </a>
-                    {% else %}
-                    <span class="text-muted">{% trans "None" %}</span>
-                    {% endif %}
-                </td>
+                    <th scope='row'>Tenant</th>
+                    <td>{% if object.tenant %}
+                        <a href="{% url 'tenancy:tenant' object.tenant.id %}"> {{ object.tenant.name|markdown }} </a>
+                        {% else %}
+                        <span class="text-muted">{% trans "None" %}</span>
+                        {% endif %}
+                    </td>
             </tr>
             </table>
             </div>

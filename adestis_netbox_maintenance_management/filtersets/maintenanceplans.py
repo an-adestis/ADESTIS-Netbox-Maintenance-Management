@@ -38,14 +38,14 @@ class MaintenancePlansFilterSet(NetBoxModelFilterSet):
     
     maintenance_action_id = django_filters.ModelMultipleChoiceFilter(
         queryset=MaintenanceActions.objects.all(),
-        label=_('Maintenance Window (ID)'),
+        label=_('Maintenance Action (ID)'),
     )
     
     maintenance_action = django_filters.ModelMultipleChoiceFilter(
         queryset=MaintenanceActions.objects.all(),
         required = False,
         field_name='maintenance_action',
-        label=_('Maintenance Window (name)'),
+        label=_('Maintenance Action (name)'),
     )
     
     class Meta:

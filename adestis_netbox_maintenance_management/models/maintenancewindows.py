@@ -156,33 +156,6 @@ class MaintenanceWindows(NetBoxModel):
         help_text="Describe the monthly pattern, e.g.: 'every 2nd Wednesday', 'last Friday of the month', or 'first workday'"
     )
     
-    
-    def count_workdays(self) -> int:
-        """
-        Zählt die Werktage (Mo–Fr) zwischen start_time und end_time, inkl. Feiertagsprüfung.
-        """
-        if not self.start_time or not self.end_time:
-            return 0
-
-        begin_date = self.start_time
-        end_date = self.end_time
-
-        diff = end_date - begin_date
-        workday_count = 0
-
-        for i in range(diff.days + 1):  # Python 3 statt xrange
-            actual_day = begin_date + timedelta(days=i)
-            if (
-                actual_day.strftime("%m-%d") not in HOLIDAYS and
-                actual_day.weekday() in Workday
-            ):
-                workday_count += 1
-
-        return workday_count
-
-    
-    def __str__(self):
-        return f"{self.get_recurrence_type_display()}"
 
     class Meta:
         verbose_name_plural = "Maintenance Windows"

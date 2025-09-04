@@ -47,9 +47,6 @@ class MaintenancePlans(NetBoxModel):
          verbose_name='Tenant',
          blank = True
      )
-    
-    def __str__(self):
-        return f"{self.get_recurrence_type_display()}"
 
     class Meta:
         verbose_name_plural = "Maintenance Plans"
