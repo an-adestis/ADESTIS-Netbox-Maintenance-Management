@@ -37,11 +37,11 @@ _maintenanceplans = [
 
 _maintenancereports = [
     PluginMenuItem(
-        link='plugins:adestis_netbox_maintenance_management:maintenancereports_list',
+        link='plugins:adestis_netbox_maintenance_management:maintenancereport_list',
         link_text='Maintenance Reports',
-        permissions=["adestis_netbox_maintenance_management.maintenancereports_list"],
+        permissions=["adestis_netbox_maintenance_management.maintenancereport_list"],
         buttons=(
-            PluginMenuButton('plugins:adestis_netbox_maintenance_management:maintenancereports_add', 'Add', 'mdi mdi-plus-thick', ButtonColorChoices.GREEN, ["adestis_netbox_maintenance_management.maintenancereports_add"]),
+            PluginMenuButton('plugins:adestis_netbox_maintenance_management:maintenancereport_add', 'Add', 'mdi mdi-plus-thick', ButtonColorChoices.GREEN, ["adestis_netbox_maintenance_management.maintenancereport_add"]),
         )
     ),    
 ]

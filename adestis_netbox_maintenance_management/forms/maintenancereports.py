@@ -32,7 +32,7 @@ class MaintenanceReportsForm(NetBoxModelForm):
     
     
     fieldsets = (
-        FieldSet('maintenance_plans', name=_('Maintenance Reports')),
+        FieldSet('name', 'maintenance_plans', name=_('Maintenance Reports')),
         
     )
     

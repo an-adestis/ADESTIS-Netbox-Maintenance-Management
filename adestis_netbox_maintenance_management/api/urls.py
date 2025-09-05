@@ -7,5 +7,6 @@ router = NetBoxRouter()
 router.register('maintenancewindows', views.MaintenanceWindowsViewSet)
 router.register('maintenanceactions', views.MaintenanceActionsViewSet)
 router.register('maintenanceplans', views.MaintenancePlansViewSet)
+router.register('maintenancereports', views.MaintenanceReportsViewSet)
 
 urlpatterns = router.urls

@@ -4,7 +4,7 @@ from netbox.models import NetBoxModel
 from utilities.choices import ChoiceSet
 from tenancy.models import *
 from dcim.models import *
-from virtualization.models import *
+from virtualization.models import VirtualMachine
 from django.utils.translation import gettext_lazy as _
 from django import forms
 from django.contrib.postgres.fields import ArrayField 
@@ -156,7 +156,13 @@ class MaintenanceWindows(NetBoxModel):
         help_text="Describe the monthly pattern, e.g.: 'every 2nd Wednesday', 'last Friday of the month', or 'first workday'"
     )
     
-
+    virtual_machine = django_models.ManyToManyField(
+        to='virtualization.VirtualMachine',
+        verbose_name='Virtual Machines',
+        related_name='maintenance_windows',
+        blank = True
+    )
+    
     class Meta:
         verbose_name_plural = "Maintenance Windows"
         verbose_name = 'Maintenance Window'

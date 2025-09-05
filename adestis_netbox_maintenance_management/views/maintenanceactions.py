@@ -35,7 +35,7 @@ __all__ = (
     'MaintenanceActionsRemoveDeviceView',
     
     'VirtualMachineAffectedMaintenanceActionsView',
-    'VirtualMachineAffectedMaintenanceActionsView',
+    'MaintenanceActionsAffectVirtualMachineView',
     'MaintenanceActionsAssignDevice',
     'MaintenanceActionsRemoveVirtualMachineView',
 )
@@ -205,7 +205,7 @@ class MaintenanceActionsRemoveDeviceView(generic.ObjectEditView):
         })
         
 @register_model_view(MaintenanceActions, name='virtual_machine')
-class VirtualMachineAffectedMaintenanceActionsView(generic.ObjectChildrenView):
+class MaintenanceActionsAffectVirtualMachineView(generic.ObjectChildrenView):
     queryset = MaintenanceActions.objects.all()
     child_model= VirtualMachine
     table = VirtualMachineTableMaintenanceActions
@@ -249,7 +249,7 @@ class VirtualMachineAffectedMaintenanceActionsView(generic.ObjectChildrenView):
         return MaintenanceActions.objects.restrict(request.user, 'view').filter(virtual_machine=parent)
       
 @register_model_view(MaintenanceActions, 'assign_virtual_machine')
-class MaintenanceActionsAssignDevice(generic.ObjectEditView):
+class MaintenanceActionsAssignVirtualMachine(generic.ObjectEditView):
     queryset = MaintenanceActions.objects.prefetch_related(
         'virtual_machine', 'tags', 
     ).all()
