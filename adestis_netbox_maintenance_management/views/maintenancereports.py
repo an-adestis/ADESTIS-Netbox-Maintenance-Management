@@ -7,7 +7,7 @@ from netbox.views import generic
 from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect
 
-import weasyprint  # falls du PDF erzeugst
+# import weasyprint  # falls du PDF erzeugst
 
 
 from django.views.generic import TemplateView
@@ -17,6 +17,9 @@ __all__ = (
     'MaintenanceReportsView',
     'MaintenanceReportsListView',
     'MaintenanceReportsEditView',
+    'MaintenanceReportsDeleteView',
+    'MaintenanceReportsBulkEditView',
+    'MaintenanceReportsBulkDeleteView',
 )
 
 class MaintenanceReportsView(generic.ObjectView):
@@ -31,6 +34,26 @@ class MaintenanceReportsListView(generic.ObjectListView):
 class MaintenanceReportsEditView(generic.ObjectEditView):
     queryset = MaintenanceReport.objects.all()
     form = MaintenanceReportsForm
+    
+class MaintenanceReportsDeleteView(generic.ObjectDeleteView):
+    queryset = MaintenanceReport.objects.all() 
+
+class MaintenanceReportsBulkDeleteView(generic.BulkDeleteView):
+    queryset = MaintenanceReport.objects.all()
+    table = MaintenanceReportsTable
+    
+    
+class MaintenanceReportsBulkEditView(generic.BulkEditView):
+    queryset = MaintenanceReport.objects.all()
+    filterset = MaintenanceReportsFilterSet
+    table = MaintenanceReportsTable
+    form =  MaintenancePlansBulkEditForm
+    
+
+# class MaintenanceReportsBulkImportView(generic.BulkImportView):
+#     queryset = MaintenanceReport.objects.all()
+#     model_form = MaintenancePlansCSVForm
+#     table = MaintenanceReportsTable
 
 # def report_pdf_kunde(request, tenant_id):
 #     context = get_kunden_report_data(tenant_id)

@@ -17,12 +17,16 @@ from utilities.forms import BulkEditForm, add_blank_choice, form_from_model
 from utilities.forms import get_field_value
 from utilities.forms.widgets import DatePicker
 from utilities.forms import get_field_value
+from utilities.forms import ConfirmationForm
 
 __all__ = (
     'MaintenanceWindowsForm',
     'MaintenanceWindowsFilterForm',
     'MaintenanceWindowsBulkEditForm',
     'MaintenanceWindowsCSVForm',
+    
+    'VirtualMachineFormAssignMaintenanceWindows',
+    'VirtualMachineRemoveMaintenanceWindows',
 )
 
 
@@ -152,4 +156,40 @@ class MaintenanceWindowsCSVForm(NetBoxModelImportForm):
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceWindows_list'
 
 
+class VirtualMachineFormAssignMaintenanceWindows(forms.Form):
     
+    maintenance_windows = DynamicModelMultipleChoiceField(
+        label=_('Maintenance Windows'),
+        queryset=MaintenanceWindows.objects.all()
+    )
+
+    class Meta:
+        fields = [
+            'maintenance_windows',
+        ]
+
+    def __init__(self, virtual_machine, *args, **kwargs):
+
+        self.virtual_machine = virtual_machine
+
+        self.maintenance_windows = DynamicModelMultipleChoiceField(
+            label=_('Maintenance Windows'),
+            queryset=MaintenanceWindows.objects.all()
+        )        
+
+        super().__init__(*args, **kwargs)
+
+        self.fields['maintenance_windows'].choices = []
+        
+class MaintenanceActionsRemoveVirtualMachine(ConfirmationForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        widget=forms.MultipleHiddenInput()
+    ) 
+    
+    
+class VirtualMachineRemoveMaintenanceWindows(ConfirmationForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=MaintenanceWindows.objects.all(),
+        widget=forms.MultipleHiddenInput()
+    ) 
