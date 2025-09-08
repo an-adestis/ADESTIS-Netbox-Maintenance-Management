@@ -67,13 +67,11 @@ class MaintenanceWindowsBulkImportView(generic.BulkImportView):
 class VirtualMachineAffectedMaintenanceWindowsView(generic.ObjectChildrenView):
     queryset = VirtualMachine.objects.all()
     child_model= MaintenanceWindows
-    table = MaintenanceWindowsTableTab
+    table = VirtualMachineTableMaintenanceActions
     template_name = "adestis_netbox_maintenance_management/maintenance_windows_virtual_machine.html"
     actions = {
         'add': {'add'},
         'export': {'view'},
-        # 'bulk_import': {'add'},
-        # 'bulk_edit': {'change'},
         'bulk_remove_maintenance_windows': {'change'},
     }
 
@@ -93,7 +91,7 @@ class VirtualMachineAssignMaintenanceWindows(generic.ObjectEditView):
     )
     
     form = VirtualMachineFormAssignMaintenanceWindows
-    template_name = 'adestis_netbox_maintenance_management/assign_maintenance_windows'
+    template_name = 'adestis_netbox_maintenance_management/assign_maintenance_windows.html'
     
     def get(self, request, pk):
         virtual_machine = get_object_or_404(self.queryset, pk=pk)
