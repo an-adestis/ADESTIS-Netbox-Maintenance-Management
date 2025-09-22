@@ -38,6 +38,8 @@ __all__ = (
     'MaintenanceActionsAffectVirtualMachineView',
     'MaintenanceActionsAssignDevice',
     'MaintenanceActionsRemoveVirtualMachineView',
+    
+    'MaintenanceActionsAssignVirtualMachine'
 )
 
 class MaintenanceActionsView(generic.ObjectView):
@@ -330,4 +332,43 @@ class MaintenanceActionsRemoveVirtualMachineView(generic.ObjectEditView):
             'obj_type_plural': 'virtual_machines',
             'return_url': maintenance_actions.get_absolute_url(),
         })
-    
+        
+@register_model_view(VirtualMachine, 'remove_maintenance_action', path='maintenance_actions/remove')
+class VirtualMachineRemoveViewMaintenanceActions(generic.ObjectEditView):
+    queryset = VirtualMachine.objects.all()
+    form = VirtualMachineRemoveMaintenanceActions
+    template_name = 'generic/bulk_remove.html'
+
+    def post(self, request, pk):
+
+        virtual_machine = get_object_or_404(self.queryset, pk=pk)
+
+        if '_confirm' in request.POST:
+            
+            form = self.form(request.POST)
+            if form.is_valid():
+                
+                maintenance_actions_pks = form.cleaned_data['pk']
+                with transaction.atomic():
+                    virtual_machine.maintenance_action.remove(*maintenance_actions_pks)
+                    virtual_machine.save()
+
+                messages.success(request, _("Removed {count} maintenance windows from virtual machines{virtual_machine}").format(
+                    count=len(maintenance_actions_pks),
+                    virtual_machine=virtual_machine
+                ))
+                return redirect(virtual_machine.get_absolute_url())
+        else:
+            form = self.form(initial={'pk': request.POST.getlist('pk')})
+
+        selected_objects = MaintenanceActions.objects.filter(pk__in=form.initial['pk'])
+        maintenance_actions_table = VirtualMachineTableMaintenanceActions(list(selected_objects), orderable=False)
+        maintenance_actions_table.configure(request)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'parent_obj': virtual_machine,
+            'table': maintenance_actions_table,
+            'obj_type_plural': 'virtual_machines',
+            'return_url': virtual_machine.get_absolute_url(),
+        })

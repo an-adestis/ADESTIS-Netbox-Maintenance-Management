@@ -33,6 +33,8 @@ __all__ = (
     
     'MaintenanceActionsAssignVirtualMachineForm',
     'MaintenanceActionsRemoveVirtualMachine',
+    
+    'VirtualMachineRemoveMaintenanceActions'
 )
 
 
@@ -251,5 +253,11 @@ class MaintenanceActionsRemoveDevice(ConfirmationForm):
 class MaintenanceActionsRemoveVirtualMachine(ConfirmationForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=VirtualMachine.objects.all(),
+        widget=forms.MultipleHiddenInput()
+    ) 
+    
+class VirtualMachineRemoveMaintenanceActions(ConfirmationForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=MaintenanceActions.objects.all(),
         widget=forms.MultipleHiddenInput()
     ) 

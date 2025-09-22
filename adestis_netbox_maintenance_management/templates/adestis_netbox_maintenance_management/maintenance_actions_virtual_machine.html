@@ -6,6 +6,17 @@
   </a>
   {{ block.super }}
 {% endblock %}
+
+{% block bulk_delete_controls %}
+    {{ block.super }}
+    {% if 'bulk_remove_maintenance_action' in actions %}
+        <button type="submit" name="_remove"
+                {% formaction %}="{% url 'virtualization:virtualmachine_bulk_remove_maintenance_action' pk=object.pk %}?return_url={{ return_url }}"
+                class="btn btn-danger">
+            <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span> Remove Selected
+        </button>
+    {% endif %}
+{% endblock bulk_delete_controls %}
 {% load buttons %}
 {% load static %}
 {% load helpers %}

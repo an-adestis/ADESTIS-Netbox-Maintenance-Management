@@ -18,7 +18,6 @@ __all__ = (
     'RecurrenceTypeChoices',
     'HOLIDAYS',
     'Weekday',
-    
 )
 
 class HOLIDAYS(ChoiceSet):
@@ -159,18 +158,21 @@ class MaintenanceWindows(NetBoxModel):
     virtual_machine = django_models.ManyToManyField(
         to='virtualization.VirtualMachine',
         verbose_name='Virtual Machines',
-        related_name='maintenance_windows',
+        related_name='maintenance_window',
         blank = True
     )
     
     class Meta:
         verbose_name_plural = "Maintenance Windows"
         verbose_name = 'Maintenance Window'
+        ordering = ('name',)
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenancewindows', args=[self.pk])
 
     def __str__(self):
         return self.name 
+    
+
     
     
