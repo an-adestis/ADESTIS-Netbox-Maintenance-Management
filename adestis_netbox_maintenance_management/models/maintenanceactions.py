@@ -52,11 +52,11 @@ class MaintenanceActions(NetBoxModel):
         related_name='maintenance_actions',
         blank = True
     )
-    
 
     class Meta:
         verbose_name_plural = "Maintenance Actions"
         verbose_name = 'Maintenance Action'
+        ordering = ('name',)
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenanceactions', args=[self.pk])

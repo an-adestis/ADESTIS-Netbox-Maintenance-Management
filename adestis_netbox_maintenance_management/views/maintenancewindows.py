@@ -22,7 +22,7 @@ __all__ = (
     'MaintenanceWindowsBulkImportView',
     
     'VirtualMachineAffectedMaintenanceWindowsView',
-    'VirtualMachineAssignMaintenanceWindows',
+    # 'VirtualMachineAssignMaintenanceWindows',
 )
 
 class MaintenanceWindowsView(generic.ObjectView):
@@ -67,28 +67,28 @@ class MaintenanceWindowsBulkImportView(generic.BulkImportView):
 class VirtualMachineAffectedMaintenanceWindowsView(generic.ObjectChildrenView):
     queryset = VirtualMachine.objects.all()
     child_model= MaintenanceWindows
-    table = VirtualMachineTableMaintenanceActions
+    table = VirtualMachineTableMaintenanceWindows
     template_name = "adestis_netbox_maintenance_management/maintenance_windows_virtual_machine.html"
     actions = {
         'add': {'add'},
         'export': {'view'},
-        'bulk_remove_maintenance_windows': {'change'},
+        'bulk_remove_maintenance_window': {'change'},
     }
 
     tab = ViewTab(
         label=_('Maintenance Windows'),
-        badge=lambda obj: obj.maintenance_windows.count(),
+        badge=lambda obj: obj.maintenance_window.count(),
         hide_if_empty=False
     )
 
     def get_children(self, request, parent):
-        return MaintenanceWindows.objects.restrict(request.user, 'view').filter(virtual_machine=parent)
+        return MaintenanceWindows.objects.restrict(request.user, 'view')
     
-@register_model_view(VirtualMachine, 'assign_maintenance_windows')
+@register_model_view(VirtualMachine, 'assign_maintenance_window')
 class VirtualMachineAssignMaintenanceWindows(generic.ObjectEditView):
     queryset = VirtualMachine.objects.prefetch_related(
-        'maintenance_windows', 'tags' 
-    )
+        'maintenance_window', 'tags' 
+    ).all()
     
     form = VirtualMachineFormAssignMaintenanceWindows
     template_name = 'adestis_netbox_maintenance_management/assign_maintenance_windows.html'
@@ -100,8 +100,8 @@ class VirtualMachineAssignMaintenanceWindows(generic.ObjectEditView):
         return render(request, self.template_name, {
             'virtual_machine': virtual_machine,
             'form': form,
-            'return_url': reverse('plugins:adestis_netbox_maintenance_management:virtualmachine', kwargs={'pk': pk}),
-            'edit_url': reverse('plugins:adestis_netbox_maintenance_management:virtualmachine_assign_maintenance_windows', kwargs={'pk': pk}),
+            'return_url': reverse('virtualization:virtualmachine', kwargs={'pk': pk}),
+            'edit_url': reverse('virtualization:virtualmachine_assign_maintenance_window', kwargs={'pk': pk}),
         })
         
     def post(self, request, pk):
@@ -110,11 +110,11 @@ class VirtualMachineAssignMaintenanceWindows(generic.ObjectEditView):
         
         if form.is_valid():
             
-            selected_maintenance_windows = form.cleaned_data['maintenance_windows']
+            selected_maintenance_windows = form.cleaned_data['maintenance_window']
             with transaction.atomic():
                 
-                for maintenance_windows in MaintenanceWindows.objects.filter(pk__in= selected_maintenance_windows):
-                    virtual_machine.maintenance_windows.add(maintenance_windows)
+                for maintenance_window in MaintenanceWindows.objects.filter(pk__in=selected_maintenance_windows):
+                    virtual_machine.maintenance_window.add(maintenance_window)
                     
             virtual_machine.save()
             
@@ -124,10 +124,11 @@ class VirtualMachineAssignMaintenanceWindows(generic.ObjectEditView):
             'virtual_machine': virtual_machine,
             'form': form,
             'return_url': virtual_machine.get_absolute_url(),
-            'edit_url': reverse('plugins:adestis_netbox_maintenance_management:virtualmachine_assign_maintenance_windows', kwargs={'pk': pk}),
+            'edit_url': reverse('virtualization:virtualmachine_assign_maintenance_window', kwargs={'pk': pk}),
+
         })
         
-@register_model_view(VirtualMachine, 'remove_maintenance_windows', path='maintenance_windows/remove')
+@register_model_view(VirtualMachine, 'remove_maintenance_window', path='maintenance_windows/remove')
 class VirtualMachineRemoveViewMaintenanceWindows(generic.ObjectEditView):
     queryset = VirtualMachine.objects.all()
     form = VirtualMachineRemoveMaintenanceWindows
@@ -144,7 +145,7 @@ class VirtualMachineRemoveViewMaintenanceWindows(generic.ObjectEditView):
                 
                 maintenance_windows_pks = form.cleaned_data['pk']
                 with transaction.atomic():
-                    virtual_machine.maintenance_windows.remove(*maintenance_windows_pks)
+                    virtual_machine.maintenance_window.remove(*maintenance_windows_pks)
                     virtual_machine.save()
 
                 messages.success(request, _("Removed {count} maintenance windows from virtual machines{virtual_machine}").format(
@@ -156,7 +157,7 @@ class VirtualMachineRemoveViewMaintenanceWindows(generic.ObjectEditView):
             form = self.form(initial={'pk': request.POST.getlist('pk')})
 
         selected_objects = MaintenanceWindows.objects.filter(pk__in=form.initial['pk'])
-        maintenance_windows_table = MaintenanceWindowsTable(list(selected_objects), orderable=False)
+        maintenance_windows_table = VirtualMachineTableMaintenanceWindows(list(selected_objects), orderable=False)
         maintenance_windows_table.configure(request)
 
         return render(request, self.template_name, {
