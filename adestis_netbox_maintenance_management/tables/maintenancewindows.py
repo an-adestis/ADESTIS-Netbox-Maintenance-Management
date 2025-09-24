@@ -5,6 +5,8 @@ from virtualization.models import *
 from virtualization.forms import *
 from virtualization.tables import *
 import django_tables2 as tables
+from django.utils.safestring import mark_safe
+
 
 class MaintenanceWindowsTable(NetBoxTable):
     comments = columns.MarkdownColumn()
@@ -14,16 +16,33 @@ class MaintenanceWindowsTable(NetBoxTable):
     name = columns.MarkdownColumn(
         linkify=True
     )
+    
+    virtual_machine = tables.Column(
+        linkify=True
+    )
 
     description = columns.MarkdownColumn()
+    
+    # def render_virtual_machine(self, record):
+    #     # `record` ist eine MaintenanceWindow-Instanz
+    #     checkboxes = []
+
+    #     for vm in record.virtual_machine.all():
+    #         checkbox_html = f'''
+    #             <label style="display: block;">
+    #                 <input type="checkbox" name="completed_vm_{vm.pk}" />
+    #                 {vm.name}
+    #             </label>
+    #         '''
+    #         checkboxes.append(checkbox_html)
+
+    #     return mark_safe(''.join(checkboxes))
 
     class Meta(NetBoxTable.Meta):
         model = MaintenanceWindows
         fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'virtual_machine']
-        default_columns = [ 'name', 'schedule_type' ]
+        default_columns = [ 'name', 'schedule_type', 'virtual_machine']
         
-    
-    
 class MaintenanceWindowsTableTab(MaintenanceWindowsTable):   
     actions = columns.ActionsColumn(
         actions=('edit',),
@@ -46,7 +65,7 @@ class VirtualMachineTableMaintenanceWindows(VirtualMachineTable):
     
     class Meta(VirtualMachineTable.Meta):
         fields = [
-            'pk', 'id', 'name', 'status', 'tenant_group', 'actions', 'maintenance_window', 'schedule_type'
+            'pk', 'id', 'name', 'status', 'actions', 'maintenance_window', 'schedule_type'
         ]
         default_columns = [
             'pk', 'name', 'schedule_type'

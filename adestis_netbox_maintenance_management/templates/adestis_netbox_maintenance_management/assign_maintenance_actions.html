@@ -1,4 +1,4 @@
-{% comment %} {% extends 'generic/object_edit.html' %}
+{% extends 'generic/object_edit.html' %}
 {% load helpers %}
 {% load i18n %}
 {% load static %}
@@ -8,16 +8,16 @@
 
 {% block title %}
   {% blocktrans trimmed %}
-    Assign Maintenance to Virtual Machine {{ virtual_machine }}
+    Assign Maintenance to Device {{ device }}
   {% endblocktrans %}
 {% endblock %}
 
 {% block content %}
     <form action="{{ edit_url }}" method="post">
         {% csrf_token %}
-        {% for field in form.hidden_fields %}
+        {% comment %} {% for field in form.hidden_fields %}
             {{ field }}
-        {% endfor %}
+        {% endfor %} {% endcomment %}
         <div class="row">
             <div class="col col-md-6 offset-md-3">
                 <div class="field-group">
@@ -32,4 +32,4 @@
             </div>
         </div>
     </form>
-{% endblock %}  {% endcomment %}
+{% endblock %} 

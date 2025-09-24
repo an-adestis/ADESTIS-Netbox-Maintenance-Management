@@ -18,10 +18,6 @@ class MaintenancePlansTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    device = tables.Column(
-            linkify=True
-    )
-    
     tenant = tables.Column(
         linkify=True
     )
@@ -35,7 +31,7 @@ class MaintenancePlansTable(NetBoxTable):
         model = MaintenanceActions
         
         fields = ['name', 'maintenance_action', 'tenant', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'maintenance_action', ]
+        default_columns = [ 'name', 'tenant', 'maintenance_action']
 
 
         

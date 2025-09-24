@@ -25,8 +25,8 @@ __all__ = (
     'MaintenanceWindowsBulkEditForm',
     'MaintenanceWindowsCSVForm',
     
-    'VirtualMachineFormAssignMaintenanceWindows',
-    'VirtualMachineRemoveMaintenanceWindows',
+    # 'VirtualMachineFormAssignMaintenanceWindows',
+    # 'VirtualMachineRemoveMaintenanceWindows',
 )
 
 
@@ -156,39 +156,39 @@ class MaintenanceWindowsCSVForm(NetBoxModelImportForm):
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceWindows_list'
 
 
-class VirtualMachineFormAssignMaintenanceWindows(forms.Form):
+# class VirtualMachineFormAssignMaintenanceWindows(forms.Form):
     
-    maintenance_window = DynamicModelMultipleChoiceField(
-        label=_('Maintenance Windows'),
-        queryset=MaintenanceWindows.objects.all()
-    )
+#     maintenance_window = DynamicModelMultipleChoiceField(
+#         label=_('Maintenance Windows'),
+#         queryset=MaintenanceWindows.objects.all()
+#     )
 
-    class Meta:
-        fields = [
-            'maintenance_window',
-        ]
+#     class Meta:
+#         fields = [
+#             'maintenance_window',
+#         ]
 
-    def __init__(self, virtual_machine, *args, **kwargs):
+#     def __init__(self, virtual_machine, *args, **kwargs):
 
-        self.virtual_machine = virtual_machine
+#         self.virtual_machine = virtual_machine
 
-        self.maintenance_window = DynamicModelMultipleChoiceField(
-            label=_('Maintenance Windows'),
-            queryset=MaintenanceWindows.objects.all()
-        )        
+#         self.maintenance_window = DynamicModelMultipleChoiceField(
+#             label=_('Maintenance Windows'),
+#             queryset=MaintenanceWindows.objects.all()
+#         )        
 
-        super().__init__(*args, **kwargs)
+#         super().__init__(*args, **kwargs)
 
-        self.fields['maintenance_window'].choices = []
+#         self.fields['maintenance_window'].choices = []
         
-class MaintenanceActionsRemoveVirtualMachine(ConfirmationForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=VirtualMachine.objects.all(),
-        widget=forms.MultipleHiddenInput()
-    ) 
+# class MaintenanceActionsRemoveVirtualMachine(ConfirmationForm):
+#     pk = forms.ModelMultipleChoiceField(
+#         queryset=VirtualMachine.objects.all(),
+#         widget=forms.MultipleHiddenInput()
+#     ) 
     
-class VirtualMachineRemoveMaintenanceWindows(ConfirmationForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=MaintenanceWindows.objects.all(),
-        widget=forms.MultipleHiddenInput()
-    ) 
+# class VirtualMachineRemoveMaintenanceWindows(ConfirmationForm):
+#     pk = forms.ModelMultipleChoiceField(
+#         queryset=MaintenanceWindows.objects.all(),
+#         widget=forms.MultipleHiddenInput()
+#     ) 
