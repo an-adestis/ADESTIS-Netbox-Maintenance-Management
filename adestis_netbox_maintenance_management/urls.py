@@ -29,9 +29,8 @@ urlpatterns = (
     path('maintenancewindows/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancewindows_changelog', kwargs={
         'model': MaintenanceWindows
     }),
-    
-    path('virtualmachine/maintenancewindows', VirtualMachineAffectedMaintenanceWindowsView.as_view(),
-         name='maintenancewindowsvirtualmachine_list'),
+#     path('virtualmachine/maintenancewindows', VirtualMachineAffectedMaintenanceWindowsView.as_view(),
+#          name='maintenancewindowsvirtualmachine_list'),
     
     # Maintenance Actions
     path('maintenanceactions/', MaintenanceActionsListView.as_view(),
@@ -53,12 +52,9 @@ urlpatterns = (
     path('maintenanceactions/<int:pk>/delete/',
          MaintenanceActionsDeleteView.as_view(), name='maintenanceactions_delete'),
     path('maintenanceactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceactions_changelog', kwargs={
-        'model': MaintenanceActions
-    }),
-    
+        'model': MaintenanceActions}),  
     path('maintenanceactions/devices/', DeviceAffectedMaintenanceActionsView.as_view(),
          name='maintenanceactionsdevices_list'),
-    
     path('maintenanceactions/virtualmachines/', VirtualMachineAffectedMaintenanceActionsView.as_view(),
          name='maintenanceactionsvirtualmachines_list'),
     
@@ -92,21 +88,16 @@ urlpatterns = (
          name='maintenancereport_add'),
     path('maintenancereports/<int:pk>/edit/',
          MaintenanceReportsEditView.as_view(), name='maintenancereport_edit'),
-    
     path('maintenancereports/delete/', MaintenanceReportsBulkDeleteView.as_view(),
          name='maintenancereport_bulk_delete'),
     path('maintenancereports/edit/', MaintenanceReportsBulkEditView.as_view(),
          name='maintenancereport_bulk_edit'),
 #     path('maintenancereports/import/', MaintenanceReportsBulkImportView.as_view(),
 #          name='maintenancereport_bulk_import'),
-    
     path('maintenancereports/<int:pk>/',
          MaintenanceReportsView.as_view(), name='maintenancereports'),
     path('maintenancereports/<int:pk>/delete/',
          MaintenanceReportsDeleteView.as_view(), name='maintenancereport_delete'),
     path('maintenancereports/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancereport_changelog', kwargs={
-        'model': MaintenanceReport
-        }),
-    
-    
+        'model': MaintenanceReport}), 
 )

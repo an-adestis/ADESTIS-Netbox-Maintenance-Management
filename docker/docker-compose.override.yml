@@ -32,5 +32,14 @@ services:
     build:
       context: ../
       dockerfile: Dev-Dockerfile
+
+    environment:
+      SKIP_SUPERUSER: "false"
+      SUPERUSER_EMAIL: "admin@adestis.de"
+      SUPERUSER_NAME: "admin"
+      SUPERUSER_PASSWORD: "admin"
+      DEVELOPER: "True"
+      DEBUG: "True"
+      DB_WAIT_DEBUG: "1"
   # netbox-housekeeping:
   #   <<: *netbox

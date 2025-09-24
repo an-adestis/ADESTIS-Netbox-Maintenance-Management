@@ -33,7 +33,7 @@ class MaintenancePlans(NetBoxModel):
     
     maintenance_action = django_models.ForeignKey(
         to='adestis_netbox_maintenance_management.MaintenanceActions',
-        on_delete= django_models.PROTECT,
+        on_delete= django_models.CASCADE,
         related_name='maintenance_action',
         blank=False,
         null=False
@@ -58,5 +58,14 @@ class MaintenancePlans(NetBoxModel):
 
     def __str__(self):
         return self.name 
+    
+    def save(self, *args, **kwargs):
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenancePlans
+        AutoCreateMaintenancePlans.enqueue_once()
+        return super().save(*args, **kwargs)
+
+    def sync(self):
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenancePlans
+        AutoCreateMaintenancePlans.enqueue()
     
     

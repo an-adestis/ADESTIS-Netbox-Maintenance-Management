@@ -1,4 +1,4 @@
-{% comment %} {% extends 'generic/object_edit.html' %}
+{% extends 'generic/object_edit.html' %}
 {% load helpers %}
 {% load i18n %}
 {% load static %}
@@ -15,9 +15,6 @@
 {% block content %}
     <form action="{{ edit_url }}" method="post">
         {% csrf_token %}
-        {% for field in form.hidden_fields %}
-            {{ field }}
-        {% endfor %}
         <div class="row">
             <div class="col col-md-6 offset-md-3">
                 <div class="field-group">
@@ -32,4 +29,4 @@
             </div>
         </div>
     </form>
-{% endblock %}  {% endcomment %}
+{% endblock %} 

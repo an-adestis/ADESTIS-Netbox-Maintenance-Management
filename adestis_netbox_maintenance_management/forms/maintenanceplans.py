@@ -34,9 +34,9 @@ class MaintenancePlansForm(NetBoxModelForm):
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False,
-        query_params={
-            'group_id': '$tenant_group'
-        },
+        # query_params={
+        #     'group_id': '$tenant_group'
+        # },
     )
     
     fieldsets = (
@@ -97,9 +97,9 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
     tenant_id = DynamicModelMultipleChoiceField(
         queryset=Tenant.objects.all(),
         required=False,
-        query_params={
-            'group_id': '$tenant_group_id'
-        },
+        # query_params={
+        #     'group_id': '$tenant_group_id'
+        # },
         label=_('Tenant')
     )
     
