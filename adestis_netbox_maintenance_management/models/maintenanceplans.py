@@ -31,10 +31,8 @@ class MaintenancePlans(NetBoxModel):
         blank = True
     )
     
-    maintenance_action = django_models.ForeignKey(
+    maintenance_action = django_models.ManyToManyField(
         to='adestis_netbox_maintenance_management.MaintenanceActions',
-        on_delete= django_models.CASCADE,
-        related_name='maintenance_action',
         blank=False,
         null=False
     )

@@ -309,7 +309,7 @@ class MaintenanceActionsAffectVirtualMachineView(generic.ObjectChildrenView):
 
     tab = ViewTab(
         label=_('Virtual Machine'),
-        # badge=lambda obj: obj.virtual_machine.count(),
+        badge=lambda obj: obj.virtual_machine.count(),
         weight=600
     )
 
@@ -365,11 +365,11 @@ class MaintenanceActionsAssignVirtualMachine(generic.ObjectEditView):
 
         if form.is_valid():
             
-            # selected_virtual_machines = form.cleaned_data['virtual_machine']
-            # with transaction.atomic():
+            selected_virtual_machines = form.cleaned_data['virtual_machine']
+            with transaction.atomic():
                 
-            #     for virtual_machine in VirtualMachine.objects.filter(pk__in=selected_virtual_machines): 
-            #         maintenance_actions.add(virtual_machine)
+                for virtual_machine in VirtualMachine.objects.filter(pk__in=selected_virtual_machines): 
+                    maintenance_actions.virtual_machine.add(virtual_machine)
             
             maintenance_actions.save()
             
