@@ -46,13 +46,11 @@ class MaintenanceActions(NetBoxModel):
         blank = True
     )
     
-    virtual_machine = django_models.ForeignKey(
+    virtual_machine = django_models.ManyToManyField(
         to='virtualization.VirtualMachine',
-        on_delete= django_models.PROTECT,
         verbose_name='Virtual Machines',
         related_name='maintenance_actions',
-        blank = True,
-        null = True
+        blank = True
     )
 
     class Meta:

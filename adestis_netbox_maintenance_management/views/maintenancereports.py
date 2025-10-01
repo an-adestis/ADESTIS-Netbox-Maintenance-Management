@@ -20,6 +20,8 @@ __all__ = (
     'MaintenanceReportsDeleteView',
     'MaintenanceReportsBulkEditView',
     'MaintenanceReportsBulkDeleteView',
+    
+    'MaintenanceReportsBulkImportView'
 )
 
 class MaintenanceReportsView(generic.ObjectView):
@@ -50,10 +52,10 @@ class MaintenanceReportsBulkEditView(generic.BulkEditView):
     form =  MaintenancePlansBulkEditForm
     
 
-# class MaintenanceReportsBulkImportView(generic.BulkImportView):
-#     queryset = MaintenanceReport.objects.all()
-#     model_form = MaintenancePlansCSVForm
-#     table = MaintenanceReportsTable
+class MaintenanceReportsBulkImportView(generic.BulkImportView):
+    queryset = MaintenanceReport.objects.all()
+    model_form = MaintenancePlansCSVForm
+    table = MaintenanceReportsTable
 
 # def report_pdf_kunde(request, tenant_id):
 #     context = get_kunden_report_data(tenant_id)

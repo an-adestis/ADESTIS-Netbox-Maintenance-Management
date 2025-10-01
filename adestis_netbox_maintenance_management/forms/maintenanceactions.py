@@ -134,7 +134,7 @@ class MaintenanceActionsBulkEditForm(NetBoxModelBulkEditForm):
     
 class MaintenanceActionsFilterForm(NetBoxModelFilterSetForm):
     
-    virtual_machine_id = DynamicModelMultipleChoiceField(
+    virtual_machine = DynamicModelMultipleChoiceField(
         queryset=VirtualMachine.objects.all(),
         label=_('Virtual Machine'),
         required=False,
@@ -158,7 +158,7 @@ class MaintenanceActionsFilterForm(NetBoxModelFilterSetForm):
         FieldSet('q', 'index',),
         FieldSet('name', 'maintenance_window_id', 'tag',  name=_('Maintenanc Actions')),
         FieldSet('device', name=_("Device")),
-        FieldSet('virtual_machine_id', name=_("Virtue Machine")),
+        FieldSet('virtual_machine', name=_("Virtue Machine")),
     )
 
     index = forms.IntegerField(
