@@ -14,5 +14,6 @@ class AdestisMaintenanceConfig(PluginConfig):
     }
 
 config = AdestisMaintenanceConfig
+default_app_config = "adestis_netbox_maintenance_management.apps.AdestisMaintenanceManagementAppConfig"
 
 
