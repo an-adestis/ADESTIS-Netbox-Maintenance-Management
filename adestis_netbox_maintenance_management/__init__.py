@@ -13,6 +13,10 @@ class AdestisMaintenanceConfig(PluginConfig):
         'top_level_menu' : True,
     }
 
+    def ready(self):
+        super().ready()
+        from .jobs import AutoCreateMaintenancePlans
+
 config = AdestisMaintenanceConfig
 default_app_config = "adestis_netbox_maintenance_management.apps.AdestisMaintenanceManagementAppConfig"
 
