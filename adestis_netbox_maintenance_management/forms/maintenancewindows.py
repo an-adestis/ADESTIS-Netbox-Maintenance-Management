@@ -15,7 +15,7 @@ from dcim.models import *
 from virtualization.models import *
 from utilities.forms import BulkEditForm, add_blank_choice, form_from_model
 from utilities.forms import get_field_value
-from utilities.forms.widgets import DatePicker
+from utilities.forms.widgets import DatePicker, TimePicker
 from utilities.forms import get_field_value
 from utilities.forms import ConfirmationForm
 
@@ -32,8 +32,9 @@ __all__ = (
 
 class MaintenanceWindowsForm(NetBoxModelForm):
     
+    
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_('Maintenance Windows')),
+        FieldSet('name', 'description', 'tags', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'time', name=_('Maintenance Windows')),
     )
     
     class Meta:
@@ -47,12 +48,16 @@ class MaintenanceWindowsForm(NetBoxModelForm):
             'weekdays',
             'monthdays', 
             'special_ordinal',
+            'time'
         ]
         
         widgets = {
             'start_time': DatePicker(),
             'end_time': DatePicker(),
             'monthdays': DatePicker(),
+            'time': TimePicker(attrs={
+                'placeholder' : 'hh:mm' 
+            }),
         }
         
         
@@ -86,11 +91,15 @@ class MaintenanceWindowsBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         initial=''
     )
+    
+    time = forms.TimeField(
+        widget=forms.TimeInput(format='%H:%M')
+    )
 
     model = MaintenanceWindows
 
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'comments', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_('Maintenance Windows')),
+        FieldSet('name', 'description', 'tags', 'comments', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'time', 'special_ordinal', name=_('Maintenance Windows')),
     )
 
     nullable_fields = [
@@ -105,7 +114,8 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
         FieldSet('q', 'index',),
         FieldSet('name', 'tag', 'schedule_type',  name=_('Maintenanc Windows')),
         FieldSet('start_time', 'end_time', name=_("One Time")),
-        FieldSet('recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_("Recurring"))
+        FieldSet('recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_("Recurring")),
+        FieldSet('time', name=_("Time"))
     )
     
     schedule_type = forms.MultipleChoiceField(
@@ -138,6 +148,11 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
         widget=forms.DateInput(attrs={'type': 'date'})
     )
     
+    time = forms.TimeField(
+        # widget=forms.TimeInput(format='%H:%M'),
+        required = False
+    )
+    
     special_ordinal = forms.CharField(
         required = False
     )
@@ -152,43 +167,5 @@ class MaintenanceWindowsCSVForm(NetBoxModelImportForm):
 
     class Meta:
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal']
+        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'time', 'special_ordinal']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceWindows_list'
-
-
-# class VirtualMachineFormAssignMaintenanceWindows(forms.Form):
-    
-#     maintenance_window = DynamicModelMultipleChoiceField(
-#         label=_('Maintenance Windows'),
-#         queryset=MaintenanceWindows.objects.all()
-#     )
-
-#     class Meta:
-#         fields = [
-#             'maintenance_window',
-#         ]
-
-#     def __init__(self, virtual_machine, *args, **kwargs):
-
-#         self.virtual_machine = virtual_machine
-
-#         self.maintenance_window = DynamicModelMultipleChoiceField(
-#             label=_('Maintenance Windows'),
-#             queryset=MaintenanceWindows.objects.all()
-#         )        
-
-#         super().__init__(*args, **kwargs)
-
-#         self.fields['maintenance_window'].choices = []
-        
-# class MaintenanceActionsRemoveVirtualMachine(ConfirmationForm):
-#     pk = forms.ModelMultipleChoiceField(
-#         queryset=VirtualMachine.objects.all(),
-#         widget=forms.MultipleHiddenInput()
-#     ) 
-    
-# class VirtualMachineRemoveMaintenanceWindows(ConfirmationForm):
-#     pk = forms.ModelMultipleChoiceField(
-#         queryset=MaintenanceWindows.objects.all(),
-#         widget=forms.MultipleHiddenInput()
-#     ) 

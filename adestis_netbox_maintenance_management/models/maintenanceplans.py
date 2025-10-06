@@ -31,10 +31,12 @@ class MaintenancePlans(NetBoxModel):
         blank = True
     )
     
-    maintenance_action = django_models.ManyToManyField(
+    maintenance_action = django_models.ForeignKey(
         to='adestis_netbox_maintenance_management.MaintenanceActions',
         blank=False,
-        null=False
+        null=False,
+        on_delete = django_models.PROTECT,
+        verbose_name='Maintenance Actions',
     )
     
     tenant = django_models.ForeignKey(

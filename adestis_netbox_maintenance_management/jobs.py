@@ -8,7 +8,7 @@ from adestis_netbox_maintenance_management.models import MaintenanceWindows, Mai
 
 
 logger = logging.getLogger(__name__)
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+
 class AutoCreateMaintenancePlans(JobRunner):
     class Meta:
         name = "Automatischer Wartungsplan"
@@ -45,15 +45,16 @@ class AutoCreateMaintenancePlans(JobRunner):
                 
 
             # check if schedule_type is on today's weekday
-            elif window.recurrence_type == "weekly" :
-                
-                if hasattr(window, 'weekdays') and window.weekdays == weekday:
-                    is_today = True
-            
-            # check if schedule_type is on today
+            elif window.recurrence_type == "weekly":
+                try:
+                    if window.weekdays and int(window.weekdays) == weekday:
+                        is_today = True
+                except ValueError:
+                    # logger.warning(f"Ungültiger Wert in 'weekdays': {window.weekdays}")
+                    continue
+
             elif window.recurrence_type == "monthly":
-                
-                if hasattr(window, 'monthdays') and window.monthdays == today.day:
+                if window.monthdays and window.monthdays.day == today.day:
                     is_today = True
 
             if not is_today:
@@ -61,20 +62,13 @@ class AutoCreateMaintenancePlans(JobRunner):
 
             actions = MaintenanceActions.objects.filter(maintenance_window=window).all()
 
-            if not actions.exists():
-                continue
-                
-            # skip existing Maintenance Plans with a maintenance action
+
             for action in actions:
                 if not MaintenancePlans.objects.filter(maintenance_action=action).exists():
                     plan = MaintenancePlans.objects.create(
                         name = action.name,
                         maintenance_action=action
                     )
+                       
                     created_count += 1
 
-
-                # plan = MaintenancePlans.objects.create()
-                # plan.maintenance_action.set(actions)
-                
-                # created_count += 1

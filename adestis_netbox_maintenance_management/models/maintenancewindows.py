@@ -53,13 +53,13 @@ class RecurrenceTypeChoices(ChoiceSet):
 class Weekday(ChoiceSet):
         key = 'weekday'
         
-        MON = 'monday'
-        TUE = 'tuesday'
-        WED = 'wednesday'
-        THU = 'thursday'
-        FRI = 'friday'
-        SAT = 'saturday'
-        SUN = 'sunday'
+        MON = '0'
+        TUE = '1'
+        WED = '2'
+        THU = '3'
+        FRI = '4'
+        SAT = '5'
+        SUN = '6'
 
         CHOICES = [
             (MON, 'Monday'),      
@@ -160,6 +160,11 @@ class MaintenanceWindows(NetBoxModel):
         verbose_name='Virtual Machines',
         related_name='maintenance_window',
         blank = True
+    )
+    
+    time = django_models.TimeField(
+        blank=True, 
+        null = True,
     )
     
     class Meta:
