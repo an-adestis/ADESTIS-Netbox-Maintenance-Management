@@ -42,6 +42,15 @@
                 <span class="text-muted">{% trans "None" %}</span>
               {% endif %}</td>
             </tr>
+
+            <tr>
+              <th scope='row'>{% trans "Time" %}</th>
+              <td>{% if object.time %}
+                {{ object.time|date:"H:i" }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>            
           </table>
         </div>
       </div>

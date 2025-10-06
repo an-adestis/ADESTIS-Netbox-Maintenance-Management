@@ -97,23 +97,20 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
     tenant_id = DynamicModelMultipleChoiceField(
         queryset=Tenant.objects.all(),
         required=False,
-        # query_params={
-        #     'group_id': '$tenant_group_id'
-        # },
         label=_('Tenant')
     )
     
-    # maintenance_action_id = DynamicModelMultipleChoiceField(
-    #     queryset=MaintenanceActions.objects.all(),
-    #     required=False,
-    #     label=_('Maintenance Actions')
-    # )
+    maintenance_action_id = DynamicModelMultipleChoiceField(
+        queryset=MaintenanceActions.objects.all(),
+        required=False,
+        label=_('Maintenance Actions')
+    )
     
     model = MaintenancePlans
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'tag',  name=_('Maintenanc Plans')),
+        FieldSet('name', 'tag', 'maintenance_action_id', name=_('Maintenanc Plans')),
         FieldSet('tenant_id', name=_("Tenant")),
         
     )
