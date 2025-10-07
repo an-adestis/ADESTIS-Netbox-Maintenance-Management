@@ -58,6 +58,29 @@ urlpatterns = (
     path('maintenanceactions/virtualmachines/', VirtualMachineAffectedMaintenanceActionsView.as_view(),
          name='maintenanceactionsvirtualmachines_list'),
     
+    # Maintenance Tasks
+    path('maintenancetasks/', MaintenanceTasksListView.as_view(),
+         name='maintenancetasks_list'),
+    path('maintenancetasks/add/', MaintenanceTasksEditView.as_view(),
+         name='maintenancetasks_add'),
+    path('maintenancetasks/delete/', MaintenanceTasksBulkDeleteView.as_view(),
+         name='maintenancetasks_bulk_delete'),
+    path('maintenancetasks/edit/', MaintenanceTasksBulkEditView.as_view(),
+         name='maintenancetasks_bulk_edit'),
+    path('maintenancetasks/import/', MaintenanceTasksBulkImportView.as_view(),
+         name='maintenancetasks_bulk_import'),
+    path('maintenancetasks/<int:pk>/',
+         MaintenanceTasksView.as_view(), name='maintenancetasks'),
+    path('maintenancetasks/<int:pk>/',
+         include(get_model_urls("adestis_netbox_maintenance_management", "maintenancetasks"))),
+    path('maintenancetasks/<int:pk>/edit/',
+         MaintenanceTasksEditView.as_view(), name='maintenancetasks_edit'),
+    path('maintenancetasks/<int:pk>/delete/',
+         MaintenanceTasksDeleteView.as_view(), name='maintenancetasks_delete'),
+    path('maintenancetasks/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancetasks_changelog', kwargs={
+        'model': MaintenanceTasks
+    }),
+    
     # Maintenance Plans
     path('maintenanceplans/', MaintenancePlansListView.as_view(),
          name='maintenanceplans_list'),

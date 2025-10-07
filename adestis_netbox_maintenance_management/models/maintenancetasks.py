@@ -13,10 +13,10 @@ from adestis_netbox_maintenance_management.models import MaintenanceActions
 from core.choices import JobIntervalChoices
 
 __all__ = (
-    'MaintenancePlans',
+    'MaintenanceTasks',
 )
 
-class MaintenancePlans(NetBoxModel):
+class MaintenanceTasks(NetBoxModel):
 
     comments = django_models.TextField(
         blank=True
@@ -33,28 +33,34 @@ class MaintenancePlans(NetBoxModel):
     
     maintenance_action = django_models.ForeignKey(
         to='adestis_netbox_maintenance_management.MaintenanceActions',
+        on_delete= django_models.PROTECT,
+        related_name='task_maintenance_windows',
         blank=False,
-        null=False,
-        on_delete = django_models.PROTECT,
-        verbose_name='Maintenance Actions',
+        null=False
     )
     
-    tenant = django_models.ForeignKey(
-         to = 'tenancy.Tenant',
-         on_delete = django_models.PROTECT,
-         related_name = 'maintenance_tenant',
-         null = True,
-         verbose_name='Tenant',
-         blank = True
-     )
+    maintenance_windows = django_models.ForeignKey(
+        to='adestis_netbox_maintenance_management.MaintenanceWindows',
+        on_delete= django_models.PROTECT,
+        related_name='task_maintenance_windows',
+        blank=False,
+        null=False
+    )
+    
+    virtual_machine = django_models.ManyToManyField(
+        to='virtualization.VirtualMachine',
+        verbose_name='Virtual Machines',
+        related_name='tasks_vm',
+        blank = True
+    )
 
     class Meta:
-        verbose_name_plural = "Maintenance Plans"
-        verbose_name = 'Maintenance Plans'
+        verbose_name_plural = "Maintenance Tasks"
+        verbose_name = 'Maintenance Tasks'
         ordering = ('name',)
 
     def get_absolute_url(self):
-        return reverse('plugins:adestis_netbox_maintenance_management:maintenanceplans', args=[self.pk])
+        return reverse('plugins:adestis_netbox_maintenance_management:maintenancetasks', args=[self.pk])
 
     def __str__(self):
         return self.name 
