@@ -8,5 +8,5 @@ router.register('maintenancewindows', views.MaintenanceWindowsViewSet)
 router.register('maintenanceactions', views.MaintenanceActionsViewSet)
 router.register('maintenanceplans', views.MaintenancePlansViewSet)
 router.register('maintenancereports', views.MaintenanceReportsViewSet)
-
+router.register('maintenancetasks', views.MaintenanceTasksViewSet)
 urlpatterns = router.urls

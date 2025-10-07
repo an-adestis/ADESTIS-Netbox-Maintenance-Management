@@ -1,7 +1,7 @@
 from django import forms
 from netbox.forms import NetBoxModelForm, NetBoxModelFilterSetForm, NetBoxModelBulkEditForm, NetBoxModelImportForm
 from utilities.forms.fields import CommentField, CSVChoiceField, TagFilterField
-from adestis_netbox_maintenance_management.models.maintenanceactions import MaintenanceActions
+from adestis_netbox_maintenance_management.models import *
 from utilities.forms import ConfirmationForm
 from django.utils.translation import gettext_lazy as _
 from utilities.forms.rendering import FieldSet
@@ -19,38 +19,30 @@ from utilities.forms import BulkEditForm, add_blank_choice, form_from_model
 from utilities.forms import get_field_value
 from utilities.forms.widgets import DatePicker
 from utilities.forms import get_field_value
-from adestis_netbox_maintenance_management.models import MaintenancePlans
+
 
 __all__ = (
-    'MaintenancePlansForm',
-    'MaintenancePlansFilterForm',
-    'MaintenancePlansBulkEditForm',
-    'MaintenancePlansCSVForm',
+    'MaintenanceTasksForm',
+    'MaintenanceTasksFilterForm',
+    'MaintenanceTasksBulkEditForm',
+    'MaintenanceTasksCSVForm',
 )
 
 
-class MaintenancePlansForm(NetBoxModelForm):
-    
-    tenant = DynamicModelChoiceField(
-        queryset=Tenant.objects.all(),
-        required=False,
-        # query_params={
-        #     'group_id': '$tenant_group'
-        # },
-    )
+class MaintenanceTasksForm(NetBoxModelForm):
     
     fieldsets = (
-        FieldSet('name', 'maintenance_action', 'description', 'tags',  name=_('Maintenance Plans')),
-        FieldSet('tenant', name=_("Tenant")),
+        FieldSet('name', 'maintenance_action', 'maintenance_windows', 'description', 'tags',  name=_('Maintenance Tasks')),
+        FieldSet('virtual_machine', name=_("Virtual Machine")),
         
     )
     
     class Meta:
-        model = MaintenancePlans
+        model = MaintenanceTasks
         
-        fields = ['name', 'maintenance_action', 'tenant', 'description', 'tags', 'comments']
+        fields = ['name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'description', 'tags', 'comments']
         
-class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
+class MaintenanceTasksBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=MaintenanceActions.objects.all(),
         widget=forms.MultipleHiddenInput, 
@@ -79,12 +71,24 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
         required= False,
         label=_('Maintenance Action'),
     )
+    
+    maintenance_windows = DynamicModelChoiceField(
+        queryset=MaintenanceWindows.objects.all(),
+        required= False,
+        label=_('Maintenance Window'),
+    )
+    
+    virtual_machine = DynamicModelChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        required= False,
+        label=_('Virtual Machine'),
+    )
 
-    model = MaintenancePlans
+    model = MaintenanceTasks
 
     fieldsets = (
-        FieldSet('name', 'maintenance_action', 'description', 'tags', 'comments', name=_('Maintenance Plans')),
-        FieldSet('tenant', name=_("Tenant")),
+        FieldSet('name', 'maintenance_action', 'maintenance_windows', 'description', 'tags', 'comments', name=_('Maintenance Tasks')),
+        FieldSet('virtual_machine', name=_("Virtual Machine")),
         
     )
 
@@ -92,26 +96,33 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
         'add_tags', 'remove_tags', 'description',
     ]
     
-class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
+class MaintenanceTasksFilterForm(NetBoxModelFilterSetForm):
     
-    tenant_id = DynamicModelMultipleChoiceField(
-        queryset=Tenant.objects.all(),
-        required=False,
-        label=_('Tenant')
-    )
-    
-    maintenance_action_id = DynamicModelMultipleChoiceField(
+    maintenance_windows = DynamicModelMultipleChoiceField(
         queryset=MaintenanceActions.objects.all(),
         required=False,
         label=_('Maintenance Actions')
     )
     
-    model = MaintenancePlans
+    maintenance_action = DynamicModelMultipleChoiceField(
+        queryset=MaintenanceActions.objects.all(),
+        required=False,
+        label=_('Maintenance Actions')
+    )
+    
+    virtual_machine = DynamicModelMultipleChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        label=_('Virtual Machine'),
+        required=False,
+    )
+    
+    
+    model = MaintenanceTasks
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'tag', 'maintenance_action_id', name=_('Maintenance Plans')),
-        FieldSet('tenant_id', name=_("Tenant")),
+        FieldSet('name', 'tag', 'maintenance_action', 'maintenance_windows', name=_('Maintenance Tasks')),
+        FieldSet('virtual_machine', name=_("Virtual Machine")),
         
     )
 
@@ -121,27 +132,35 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
 
     tag = TagFilterField(model)
 
-class MaintenancePlansCSVForm(NetBoxModelImportForm):
+class MaintenanceTasksCSVForm(NetBoxModelImportForm):
     
     maintenance_action = CSVModelChoiceField(
         label=_('Maintenance Windows'),
         queryset=MaintenanceActions.objects.all(),
         required=True,
         to_field_name='name',
+        help_text=_('Name of assigned maintenance action')
+    )
+    
+    maintenance_windows = CSVModelChoiceField(
+        label=_('Maintenance Windows'),
+        queryset=MaintenanceWindows.objects.all(),
+        required=True,
+        to_field_name='name',
         help_text=_('Name of assigned maintenance window')
     )
     
-    tenant = CSVModelChoiceField(
-        label=_('Tenant'),
-        queryset=Tenant.objects.all(),
+    virtual_machine = CSVModelMultipleChoiceField(
+        label=_('Virtual Machines'),
+        queryset=VirtualMachine.objects.all(),
         required=True,
         to_field_name='name',
-        help_text=_('Name of assigned tenant')
+        help_text=_('Name of assigned virtual machine')
     )
     
     class Meta:
-        model = MaintenancePlans
-        fields = ['name', 'maintenance_action', 'tenant', 'description', 'tags', 'comments']
+        model = MaintenanceTasks
+        fields = ['name', 'maintenance_action', 'virtual_machine', 'description', 'tags', 'comments']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceActions_list'
 
 

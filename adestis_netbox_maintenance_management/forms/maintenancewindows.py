@@ -34,30 +34,31 @@ class MaintenanceWindowsForm(NetBoxModelForm):
     
     
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'time', name=_('Maintenance Windows')),
+        FieldSet('name', 'description', 'tags', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_('Maintenance Windows')),
     )
     
     class Meta:
         model = MaintenanceWindows
         
-        fields = ['name', 'description', 'tags', 'comments',  
-            'schedule_type',
+        fields = ['name', 'description', 'tags', 'comments', 
             'start_time',
-            'end_time',
+            'end_time', 
+            'schedule_type',
+            'start_day',
+            'end_day',
+            
             'recurrence_type',
             'weekdays',
             'monthdays', 
             'special_ordinal',
-            'time'
         ]
         
         widgets = {
-            'start_time': DatePicker(),
-            'end_time': DatePicker(),
+            'start_day': DatePicker(),
+            'end_day': DatePicker(),
+            'start_time': TimePicker(),
+            'end_time': TimePicker(),
             'monthdays': DatePicker(),
-            'time': TimePicker(attrs={
-                'placeholder' : 'hh:mm' 
-            }),
         }
         
         
@@ -92,14 +93,11 @@ class MaintenanceWindowsBulkEditForm(NetBoxModelBulkEditForm):
         initial=''
     )
     
-    time = forms.TimeField(
-        widget=forms.TimeInput(format='%H:%M')
-    )
 
     model = MaintenanceWindows
 
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'comments', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'time', 'special_ordinal', name=_('Maintenance Windows')),
+        FieldSet('name', 'description', 'tags', 'comments', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_('Maintenance Windows')),
     )
 
     nullable_fields = [
@@ -113,9 +111,9 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
     fieldsets = (
         FieldSet('q', 'index',),
         FieldSet('name', 'tag', 'schedule_type',  name=_('Maintenanc Windows')),
-        FieldSet('start_time', 'end_time', name=_("One Time")),
+        FieldSet('start_day', 'end_day', name=_("One Time")),
         FieldSet('recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', name=_("Recurring")),
-        FieldSet('time', name=_("Time"))
+        FieldSet('start_time', 'end_time', name=_("Time"))
     )
     
     schedule_type = forms.MultipleChoiceField(
@@ -123,12 +121,12 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
         choices=ScheduleTypeModeChoices
     )
     
-    start_time = forms.DateField(
+    start_day = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={'type': 'date'})
     )
     
-    end_time = forms.DateField(
+    end_day = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={'type': 'date'})
     )
@@ -148,7 +146,12 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
         widget=forms.DateInput(attrs={'type': 'date'})
     )
     
-    time = forms.TimeField(
+    start_time = forms.TimeField(
+        # widget=forms.TimeInput(format='%H:%M'),
+        required = False
+    )
+    
+    end_time = forms.TimeField(
         # widget=forms.TimeInput(format='%H:%M'),
         required = False
     )
@@ -167,5 +170,5 @@ class MaintenanceWindowsCSVForm(NetBoxModelImportForm):
 
     class Meta:
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'time', 'special_ordinal']
+        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceWindows_list'

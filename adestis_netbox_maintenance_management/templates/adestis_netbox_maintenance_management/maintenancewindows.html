@@ -33,7 +33,22 @@
                 <span class="text-muted">{% trans "None" %}</span>
               {% endif %}</td>
             </tr>
-
+            <tr>
+              <th scope='row'>{% trans "Start Time" %}</th>
+              <td>{% if object.start_time %}
+                {{ object.start_time|date:"H:i" }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
+            <tr>
+              <th scope='row'>{% trans "End Time" %}</th>
+              <td>{% if object.end_time %}
+                {{ object.end_time|date:"H:i" }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
             <tr>
               <th scope='row'>{% trans "Schedule Type" %}</th>
               <td>{% if object.schedule_type %}
@@ -41,16 +56,7 @@
               {% else %}
                 <span class="text-muted">{% trans "None" %}</span>
               {% endif %}</td>
-            </tr>
-
-            <tr>
-              <th scope='row'>{% trans "Time" %}</th>
-              <td>{% if object.time %}
-                {{ object.time|date:"H:i" }}
-              {% else %}
-                <span class="text-muted">{% trans "None" %}</span>
-              {% endif %}</td>
-            </tr>            
+            </tr>             
           </table>
         </div>
       </div>
@@ -67,21 +73,21 @@
           <h5 class="card-header">One Time</h5>
           <div class="card-body">
             <table class="table table-hover attr-table">
-              {% if object.schedule_type == 'one_time' and object.start_time %}
+              {% if object.schedule_type == 'one_time' and object.start_day %}
                 <tr>
-                  <th scope='row'>{% trans "Start Time" %}</th>
-                  <td>{% if object.start_time %}
-                    {{ object.start_time }}
+                  <th scope='row'>{% trans "Start Day" %}</th>
+                  <td>{% if object.start_day %}
+                    {{ object.start_day }}
                   {% else %}
                     <span class="text-muted">{% trans "None" %}</span>
                   {% endif %}</td>
                 </tr>
               {% endif %}
-              {% if object.schedule_type == 'one_time' and object.end_time %}
+              {% if object.schedule_type == 'one_time' and object.end_day %}
                 <tr>
-                  <th scope='row'>{% trans "End Time" %}</th>
-                  <td>{% if object.end_time %}
-                    {{ object.end_time }}
+                  <th scope='row'>{% trans "End Day" %}</th>
+                  <td>{% if object.end_day %}
+                    {{ object.end_day }}
                   {% else %}
                     <span class="text-muted">{% trans "None" %}</span>
                   {% endif %}</td>

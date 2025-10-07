@@ -65,10 +65,10 @@ class MaintenanceActions(NetBoxModel):
         return self.name 
     
     def save(self, *args, **kwargs):
-        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenancePlans
-        AutoCreateMaintenancePlans.enqueue_once()
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
+        AutoCreateMaintenanceTasks.enqueue_once()
         return super().save(*args, **kwargs)
 
     def sync(self):
-        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenancePlans
-        AutoCreateMaintenancePlans.enqueue()
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
+        AutoCreateMaintenanceTasks.enqueue()

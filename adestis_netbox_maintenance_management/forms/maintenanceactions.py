@@ -60,7 +60,7 @@ class MaintenanceActionsForm(NetBoxModelForm):
         null_option='None',
         query_params={
             'cluster_id': '$cluster',
-            'device_id': '$device',
+            # 'device_id': '$device',
         },
         help_text=_("Virtual Machine"),
     )

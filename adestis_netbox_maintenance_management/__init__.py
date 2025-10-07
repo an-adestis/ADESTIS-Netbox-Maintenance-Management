@@ -15,7 +15,7 @@ class AdestisMaintenanceConfig(PluginConfig):
 
     def ready(self):
         super().ready()
-        from .jobs import AutoCreateMaintenancePlans
+        from .jobs import AutoCreateMaintenanceTasks
 
 config = AdestisMaintenanceConfig
 default_app_config = "adestis_netbox_maintenance_management.apps.AdestisMaintenanceManagementAppConfig"

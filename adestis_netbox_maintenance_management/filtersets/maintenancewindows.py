@@ -23,7 +23,7 @@ class MaintenanceWindowsFilterSet(NetBoxModelFilterSet):
     
     class Meta:
         model = MaintenanceWindows
-        fields = ['id', 'name', 'schedule_type', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'time', 'special_ordinal']
+        fields = ['id', 'name', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal']
     
 
     def search(self, queryset, name, value):

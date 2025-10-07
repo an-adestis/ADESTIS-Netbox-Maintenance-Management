@@ -119,12 +119,12 @@ class MaintenanceWindows(NetBoxModel):
         
     schedule_type = django_models.CharField(max_length=20, choices=ScheduleTypeModeChoices, null=False, blank=False, default=ScheduleTypeModeChoices.SELECT_File)
     
-    start_time = django_models.DateField(
+    start_day = django_models.DateField(
         blank=True,
         null=True,
     )
     
-    end_time = django_models.DateField(
+    end_day = django_models.DateField(
         blank=True,
         null=True,
     )
@@ -162,9 +162,14 @@ class MaintenanceWindows(NetBoxModel):
         blank = True
     )
     
-    time = django_models.TimeField(
+    start_time = django_models.TimeField(
         blank=True, 
         null = True,
+    )
+    
+    end_time = django_models.TimeField(
+        blank= True, 
+        null=True,
     )
     
     class Meta:
