@@ -16,25 +16,8 @@ __all__ = (
     'Weekday',
     'ScheduleTypeModeChoices',
     'RecurrenceTypeChoices',
-    'HOLIDAYS',
     'Weekday',
 )
-
-class HOLIDAYS(ChoiceSet):
-    Neujahr = "01-01",  # Neujahr
-    Tag_der_Arbeit = "05-01",  # Tag der Arbeit
-    Deutsche_Einheit = "10-03",  # Tag der Deutschen Einheit
-    Weihnachten = "12-25",  # Weihnachten
-    ZweiterWeihnachtstag = "12-26",  # 2. Weihnachtstag
-
-    CHOICES = [
-            (Neujahr, '01-01'),
-            (Tag_der_Arbeit, '05-01'),
-            (Deutsche_Einheit, '10-03'),
-            (Weihnachten, '12-25'),
-            (ZweiterWeihnachtstag, '12-26'),
-        ]
-
 class RecurrenceTypeChoices(ChoiceSet):
 
         DAILY = 'daily'
@@ -53,13 +36,13 @@ class RecurrenceTypeChoices(ChoiceSet):
 class Weekday(ChoiceSet):
         key = 'weekday'
         
-        MON = '0'
-        TUE = '1'
-        WED = '2'
-        THU = '3'
-        FRI = '4'
-        SAT = '5'
-        SUN = '6'
+        MON = 'Monday'
+        TUE = 'Tuesday'
+        WED = 'Wednesday'
+        THU = 'Thursday'
+        FRI = 'Friday'
+        SAT = 'Saturday'
+        SUN = 'Sunday'
 
         CHOICES = [
             (MON, 'Monday'),      

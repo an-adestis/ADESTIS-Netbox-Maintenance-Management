@@ -1,5 +1,5 @@
 from netbox.tables import NetBoxTable, ChoiceFieldColumn, columns
-from adestis_netbox_maintenance_management.models import MaintenancePlans
+from adestis_netbox_maintenance_management.models import *
 from adestis_netbox_maintenance_management.filtersets import *
 from dcim.models import *
 from dcim.tables import *
@@ -24,6 +24,10 @@ class MaintenancePlansTable(NetBoxTable):
         
     maintenance_action = tables.Column(
         linkify= True
+    )
+    
+    tasks = tables.Column(
+        linkify = True
     )
 
     class Meta(NetBoxTable.Meta):

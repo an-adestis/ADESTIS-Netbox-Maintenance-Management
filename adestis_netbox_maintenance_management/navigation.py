@@ -66,9 +66,10 @@ if plugin_settings.get('top_level_menu'):
         groups=(
             ("Maintenance Windows", _maintenancewindows),
             ("Maintenance Actions", _maintenanceactions),
+            ("Maintenance Tasks", _maintenancetasks),
             ("Maintenance Plans", _maintenanceplans),
             ("Maintenance Reports", _maintenancereports),
-            ("Maintenance Tasks", _maintenancetasks),
+            
         ),
         icon_class="mdi mdi-wrench",
     )
