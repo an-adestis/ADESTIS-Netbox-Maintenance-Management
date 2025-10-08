@@ -4,6 +4,7 @@ from adestis_netbox_maintenance_management.models import *
 from adestis_netbox_maintenance_management.views import *
 from django.urls import include
 from utilities.urls import get_model_urls
+from adestis_netbox_maintenance_management import views
 
 urlpatterns = (
 

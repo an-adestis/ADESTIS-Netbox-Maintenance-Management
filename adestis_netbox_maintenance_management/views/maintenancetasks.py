@@ -6,6 +6,9 @@ from adestis_netbox_maintenance_management.tables import *
 from netbox.views import generic
 from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 __all__ = (
     'MaintenanceTasksView',
