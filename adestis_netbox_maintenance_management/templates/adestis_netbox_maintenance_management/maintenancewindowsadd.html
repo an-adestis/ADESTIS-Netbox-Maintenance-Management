@@ -7,7 +7,7 @@
 
 {% block content %}
   {{ block.super }}
-
+    <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
   <script>
         document.addEventListener("DOMContentLoaded", function () {
             console.log("DOM ready");
@@ -48,7 +48,7 @@
         function updateVisibility() {
             const scheduleValue = schedulefields.value;
             const recurrenceValue = recurrencefield.value;
-
+            
             // schedule_type abhängige Felder
             if (scheduleValue === "recurring") {
                 recurenceContainer.style.display = '';
@@ -100,9 +100,49 @@
 
         // Initiale Sichtbarkeit setzen
         updateVisibility();
+        const helpText = document.getElementById("id_special_ordinal_helptext");
 
-            
+        function updateCronDescription() {
+            const raw = specialordinal.value;
+
+            try {
+                const description = cronstrue.toString(raw);
+                console.log('Cron Beschreibung:', description);
+
+                // helpText holen oder erstellen, wenn nicht vorhanden
+                let helpText = document.getElementById("id_special_ordinal_helptext");
+                if (!helpText) {
+                    helpText = document.createElement("small");
+                    helpText.id = "id_special_ordinal_helptext";
+                    helpText.className = "form-text text-muted";
+                    specialordinal.insertAdjacentElement("afterend", helpText);
+                }
+
+                // Text setzen
+                helpText.textContent = description;
+            } catch (e) {
+                console.log('❌ Ungültiger Cron-Ausdruck');
+
+                let helpText = document.getElementById("id_special_ordinal_helptext");
+                if (!helpText) {
+                    helpText = document.createElement("small");
+                    helpText.id = "id_special_ordinal_helptext";
+                    helpText.className = "form-text text-muted";
+                    specialordinal.insertAdjacentElement("afterend", helpText);
+                }
+
+                helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
+            }
+        }
+
+        specialordinal.addEventListener("input", updateCronDescription);
+
+        // Initial einmal ausführen
+        updateCronDescription();    
 
         });
     </script>
+    
+
+  
 {% endblock %}

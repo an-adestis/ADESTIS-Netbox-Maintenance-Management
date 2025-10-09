@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django import forms
 from django.contrib.postgres.fields import ArrayField 
 from datetime import timedelta
+from crontab import CronTab
 
 
 __all__ = (
@@ -115,6 +116,7 @@ class MaintenanceWindows(NetBoxModel):
     recurrence_type =django_models.CharField(
         max_length=20,
         choices=RecurrenceTypeChoices,
+        default=RecurrenceTypeChoices.DAILY,
         blank=True,
         null=True
     )
@@ -133,9 +135,11 @@ class MaintenanceWindows(NetBoxModel):
     )
 
     special_ordinal = django_models.CharField(
+        max_length=100,
         blank=True,
         null=True,
-        help_text="Describe the monthly pattern, e.g.: 'every 2nd Wednesday', 'last Friday of the month', or 'first workday'"
+        default="0 9 * * 1",
+        help_text=""
     )
     
     virtual_machine = django_models.ManyToManyField(
