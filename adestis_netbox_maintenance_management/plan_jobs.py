@@ -62,5 +62,4 @@ class AutoCreateMaintenancePlans(JobRunner):
                 plan.tasks.add(task)
                 assigned_count += 1
     
-    class Meta:
-        name = "Automatically Generated Maintenance Plans"
+    

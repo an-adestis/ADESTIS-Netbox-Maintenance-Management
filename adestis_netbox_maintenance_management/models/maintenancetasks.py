@@ -53,6 +53,13 @@ class MaintenanceTasks(NetBoxModel):
         related_name='tasks_vm',
         blank = True
     )
+    
+    device = django_models.ManyToManyField(
+        to='dcim.Device',
+        verbose_name='Devices',
+        related_name='tasks_device',
+        blank = True
+    )
 
     class Meta:
         verbose_name_plural = "Maintenance Tasks"

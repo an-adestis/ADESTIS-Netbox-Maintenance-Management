@@ -34,9 +34,13 @@ class MaintenanceTasksFilterSet(NetBoxModelFilterSet):
         queryset=MaintenanceWindows.objects.all()
     )
     
+    device = django_filters.ModelMultipleChoiceFilter(
+        queryset=Device.objects.all()
+    )
+    
     class Meta:
         model = MaintenanceTasks
-        fields = ['id', 'name', 'maintenance_action', 'maintenance_windows', 'virtual_machine']
+        fields = ['id', 'name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device']
     
 
     def search(self, queryset, name, value):

@@ -17,7 +17,7 @@ class MaintenanceWindowsTable(NetBoxTable):
         linkify=True
     )
     
-    virtual_machine = tables.Column(
+    virtual_machine = columns.ManyToManyColumn(
         linkify=True
     )
 

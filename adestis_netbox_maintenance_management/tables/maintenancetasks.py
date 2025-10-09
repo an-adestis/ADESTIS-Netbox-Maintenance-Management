@@ -28,7 +28,11 @@ class MaintenanceTasksTable(NetBoxTable):
         verbose_name="Virtual Machines"
     )
     
-        
+    device = columns.ManyToManyColumn(
+        linkify = True,
+        verbose_name= "Device"
+    )
+    
     maintenance_action = tables.Column(
         linkify= True
     )
@@ -54,8 +58,8 @@ class MaintenanceTasksTable(NetBoxTable):
 
         model = MaintenanceTasks
         
-        fields = ['name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'description', 'tags', 'comments', 'done']
-        default_columns = [ 'name', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'done', 'comments']
+        fields = ['name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device', 'description', 'tags', 'comments', 'done']
+        default_columns = [ 'name', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device', 'done', 'comments']
 
 
         

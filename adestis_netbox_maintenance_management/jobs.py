@@ -60,6 +60,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
                             # virtual_machine = action.virtual_machine
                         )
                         task.virtual_machine.set(action.virtual_machine.all())
+                        task.device.set(action.device.all())
                         # task.maintenance_windows.set([window])
                         
                         created_count += 1
