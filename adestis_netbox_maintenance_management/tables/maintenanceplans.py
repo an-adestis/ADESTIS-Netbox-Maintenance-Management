@@ -22,11 +22,23 @@ class MaintenancePlansTable(NetBoxTable):
         linkify=True
     )
         
-    maintenance_action = tables.Column(
-        linkify= True
+    maintenance_action = columns.ManyToManyColumn(
+        linkify = True
     )
     
-    tasks = tables.Column(
+    maintenance_tasks = columns.ManyToManyColumn(
+        linkify = True
+    )
+    
+    maintenance_windows = columns.ManyToManyColumn(
+        linkify = True
+    )
+    
+    virtual_machine = columns.ManyToManyColumn(
+        linkify = True
+    )
+    
+    device = columns.ManyToManyColumn(
         linkify = True
     )
 
@@ -34,8 +46,8 @@ class MaintenancePlansTable(NetBoxTable):
 
         model = MaintenancePlans
         
-        fields = ['name', 'maintenance_action', 'tenant', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'maintenance_action']
+        fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
+        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device' ]
 
 
         

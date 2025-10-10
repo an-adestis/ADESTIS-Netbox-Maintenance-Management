@@ -18,11 +18,11 @@ class MaintenanceActionsTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    device = tables.Column(
+    device = columns.ManyToManyColumn(
         linkify=True
     )
     
-    virtual_machine = tables.Column(
+    virtual_machine = columns.ManyToManyColumn(
         linkify=True
     )
         

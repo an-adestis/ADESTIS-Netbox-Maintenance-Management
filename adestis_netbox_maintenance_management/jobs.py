@@ -53,7 +53,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
             for action in actions:
                     if not MaintenanceTasks.objects.filter(maintenance_action=action).exists():
                         task = MaintenanceTasks.objects.create(
-                            name = f"{action.name} {get_schedule_label_or_today(window)}",
+                            name = f"{window.name} {get_schedule_label_or_today(window)}",
                             maintenance_action=action, 
                             maintenance_windows = window,
                             comments = action.comments,
