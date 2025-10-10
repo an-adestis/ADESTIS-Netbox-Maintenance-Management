@@ -47,10 +47,24 @@ class MaintenancePlans(NetBoxModel):
         verbose_name='Maintenance Windows',
     )
     
+    maintenance_tasks = django_models.ManyToManyField(
+        to='adestis_netbox_maintenance_management.MaintenanceTasks',
+        verbose_name='Maintenance Tasks',
+        related_name='plans_tasks',
+        blank = True
+    )
+    
     virtual_machine = django_models.ManyToManyField(
         to='virtualization.VirtualMachine',
         verbose_name='Virtual Machines',
         related_name='plans_vm',
+        blank = True
+    )
+    
+    device = django_models.ManyToManyField(
+        to='dcim.Device',
+        verbose_name='Devices',
+        related_name='plans_device',
         blank = True
     )
     

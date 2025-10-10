@@ -160,19 +160,19 @@
     </div>
   </div>
   <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const cronTextElement = document.getElementById("special_ordinal_value");
-    if (cronTextElement) {
-      try {
-        const raw = cronTextElement.textContent.trim();
-        const cron = raw.trim().split(/\s+/).slice(-5).join(" ");  // Normalisieren
-        const description = cronstrue.toString(cron);
-        cronTextElement.textContent = description;
-      } catch (e) {
-        cronTextElement.textContent = "❌ Ungültiger Cron-Ausdruck";
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const cronTextElement = document.getElementById("special_ordinal_value");
+      if (cronTextElement) {
+        try {
+          const raw = cronTextElement.textContent.trim();
+          const cron = raw.trim().split(/\s+/).slice(-5).join(" ");  // Normalisieren
+          const description = cronstrue.toString(cron);
+          cronTextElement.textContent = description;
+        } catch (e) {
+          cronTextElement.textContent = "❌ Ungültiger Cron-Ausdruck";
+        }
       }
-    }
-  });
-</script>
+    });
+  </script>
 {% endblock content %}
