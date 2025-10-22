@@ -6,7 +6,11 @@ from virtualization.forms import *
 from virtualization.tables import *
 import django_tables2 as tables
 from django.utils.safestring import mark_safe
+from django.utils.safestring import mark_safe
 
+def render_cron_value(obj):
+    cron_value = obj.schedule_type.strip()
+    return mark_safe(f'<span class="cron-expression">{cron_value}</span>')
 
 class MaintenanceWindowsTable(NetBoxTable):
     comments = columns.MarkdownColumn()
@@ -23,20 +27,32 @@ class MaintenanceWindowsTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    # def render_virtual_machine(self, record):
-    #     # `record` ist eine MaintenanceWindow-Instanz
-    #     checkboxes = []
+    special_ordinal = columns.TemplateColumn(
+         template_code="""
+            <span class="cron-expression" title="{{ record.special_ordinal }}">{{ record.special_ordinal }}</span>
+            {% if forloop.first %}
+            <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+            <script>
+                function renderCronDescriptions() {
+                    document.querySelectorAll(".cron-expression").forEach(function (el) {
+                        try {
+                            const raw = el.textContent.trim();
+                            const cron = raw.split(/\s+/).slice(-5).join(" ");
+                            const description = cronstrue.toString(cron, { locale: "de" });
+                            el.textContent = description;
+                        } catch (e) {
+                            el.textContent = "❌ Ungültiger Cron-Ausdruck";
+                        }
+                    });
+                }
 
-    #     for vm in record.virtual_machine.all():
-    #         checkbox_html = f'''
-    #             <label style="display: block;">
-    #                 <input type="checkbox" name="completed_vm_{vm.pk}" />
-    #                 {vm.name}
-    #             </label>
-    #         '''
-    #         checkboxes.append(checkbox_html)
-
-    #     return mark_safe(''.join(checkboxes))
+                document.addEventListener("DOMContentLoaded", renderCronDescriptions);
+                document.body.addEventListener("htmx:afterSettle", renderCronDescriptions);  // ✅ wichtig!
+            </script>
+            {% endif %}
+        """,
+        verbose_name="Zeitplan"
+    )
 
     class Meta(NetBoxTable.Meta):
         model = MaintenanceWindows

@@ -8,6 +8,7 @@
 {% block content %}
   {{ block.super }}
     <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+
   <script>
         document.addEventListener("DOMContentLoaded", function () {
             console.log("DOM ready");
@@ -102,36 +103,77 @@
         updateVisibility();
         const helpText = document.getElementById("id_special_ordinal_helptext");
 
+        function isValidCronPart(part, min, max) {
+            if (part === '*' || part === '?') return true;
+
+            // Unterstützung für Listen, Ranges und Schritte (einfachste Form)
+            const parts = part.split(',');
+
+            return parts.every(p => {
+                if (p.includes('/')) {
+                    [p] = p.split('/'); // nur linken Teil nehmen (z.B. "5/2" → "5")
+                }
+
+                if (p.includes('-')) {
+                    const [start, end] = p.split('-').map(Number);
+                    return (
+                        !isNaN(start) &&
+                        !isNaN(end) &&
+                        start >= min && start <= max &&
+                        end >= min && end <= max &&
+                        start <= end
+                    );
+                }
+
+                const num = Number(p);
+                return !isNaN(num) && num >= min && num <= max;
+            });
+        }
+
+        function validateCron(raw) {
+            if (typeof raw !== 'string') return false;
+
+            const parts = raw.trim().split(/\s+/);
+            if (parts.length !== 5) return false;
+
+            const [minute, hour, day, month, weekday] = parts;
+
+            return (
+                isValidCronPart(minute, 0, 59) &&
+                isValidCronPart(hour, 0, 23) &&
+                isValidCronPart(day, 1, 31) &&
+                isValidCronPart(month, 1, 12) &&
+                isValidCronPart(weekday, 0, 6)
+            );
+        }
+
         function updateCronDescription() {
-            const raw = specialordinal.value;
+            
+            const raw = specialordinal?.value || "";
 
-            try {
-                const description = cronstrue.toString(raw);
-                console.log('Cron Beschreibung:', description);
+            // helpText holen oder erstellen
+            let helpText = document.getElementById("id_special_ordinal_helptext");
+            if (!helpText) {
+                helpText = document.createElement("small");
+                helpText.id = "id_special_ordinal_helptext";
+                helpText.className = "form-text text-muted";
+                specialordinal.insertAdjacentElement("afterend", helpText);
+            }
 
-                // helpText holen oder erstellen, wenn nicht vorhanden
-                let helpText = document.getElementById("id_special_ordinal_helptext");
-                if (!helpText) {
-                    helpText = document.createElement("small");
-                    helpText.id = "id_special_ordinal_helptext";
-                    helpText.className = "form-text text-muted";
-                    specialordinal.insertAdjacentElement("afterend", helpText);
-                }
-
-                // Text setzen
-                helpText.textContent = description;
-            } catch (e) {
-                console.log('❌ Ungültiger Cron-Ausdruck');
-
-                let helpText = document.getElementById("id_special_ordinal_helptext");
-                if (!helpText) {
-                    helpText = document.createElement("small");
-                    helpText.id = "id_special_ordinal_helptext";
-                    helpText.className = "form-text text-muted";
-                    specialordinal.insertAdjacentElement("afterend", helpText);
-                }
-
+            // Zuerst Cron-Ausdruck validieren
+            if (!validateCron(raw)) {
+                console.log("❌ Ungültiger Cron-Ausdruck (validiert)");
                 helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
+                specialordinal.setCustomValidity("Ungültiger Cron-Ausdruck");
+            }else {
+                try {
+                    const description = cronstrue.toString(raw);
+                    helpText.textContent = description;
+                    specialordinal.setCustomValidity(""); // Fehler entfernen
+                } catch (e) {
+                    helpText.textContent = "❌ Fehler beim Interpretieren des Ausdrucks";
+                    specialordinal.setCustomValidity("Fehler beim Interpretieren des Ausdrucks");
+                }
             }
         }
 
@@ -143,6 +185,4 @@
         });
     </script>
     
-
-  
 {% endblock %}
