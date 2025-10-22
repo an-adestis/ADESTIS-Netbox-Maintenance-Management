@@ -41,18 +41,15 @@ class MaintenanceTasksTable(NetBoxTable):
         linkify= True
     )
     
-    done = TemplateColumn(
+    done = columns.TemplateColumn(
         template_code="""
-        <input type="checkbox"
-            class="js-done-toggle"
-            data-pk="{{ record.pk }}"
-            onchange="localStorage.setItem('maintenance_done_{{ record.pk }}', this.checked ? '1' : '0')"
-            {% if record.pk|stringformat:"s" in request.GET.localstorage_keys %}checked{% endif %}>
-    """,
+            <input type="checkbox" id="checkbox" ></input>
+            <script>function CookiesCheck() {var checkBox = document.getElementById("checkbox");var text = document.getElementById("checkbox");if (checkBox.checked == true){text.style.display = "none";} else {text.style.display = "block";}}</script>
+            
+        """,
         verbose_name="Done",
         orderable=False
     )
-
 
     class Meta(NetBoxTable.Meta):
 

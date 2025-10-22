@@ -34,7 +34,7 @@ class MaintenanceTasks(NetBoxModel):
     maintenance_action = django_models.ForeignKey(
         to='adestis_netbox_maintenance_management.MaintenanceActions',
         on_delete= django_models.PROTECT,
-        related_name='task_maintenance_windows',
+        related_name='task_maintenance_actions',
         blank=False,
         null=False
     )

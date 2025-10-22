@@ -5,7 +5,7 @@ from netbox.jobs import JobRunner, system_job
 import logging
 # from extras.jobs import Job
 from adestis_netbox_maintenance_management.models import MaintenanceWindows, MaintenanceActions, MaintenancePlans, MaintenanceTasks
-
+from cron_descriptor import get_description, ExpressionDescriptor
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +34,17 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 window.end_day,
                 window.weekdays,
                 window.monthdays,
-                window.special_ordinal,
                 window.start_time,
                 window.end_time,
             ]
+            
+            cron_expr = window.special_ordinal
+            if cron_expr:
+                try:
+                    description = get_description(cron_expr)
+                    return description
+                except Exception:
+                    return cron_expr
 
             for value in fields:
                 if value:

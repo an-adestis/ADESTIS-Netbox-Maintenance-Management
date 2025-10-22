@@ -30,28 +30,8 @@ class MaintenanceWindowsTable(NetBoxTable):
     special_ordinal = columns.TemplateColumn(
          template_code="""
             <span class="cron-expression" title="{{ record.special_ordinal }}">{{ record.special_ordinal }}</span>
-            {% if forloop.first %}
-            <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
-            <script>
-                function renderCronDescriptions() {
-                    document.querySelectorAll(".cron-expression").forEach(function (el) {
-                        try {
-                            const raw = el.textContent.trim();
-                            const cron = raw.split(/\s+/).slice(-5).join(" ");
-                            const description = cronstrue.toString(cron, { locale: "de" });
-                            el.textContent = description;
-                        } catch (e) {
-                            el.textContent = "❌ Ungültiger Cron-Ausdruck";
-                        }
-                    });
-                }
-
-                document.addEventListener("DOMContentLoaded", renderCronDescriptions);
-                document.body.addEventListener("htmx:afterSettle", renderCronDescriptions);  // ✅ wichtig!
-            </script>
-            {% endif %}
         """,
-        verbose_name="Zeitplan"
+        verbose_name="Special Ordinal"
     )
 
     class Meta(NetBoxTable.Meta):

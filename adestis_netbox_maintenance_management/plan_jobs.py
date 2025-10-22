@@ -52,7 +52,7 @@ class AutoCreateMaintenancePlans(JobRunner):
 
             grouping_key, plan_name = get_grouping_key_and_name(window)
 
-            plan, _ = MaintenancePlans.objects.get_or_create(
+            plan = MaintenancePlans.objects.get_or_create(
                 grouping_key=grouping_key,
                 defaults={'name': plan_name}
             )

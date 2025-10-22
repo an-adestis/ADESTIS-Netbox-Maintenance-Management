@@ -61,26 +61,26 @@ class MaintenanceTasksBulkImportView(generic.BulkImportView):
     table = MaintenanceTasksTable
     
     
-# @register_model_view(MaintenanceActions, name='device')
-# class DeviceAffectedMaintenanceActionsView(generic.ObjectChildrenView):
-#     queryset = MaintenanceActions.objects.all()
-#     child_model= Device
-#     table = DeviceTable
-#     template_name = "adestis_netbox_maintenance_management/device.html"
-#     actions = {
-#         'add': {'add'},
-#         'export': {'view'},
-#         'bulk_remove_device': {'change'},
-#     }
+@register_model_view(MaintenanceTasks, name='device')
+class DeviceAffectedMaintenanceTasksView(generic.ObjectChildrenView):
+    queryset = MaintenanceTasks.objects.all()
+    child_model= Device
+    table = DeviceTable
+    # template_name = "adestis_netbox_maintenance_management/device.html"
+    actions = {
+        'add': {'add'},
+        'export': {'view'},
+        'bulk_remove_device': {'change'},
+    }
 
-#     tab = ViewTab(
-#         label=_('Devices'),
-#         badge=lambda obj: obj.device.count(),
-#         weight=600
-#     )
+    tab = ViewTab(
+        label=_('Devices'),
+        badge=lambda obj: obj.device.count(),
+        weight=600
+    )
 
-#     def get_children(self, request, parent):
-#         return Device.objects.restrict(request.user, 'view').filter(maintenance_actions=parent)
+    def get_children(self, request, parent):
+        return Device.objects.restrict(request.user, 'view').filter(tasks_device=parent)
 
 # @register_model_view(Device, name='maintenance_actions')
 # class DeviceAffectedMaintenanceActionsView(generic.ObjectChildrenView):
@@ -148,8 +148,6 @@ class MaintenanceTasksBulkImportView(generic.BulkImportView):
 #             'edit_url': reverse('plugins:adestis_netbox_maintenance_management:maintenance_actions_assign_device', kwargs={'pk': pk}),
 #         })
 
-
-
 # @register_model_view(Device, 'assign_maintenance_actions') 
 # class DeviceAssignMaintenanceActions(generic.ObjectEditView):
 #     queryset = Device.objects.prefetch_related(
@@ -192,8 +190,7 @@ class MaintenanceTasksBulkImportView(generic.BulkImportView):
 #             'return_url': device.get_absolute_url(),
 #             'edit_url': reverse('dcim:device_assign_maintenance_actions', kwargs={'pk': pk}),
 #         })
-            
-            
+             
 # @register_model_view(MaintenanceActions, 'remove_device', path='device/remove')
 # class MaintenanceActionsRemoveDeviceView(generic.ObjectEditView):
 #     queryset = MaintenanceActions.objects.all()
@@ -274,26 +271,26 @@ class MaintenanceTasksBulkImportView(generic.BulkImportView):
 #             'return_url': device.get_absolute_url(),
 #         })
         
-# @register_model_view(MaintenanceActions, name='virtual_machine')
-# class MaintenanceActionsAffectVirtualMachineView(generic.ObjectChildrenView):
-#     queryset = MaintenanceActions.objects.all()
-#     child_model= VirtualMachine
-#     table = VirtualMachineTableMaintenanceActions
-#     template_name = "adestis_netbox_maintenance_management/virtual_machine.html"
-#     actions = {
-#         'add': {'add'},
-#         'export': {'view'},
-#         'bulk_remove_virtual_machine': {'change'},
-#     }
+@register_model_view(MaintenanceTasks, name='virtual_machine')
+class MaintenanceTasksAffectVirtualMachineView(generic.ObjectChildrenView):
+    queryset = MaintenanceTasks.objects.all()
+    child_model= VirtualMachine
+    table = VirtualMachineTableMaintenanceActions
+    # template_name = "adestis_netbox_maintenance_management/virtual_machine.html"
+    actions = {
+        'add': {'add'},
+        'export': {'view'},
+        'bulk_remove_virtual_machine': {'change'},
+    }
 
-#     tab = ViewTab(
-#         label=_('Virtual Machine'),
-#         badge=lambda obj: obj.virtual_machine.count(),
-#         weight=600
-#     )
+    tab = ViewTab(
+        label=_('Virtual Machine'),
+        badge=lambda obj: obj.virtual_machine.count(),
+        weight=600
+    )
 
-#     def get_children(self, request, parent):
-#         return VirtualMachine.objects.restrict(request.user, 'view').filter(maintenance_actions=parent)
+    def get_children(self, request, parent):
+        return VirtualMachine.objects.restrict(request.user, 'view').filter(tasks_vm=parent)
 
 # @register_model_view(VirtualMachine, name='maintenance_actions')
 # class VirtualMachineAffectedMaintenanceActionsView(generic.ObjectChildrenView):
