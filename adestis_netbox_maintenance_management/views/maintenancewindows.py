@@ -32,6 +32,7 @@ class MaintenanceWindowsListView(generic.ObjectListView):
     table = MaintenanceWindowsTable
     filterset = MaintenanceWindowsFilterSet
     filterset_form = MaintenanceWindowsFilterForm
+    template_name = 'adestis_netbox_maintenance_management/maintenancetable_edit.html'
     
 
 class MaintenanceWindowsEditView(generic.ObjectEditView):

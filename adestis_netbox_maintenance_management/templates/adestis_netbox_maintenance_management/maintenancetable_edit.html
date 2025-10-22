@@ -1,0 +1,30 @@
+{% extends 'generic/object_list.html' %}
+{% load helpers %}
+{% load i18n %}
+{% load buttons %}
+{% load plugins %}
+{% load static %}
+
+{% block content %}
+  {{ block.super }}
+    <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+    <script>
+    function renderCronDescriptions() {
+        document.querySelectorAll(".cron-expression").forEach(function (el) {
+        try {
+            const raw = el.textContent.trim();
+            const cron = raw.split(/\s+/).slice(-5).join(" ");
+            const description = cronstrue.toString(cron, { locale: "de" });
+            el.textContent = description;
+        } catch (e) {
+            el.textContent = "❌ Ungültiger Cron-Ausdruck";
+        }
+        });
+    } 
+
+    document.addEventListener("DOMContentLoaded", renderCronDescriptions);
+    document.body.addEventListener("htmx:afterSettle", renderCronDescriptions);  // wichtig für sort/paginate
+    </script>
+
+
+{% endblock content %}
