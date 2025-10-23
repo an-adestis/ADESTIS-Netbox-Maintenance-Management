@@ -13,7 +13,7 @@ setup(
     license='MIT License',
     keywords=['netbox', 'netbox-plugin', 'plugin'],
     package_data={
-        "adestis_netbox_maintenance_management": ["**/*.html"],
-        '': ['LICENSE'],
+        "adestis_netbox_maintenance_management": ["**/*.html", "**/*.js"],
+        '': ['LICENSE', "static/adestis_netbox_maintenance_management/*"],
     }
 )

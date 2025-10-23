@@ -13,11 +13,13 @@
         document.querySelectorAll(".cron-expression").forEach(function (el) {
         try {
             const raw = el.textContent.trim();
+            //if (raw === '' || raw === null){return}
+            //if(!raw) { return }
             const cron = raw.split(/\s+/).slice(-5).join(" ");
-            const description = cronstrue.toString(cron, { locale: "de" });
+            const description = cronstrue.toString(cron);
             el.textContent = description;
         } catch (e) {
-            el.textContent = "❌ Ungültiger Cron-Ausdruck";
+            el.textContent = "—";
         }
         });
     } 

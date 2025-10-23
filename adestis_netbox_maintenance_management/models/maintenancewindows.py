@@ -138,7 +138,6 @@ class MaintenanceWindows(NetBoxModel):
         max_length=100,
         blank=True,
         null=True,
-        default="0 9 * * 1",
         help_text=""
     )
     

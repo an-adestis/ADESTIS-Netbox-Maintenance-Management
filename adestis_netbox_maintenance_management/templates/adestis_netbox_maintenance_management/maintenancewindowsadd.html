@@ -5,9 +5,19 @@
 {% load plugins %}
 {% load static %}
 
+
+
+{% block head %}
+<script type="text/javascript" src="{% static 'adestis_netbox_maintenance_management/js/helloworld.js' %}"></script>
+{% endblock %}
+
+
 {% block content %}
   {{ block.super }}
     <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+
+
+    <script type="text/javascript" src="{% static 'plugins:adestis_netbox_maintenance_management/helloworld.js' %}"></script>
 
   <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -34,8 +44,6 @@
             
             const specialordinalContainer = specialordinal.closest(".row.mb-3")
 
-
-            console.log(recurenceContainer.style)
             startContainer.style.display = 'none'
             stopContainer.style.display = 'none'
             recurenceContainer.style.display = 'none'
@@ -160,6 +168,7 @@
             }
 
             // Zuerst Cron-Ausdruck validieren
+            
             if (!validateCron(raw)) {
                 console.log("❌ Ungültiger Cron-Ausdruck (validiert)");
                 helpText.textContent = "❌ Ungültiger Cron-Ausdruck";

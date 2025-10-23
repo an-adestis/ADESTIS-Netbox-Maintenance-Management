@@ -42,14 +42,25 @@ class MaintenanceTasksTable(NetBoxTable):
     )
     
     done = columns.TemplateColumn(
-        template_code="""
-            <input type="checkbox" id="checkbox" ></input>
-            <script>function CookiesCheck() {var checkBox = document.getElementById("checkbox");var text = document.getElementById("checkbox");if (checkBox.checked == true){text.style.display = "none";} else {text.style.display = "block";}}</script>
-            
-        """,
-        verbose_name="Done",
-        orderable=False
-    )
+    template_code="""
+        <input type="checkbox" id="checkbox_{{ record.id }}" onclick="CookiesCheck({{ record.id }})">
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var checkbox = document.getElementById("checkbox_{{ record.id }}");
+                if (localStorage.getItem("checkbox_{{ record.id }}") === "true") {
+                    checkbox.checked = true;
+                }
+            });
+
+            function CookiesCheck(id) {
+                var checkbox = document.getElementById("checkbox_" + id);
+                localStorage.setItem("checkbox_" + id, checkbox.checked);
+            }
+        </script>
+    """,
+    verbose_name="Done",
+    orderable=False
+)
 
     class Meta(NetBoxTable.Meta):
 

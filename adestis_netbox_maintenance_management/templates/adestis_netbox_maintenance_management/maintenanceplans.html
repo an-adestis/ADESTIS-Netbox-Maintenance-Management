@@ -25,7 +25,7 @@
                 {% endif %}</td>
                 </tr>
 
-                <tr>
+                {% comment %} <tr>
                     <th scope='row'>Maintenance Actions</th>
                     <td>{% if object.maintenance_action %}
                         <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceactions' object.maintenance_action.id %}"> {{ object.maintenance_action.name|markdown }}</a>
@@ -33,7 +33,7 @@
                         <span class="text-muted">{% trans "None" %}</span>
                         {% endif %}
                     </td>
-                </tr>
+                </tr> {% endcomment %}
                 <tr>
                     <th scope='row'>Tenant</th>
                     <td>{% if object.tenant %}
@@ -42,7 +42,7 @@
                         <span class="text-muted">{% trans "None" %}</span>
                         {% endif %}
                     </td>
-            </tr>
+                </tr>
             </table>
             </div>
         </div>

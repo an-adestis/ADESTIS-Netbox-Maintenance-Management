@@ -71,39 +71,3 @@ class AutoCreateMaintenanceTasks(JobRunner):
                         # task.maintenance_windows.set([window])
                         
                         created_count += 1
-
-
-
-
-# for window in active_windows:
-        
-        #     is_today = False
-            
-        #     # check if schedule_type is daily 
-        #     if window.recurrence_type == "daily":
-        #         is_today = True
-                
-
-        #     # check if schedule_type is on today's weekday
-        #     elif window.recurrence_type == "weekly":
-        #         try:
-        #             if window.weekdays and int(window.weekdays) == weekday:
-        #                 is_today = True
-        #         except ValueError:
-        #             # logger.warning(f"Ungültiger Wert in 'weekdays': {window.weekdays}")
-        #             continue
-
-        #     elif window.recurrence_type == "monthly":
-        #         if window.monthdays and window.monthdays.day == today.day:
-        #             is_today = True
-
-        #     if not is_today:
-        #         continue
-        
-        
-        # Filter windows so only todays windows show up 
-        # active_windows = MaintenanceWindows.objects.filter(
-        #     Q(start_day__isnull=True) | Q(start_day__lte=today),
-        #     Q(end_time__isnull=True) | Q(end_time__gte=today),
-        #     Q(recurrence_type__in=["daily", "weekly", "monthly"])
-        # )
