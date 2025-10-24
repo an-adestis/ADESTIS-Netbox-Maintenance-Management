@@ -34,8 +34,10 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 window.end_day,
                 window.weekdays,
                 window.monthdays,
+                
                 window.start_time,
                 window.end_time,
+                window.recurrence_type,
             ]
             
             cron_expr = window.special_ordinal

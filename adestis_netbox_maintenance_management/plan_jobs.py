@@ -11,11 +11,17 @@ from adestis_netbox_maintenance_management.models import (
 
 logger = logging.getLogger(__name__)
 
+task = MaintenanceTasks.objects.all()
 
-# -------------------------------------------------------
-# 🔹 Hilfsfunktionen
-# -------------------------------------------------------
-
+WEEKDAY_MAP = {
+    "Monday": 0,
+    "Tuesday": 1,
+    "Wednesday": 2,
+    "Thursday": 3,
+    "Friday": 4,
+    "Saturday": 5,
+    "Sunday": 6,
+}
 
 def get_grouping_key_for_date(day) -> str:
     """Erzeugt einen eindeutigen Key für das Tagesdatum (nimmt auch Strings entgegen)."""
@@ -26,56 +32,57 @@ def get_grouping_key_for_date(day) -> str:
             day = date.today()
     elif isinstance(day, datetime):
         day = day.date()
+    elif isinstance(day, date):
+        pass
+    else:
+        day = date.today()
+    
     return f"date_{day.strftime('%Y%m%d')}"
 
 
 def get_task_date(task):
-    """
-    Gibt das relevante Ausführungsdatum eines Tasks zurück.
-    Unterstützt: one-time, weekly, monthly, crontab (special_ordinal)
-    """
     window = task.maintenance_windows
     if not window:
         return None
 
-    now = datetime.now()
-
+    # Cron-Ausdruck prüfen
     if window.special_ordinal:
-        # Cron-String als Schlüssel direkt nehmen
-        return f"cron_{window.special_ordinal.strip()}"
+        try:
+            desc = get_description(window.special_ordinal)  # z. B. "Every minute, only on Monday"
+            for day in WEEKDAY_MAP:
+                if day.lower() in desc.lower():
+                    return f"Weekday {day}"  # gleicher Key wie Weekly
+            return f"cron {window.special_ordinal.strip()}"  # fallback
+        except Exception:
+            return f"cron {window.special_ordinal.strip()}"
 
-    # 2️⃣ Wöchentlich
+
+    if window.recurrence_type == "daily":
+        return "Daily"
+
     if window.recurrence_type == "weekly" and window.weekdays:
-        weekday_keys = (
-            [int(k) for k in window.weekdays.split(",")]
-            if isinstance(window.weekdays, str)
-            else [window.weekdays]
-        )
-        today = now.date()
-        days_ahead = min(((w - today.weekday()) % 7 for w in weekday_keys))
-        return today + timedelta(days=days_ahead)
+        if isinstance(window.weekdays, str):
+            weekday_keys = [w.strip() for w in window.weekdays.split(",")]
+        else:
+            weekday_keys = [window.weekdays]
+        return "_".join([f"Weekday {w}" for w in weekday_keys])
 
-    # 3️⃣ Monatlich
+
     if window.recurrence_type == "monthly" and getattr(window, "monthdays", None):
         day_num = getattr(window.monthdays, "day", None)
+        month_num = getattr(window.monthdays, "month", None)  # falls vorhanden
         if day_num:
-            today = now.date()
-            try:
-                return date(today.year, today.month, day_num)
-            except ValueError:
-                next_month = today.replace(day=1) + timedelta(days=31)
-                return date(next_month.year, next_month.month, min(day_num, 28))
+            key_parts = [f"Monthday {day_num}"]
+            if month_num:
+                key_parts.append(f"Month {month_num}")
+            return "_".join(key_parts)
 
-    # 4️⃣ Einmalig
+
     if getattr(window, "start_day", None):
-        return window.start_day
+        return f"Date {window.start_day.isoformat()}"
 
     return None
 
-
-# -------------------------------------------------------
-# 🔹 Hauptjob
-# -------------------------------------------------------
 
 class AutoCreateMaintenancePlans(JobRunner):
     class Meta:
@@ -94,11 +101,13 @@ class AutoCreateMaintenancePlans(JobRunner):
             if not task_date_or_key:
                 continue
 
-            if isinstance(task_date_or_key, str) and task_date_or_key.startswith("cron_"):
-                key = task_date_or_key  # Cron-Ausdruck als Gruppierungs-Key
+            if isinstance(task_date_or_key, str):
+                key = task_date_or_key
+            elif isinstance(task_date_or_key, str) and task_date_or_key.startswith("Daily"):
+                key = task_date_or_key
             else:
                 key = get_grouping_key_for_date(task_date_or_key)
-
+                
             grouped_tasks.setdefault(key, []).append(task)
 
         for key, tasks in grouped_tasks.items():
@@ -110,7 +119,7 @@ class AutoCreateMaintenancePlans(JobRunner):
                     except Exception:
                             plan_name = cron_expr  # Fallback: roher Cron-String
             else:
-                plan_name = f"Plan für Gruppe {key}"
+                plan_name = f"Plan for Tasks {key}"
 
             plan, created = MaintenancePlans.objects.get_or_create(
                 grouping_key=key,

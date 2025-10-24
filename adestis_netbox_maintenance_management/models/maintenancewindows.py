@@ -138,7 +138,7 @@ class MaintenanceWindows(NetBoxModel):
         max_length=100,
         blank=True,
         null=True,
-        help_text=""
+        help_text="* 9 * * 1 `09:00 Monday`"
     )
     
     virtual_machine = django_models.ManyToManyField(

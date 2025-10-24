@@ -155,33 +155,41 @@
         }
 
         function updateCronDescription() {
+            const scheduleValue = schedulefields.value;
+            const recurrenceValue = recurrencefield.value;
             
-            const raw = specialordinal?.value || "";
+             if (
+                scheduleValue === "recurring" &&
+                (recurrenceValue === "weekday_occurrence" || recurrenceValue === "workday_occurrence")
+            ) {
+                const raw = specialordinal?.value || "";
 
-            // helpText holen oder erstellen
-            let helpText = document.getElementById("id_special_ordinal_helptext");
-            if (!helpText) {
-                helpText = document.createElement("small");
-                helpText.id = "id_special_ordinal_helptext";
-                helpText.className = "form-text text-muted";
-                specialordinal.insertAdjacentElement("afterend", helpText);
-            }
-
-            // Zuerst Cron-Ausdruck validieren
-            
-            if (!validateCron(raw)) {
-                console.log("❌ Ungültiger Cron-Ausdruck (validiert)");
-                helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
-                specialordinal.setCustomValidity("Ungültiger Cron-Ausdruck");
-            }else {
-                try {
-                    const description = cronstrue.toString(raw);
-                    helpText.textContent = description;
-                    specialordinal.setCustomValidity(""); // Fehler entfernen
-                } catch (e) {
-                    helpText.textContent = "❌ Fehler beim Interpretieren des Ausdrucks";
-                    specialordinal.setCustomValidity("Fehler beim Interpretieren des Ausdrucks");
+                let helpText = document.getElementById("id_special_ordinal_helptext");
+                if (!helpText) {
+                    helpText = document.createElement("small");
+                    helpText.id = "id_special_ordinal_helptext";
+                    helpText.className = "form-text text-muted";
+                    specialordinal.insertAdjacentElement("afterend", helpText);
                 }
+
+                if (!validateCron(raw)) {
+                    helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
+                    specialordinal.setCustomValidity("Ungültiger Cron-Ausdruck");
+                } else {
+                    try {
+                        const description = cronstrue.toString(raw);
+                        helpText.textContent = description;
+                        specialordinal.setCustomValidity("");
+                    } catch (e) {
+                        helpText.textContent = "❌ Fehler beim Interpretieren des Ausdrucks";
+                        specialordinal.setCustomValidity("Fehler beim Interpretieren des Ausdrucks");
+                    }
+                }
+            } else {
+                // Wenn Special Ordinal nicht relevant ist, Fehler zurücksetzen
+                specialordinal.setCustomValidity("");
+                const helpText = document.getElementById("id_special_ordinal_helptext");
+                if (helpText) helpText.textContent = "";
             }
         }
 

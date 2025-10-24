@@ -15,12 +15,6 @@ COPY ./docker/configuration/configuration.py /etc/netbox/config/configuration.py
 RUN /usr/local/bin/uv pip install /source/adestis-netbox-maintenance/
 RUN /usr/local/bin/uv pip install -r /source/adestis-netbox-maintenance/requirements-container.txt
 
-COPY ./clear.sh /opt/netbox
-RUN chmod +x /opt/netbox/clear.sh
-RUN /opt/netbox/clear.sh
-
-CMD ["/opt/netbox/docker-entrypoint.sh", "/opt/netbox/launch-netbox.sh" ]
-
 # RUN apt-get update && apt-get install -y \
 #     libcairo2 \
 #     pango1.0-tools \
