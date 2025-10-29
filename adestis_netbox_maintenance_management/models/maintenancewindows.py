@@ -113,7 +113,7 @@ class MaintenanceWindows(NetBoxModel):
         null=True,
     )
 
-    recurrence_type =django_models.CharField(
+    recurrence_type = django_models.CharField(
         max_length=20,
         choices=RecurrenceTypeChoices,
         default=RecurrenceTypeChoices.DAILY,
@@ -121,7 +121,7 @@ class MaintenanceWindows(NetBoxModel):
         null=True
     )
     
-    weekdays =django_models.CharField(
+    weekdays = django_models.CharField(
         max_length=50, 
         choices=Weekday.CHOICES,
         blank=True,
@@ -138,7 +138,7 @@ class MaintenanceWindows(NetBoxModel):
         max_length=100,
         blank=True,
         null=True,
-        help_text="* 9 * * 1 `09:00 Monday`"
+        help_text=""
     )
     
     virtual_machine = django_models.ManyToManyField(

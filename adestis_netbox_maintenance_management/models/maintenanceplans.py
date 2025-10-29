@@ -34,7 +34,6 @@ class MaintenancePlans(NetBoxModel):
     maintenance_action = django_models.ManyToManyField(
         to='adestis_netbox_maintenance_management.MaintenanceActions',
         blank=False,
-        
         related_name='plans_maintenance_actions',
         verbose_name='Maintenance Actions',
     )
@@ -42,7 +41,6 @@ class MaintenancePlans(NetBoxModel):
     maintenance_windows = django_models.ManyToManyField(
         to='adestis_netbox_maintenance_management.MaintenanceWindows',
         blank=False,
-        
         related_name='plans_maintenance_windows',
         verbose_name='Maintenance Windows',
     )
@@ -83,7 +81,12 @@ class MaintenancePlans(NetBoxModel):
         related_name='plans'
     )
     
-    grouping_key = django_models.CharField(max_length=100, unique=True, blank=True, null=True)
+    grouping_key = django_models.CharField(
+        max_length=100,
+        unique=True,
+        blank=True,
+        null=True
+    )
 
     class Meta:
         verbose_name_plural = "Maintenance Plans"

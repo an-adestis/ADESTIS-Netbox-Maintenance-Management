@@ -37,7 +37,7 @@ class MaintenanceWindowsTable(NetBoxTable):
     class Meta(NetBoxTable.Meta):
         model = MaintenanceWindows
         fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'virtual_machine']
-        default_columns = [ 'name', 'schedule_type', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'virtual_machine']
+        default_columns = [ 'name', 'schedule_type', 'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'start_day', 'end_day', 'virtual_machine']
         
 class MaintenanceWindowsTableTab(MaintenanceWindowsTable):   
     actions = columns.ActionsColumn(

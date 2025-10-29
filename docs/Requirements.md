@@ -9,7 +9,6 @@
 ## Maintenance Task
 -  es gibt eine Task Model
 - der besteht aus Maintenance Actions, Windows, Vm, Commenst 
-- eine Plan besteht aus mehreren tasks
 
 ## Maintenance Plans 
-- die richtige verlinkung von den zugehörigen tasks die auf dne selben tag anfallen passt noch nicht 
+- eine Plan besteht aus einem oder mehreren tasks
