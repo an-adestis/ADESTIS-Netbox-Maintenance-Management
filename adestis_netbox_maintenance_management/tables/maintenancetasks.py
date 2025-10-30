@@ -23,9 +23,11 @@ class MaintenanceTasksTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    virtual_machine = columns.ManyToManyColumn(
-        linkify= True,
-        verbose_name="Virtual Machines"
+    virtual_machine = tables.ManyToManyColumn(
+        linkify=True,
+        verbose_name="Virtual Machines",
+        transform=lambda vm: vm.name,  # oder was du anzeigen willst
+        orderable=False
     )
     
     device = columns.ManyToManyColumn(
@@ -42,31 +44,67 @@ class MaintenanceTasksTable(NetBoxTable):
     )
     
     done = columns.TemplateColumn(
-    template_code="""
-        <input type="checkbox" id="checkbox_{{ record.id }}" onclick="CookiesCheck({{ record.id }})">
+        template_code="""
+            <input type="checkbox" id="checkbox_{{ record.id }}" onclick="CookiesCheck({{ record.id }})">
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var checkbox = document.getElementById("checkbox_{{ record.id }}");
+                    if (localStorage.getItem("checkbox_{{ record.id }}") === "true") {
+                        checkbox.checked = true;
+                    }
+                });
+
+                function CookiesCheck(id) {
+                    var checkbox = document.getElementById("checkbox_" + id);
+                    localStorage.setItem("checkbox_" + id, checkbox.checked);
+                }
+            </script>
+        """,
+        verbose_name="Done",
+        orderable=False
+    )
+    
+    from django.utils.safestring import mark_safe
+
+    def render_virtual_machine(self, value, record):
+        vms = value.all().order_by("name")
+
+        # HTML: jede VM + Checkbox + Abstand
+        html_parts = []
+        for vm in vms:
+            html_parts.append(f"""
+                <div style="margin-bottom:10px;">
+                    <input type="checkbox" id="checkbox_{record.id}_{vm.id}" onclick="CookiesCheck({record.id}, {vm.id})">
+                    <label for="checkbox_{record.id}_{vm.id}">{vm}</label>
+                </div>
+            """)
+
+        # JS: DOMContentLoaded + CookiesCheck
+        js = """
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                var checkbox = document.getElementById("checkbox_{{ record.id }}");
-                if (localStorage.getItem("checkbox_{{ record.id }}") === "true") {
-                    checkbox.checked = true;
-                }
+                document.querySelectorAll("input[id^='checkbox_']").forEach(cb => {
+                    if (localStorage.getItem(cb.id) === "true") {
+                        cb.checked = true;
+                    }
+                });
             });
 
-            function CookiesCheck(id) {
-                var checkbox = document.getElementById("checkbox_" + id);
-                localStorage.setItem("checkbox_" + id, checkbox.checked);
+            function CookiesCheck(recordId, vmId) {
+                var id = 'checkbox_' + recordId + '_' + vmId;
+                var checkbox = document.getElementById(id);
+                localStorage.setItem(id, checkbox.checked);
             }
         </script>
-    """,
-    verbose_name="Done",
-    orderable=False
-)
+        """
+
+        return mark_safe("".join(html_parts) + js)
 
     class Meta(NetBoxTable.Meta):
 
         model = MaintenanceTasks
         
-        fields = ['name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device', 'description', 'tags', 'comments', 'done']
+        fields = ['virtual_machine', 'device', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments', 'done']
         default_columns = [ 'name', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device', 'done', 'comments']
 
 

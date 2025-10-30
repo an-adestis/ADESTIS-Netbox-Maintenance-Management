@@ -103,7 +103,7 @@
           <div class="card">
             <h5 class="card-header">Recurring</h5>
             <div class="card-body">
-              <table class="table table-hover attr-table">
+            <table class="table table-hover attr-table">
               {% if object.schedule_type == 'recurring' and object.recurrence_type %}
                 <tr>
                   <th scope='row'>{% trans "Recurrence Type" %}</th>
@@ -114,17 +114,32 @@
                   {% endif %}</td>
                 </tr>
               {% endif %}
-              {% if object.schedule_type == 'recurring'%}
-                {% if object.recurrence_type == 'weekly' and object.weekdays %}
-                  <tr>
-                    <th scope='row'>{% trans "Weekdays" %}</th>
-                    <td>{% if object.weekdays %}
-                      {{ object.get_weekdays_display }}
-                    {% else %}
-                      <span class="text-muted">{% trans "None" %}</span>
-                    {% endif %}</td>
-                  </tr>
-                {% endif %}
+              {% if object.schedule_type == 'recurring' %}
+                {% if object.recurrence_type == 'weekly' %}
+                      {% if object.weekdays %}
+                          <tr>
+                              <th scope="row">{% trans "Weekdays" %}</th>
+                              <td>{{ object.get_weekdays_display }}</td>
+                          </tr>
+                      {% else %}
+                          <tr>
+                              <th scope="row">{% trans "Weekdays" %}</th>
+                              <td><span class="text-muted">{% trans "None" %}</span></td>
+                          </tr>
+                      {% endif %}
+
+                      {% if object.week_in_month %}
+                          <tr>
+                              <th scope="row">{% trans "Week in Month" %}</th>
+                              <td>{{ object.get_week_in_month_display }}</td>
+                          </tr>
+                      {% else %}
+                          <tr>
+                              <th scope="row">{% trans "Week in Month" %}</th>
+                              <td><span class="text-muted">{% trans "None" %}</span></td>
+                          </tr>
+                      {% endif %}
+                  {% endif %}
               {% endif %}
               {% if object.schedule_type == 'recurring'%}
                 {% if object.recurrence_type == 'monthly' and object.monthdays %}

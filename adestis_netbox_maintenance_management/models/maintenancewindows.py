@@ -87,6 +87,19 @@ class ScheduleTypeModeChoices(ChoiceSet):
         ]
     
 class MaintenanceWindows(NetBoxModel):
+    
+    week_in_month = django_models.IntegerField(
+        choices=[
+            (1, "First"),
+            (2, "Second"),
+            (3, "Third"),
+            (4, "Fourth"),
+            (5, "Last"),  # 5 wird als "Last" interpretiert
+        ],
+        blank = True,
+        null = True
+    
+    )
 
     comments = django_models.TextField(
         blank=True
@@ -162,6 +175,12 @@ class MaintenanceWindows(NetBoxModel):
         verbose_name_plural = "Maintenance Windows"
         verbose_name = 'Maintenance Window'
         ordering = ('name',)
+
+    def clean_week_in_month(self):
+        value = self.cleaned_data.get('week_in_month')
+        if value == '':
+            return None
+        return value
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenancewindows', args=[self.pk])

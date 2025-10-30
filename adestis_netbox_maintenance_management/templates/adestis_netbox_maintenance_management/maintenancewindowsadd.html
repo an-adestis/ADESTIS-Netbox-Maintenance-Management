@@ -30,6 +30,7 @@
             var recurrencefield = document.getElementById("id_recurrence_type")
 
             var weekdaysfield = document.getElementById("id_weekdays")
+            var weekinmonth = document.getElementById("id_week_in_month-ts-control")
             var monthdaysfield = document.getElementById("id_monthdays")
 
             var specialordinal = document.getElementById("id_special_ordinal")
@@ -40,6 +41,7 @@
             const stopContainer = stoptimefield.closest(".row.mb-3");
 
             const weekdayContainer = weekdaysfield.closest(".row.mb-3");
+            const weekinmonthContainer = weekinmonth.closest(".row.mb-3");
             const monthdayContainer = monthdaysfield.closest(".row.mb-3");
             
             const specialordinalContainer = specialordinal.closest(".row.mb-3")
@@ -49,6 +51,7 @@
             recurenceContainer.style.display = 'none'
 
             weekdayContainer.style.display = 'none'
+            weekinmonthContainer.style.display = 'none'
             monthdayContainer.style.display = 'none'
 
             specialordinalContainer.style.display = 'none'
@@ -76,8 +79,10 @@
             if (scheduleValue === "recurring") {
                 if (recurrenceValue === "weekly") {
                     weekdayContainer.style.display = '';
+                    weekinmonthContainer.style.display = '';
                 } else {
                     weekdayContainer.style.display = 'none';
+                    weekinmonthContainer.style.display = 'none';
                 }
 
                 if (recurrenceValue === "monthly") {
@@ -99,6 +104,7 @@
                 weekdayContainer.style.display = 'none';
                 monthdayContainer.style.display = 'none';
                 specialordinalContainer.style.display = 'none';
+                weekinmonthContainer.style.display = 'none';
             }
         }
 

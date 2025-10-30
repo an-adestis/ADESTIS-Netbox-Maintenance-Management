@@ -92,8 +92,10 @@ def get_task_date(task):
     if window.recurrence_type == "weekly" and window.weekdays:
         # Kann entweder ein String ("Monday, Tuesday") oder eine Liste sein
         
-        weekday_keys = [w.strip() for w in window.weekdays.split(",")]
-        return (f"Weekday {window.weekdays}" )
+        label = f"Weekday {window.weekdays}"  # z. B. "Weekday Monday, Friday"
+        if getattr(window, "week_in_month", None):
+            label += f" ({window.get_week_in_month_display()})"  # z. B. "(First)"
+        return label
 
 
     if window.recurrence_type == "monthly" and getattr(window, "monthdays", None):

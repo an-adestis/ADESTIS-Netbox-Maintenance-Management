@@ -33,12 +33,19 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 window.start_day,
                 window.end_day,
                 window.weekdays,
+                window.week_in_month,
                 window.monthdays,
                 
                 window.start_time,
                 window.end_time,
                 window.recurrence_type,
             ]
+            
+            if window.weekdays:
+                label = str(window.weekdays)  # nur weekdays als String
+                if window.week_in_month:
+                    label += f" ({window.get_week_in_month_display()})"
+                return label
             
             cron_expr = window.special_ordinal
             if cron_expr:
