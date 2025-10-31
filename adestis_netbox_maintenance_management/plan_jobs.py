@@ -110,6 +110,66 @@ def get_task_date(task):
 
     return None
 
+def is_task_due_today(task):
+    """Prüft, ob ein Task heute fällig ist."""
+    today = date.today()
+    today_weekday = today.weekday()
+    today_day = today.day
+    today_month = today.month
+
+    key = get_task_date(task)
+    if not key:
+        return False
+
+    if key.startswith("date_"):
+        key_date = datetime.strptime(key.replace("date_", ""), "%Y%m%d").date()
+        return key_date == today
+
+    elif key.startswith("Weekday"):
+        for day_name, wd_index in WEEKDAY_MAP.items():
+            if day_name in key and wd_index == today_weekday:
+                return True
+
+    elif key.startswith("Monthday"):
+        parts = key.split()
+        day_num = int(parts[1])
+        month_num = int(parts[3])
+        return day_num == today_day and month_num == today_month
+
+    elif key.startswith("cron"):
+        cron_expr = task.maintenance_windows.special_ordinal
+        try:
+            ci = croniter(cron_expr, today)
+            return ci.get_next(datetime).date() == today
+        except Exception:
+            return False
+
+    elif key == "Daily":
+        return True
+
+    return False
+
+def get_task_key_for_today(task):
+    """Gibt einen eindeutigen Key für die Gruppierung zurück, nur für heute fällige Tasks."""
+    if not is_task_due_today(task):
+        return None
+
+    key = get_task_date(task)
+    today = date.today()
+    
+    if key.startswith("date_"):
+        return key  # z. B. "date_20251031"
+    elif key.startswith("Weekday"):
+        return f"Weekday_{today.strftime('%A')}"  # z. B. "Weekday_Friday"
+    elif key.startswith("Monthday"):
+        return f"Monthday_{today.day}_Month_{today.month}"
+    elif key.startswith("cron"):
+        return f"cron_today_{task.id}"  # eindeutiger Key für Cron-Task
+    elif key == "Daily":
+        return "Daily"
+    
+    return None
+
 
 class AutoCreateMaintenancePlans(JobRunner):
     """
@@ -128,12 +188,13 @@ class AutoCreateMaintenancePlans(JobRunner):
             window = task.maintenance_windows
             if not window:
                 continue
+            
+            if not is_task_due_today(task):
+                continue
 
             # Gruppierungskey oder Datum bestimmen
             task_date_or_key = get_task_date(task)
-            logger.warning(f"Info: {task_date_or_key}")
             if not task_date_or_key:
-                logger.warning("Zahl mal x das was wohl netbox maintenance")
                 continue
                 
             # Aufgaben nach Key gruppieren
@@ -141,18 +202,7 @@ class AutoCreateMaintenancePlans(JobRunner):
 
         # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
-            
-            # Falls es sich um einen Cron-Ausdruck handelt
-            if key.startswith("cron_"):
-                cron_expr = key[len("cron_"):]  # Cron-Teil extrahieren
-                try:
-                    # Beschreibung des Cron-Ausdrucks als Planname
-                    plan_name = get_description(cron_expr)
-                except Exception:
-                    plan_name = cron_expr  # Fallback: roher Cron-String
-            else:
-                # Standardname für Plan
-                plan_name = f"Plan for Tasks {key}"
+            plan_name = f"Plan for Tasks {key}"
 
             # Wartungsplan anhand des Gruppierungsschlüssels erstellen oder abrufen
             plan, created = MaintenancePlans.objects.get_or_create(
