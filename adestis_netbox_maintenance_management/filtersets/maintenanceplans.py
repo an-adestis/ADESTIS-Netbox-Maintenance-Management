@@ -36,11 +36,6 @@ class MaintenancePlansFilterSet(NetBoxModelFilterSet):
         label=_('Tenant (name)'),
     )
     
-    # maintenance_action_id = django_filters.ModelMultipleChoiceFilter(
-    #     queryset=MaintenanceActions.objects.all(),
-    #     label=_('Maintenance Action (ID)'),
-    # )
-    
     maintenance_action = django_filters.ModelMultipleChoiceFilter(
         queryset=MaintenanceActions.objects.all(),
         required = False,

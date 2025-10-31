@@ -33,16 +33,12 @@ class MaintenancePlansForm(NetBoxModelForm):
     
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
-        required=False,
-        # query_params={
-        #     'group_id': '$tenant_group'
-        # },
+        required=False
     )
     
     fieldsets = (
         FieldSet('name', 'maintenance_action', 'description', 'tags',  name=_('Maintenance Plans')),
         FieldSet('tenant', name=_("Tenant")),
-        
     )
     
     class Meta:
