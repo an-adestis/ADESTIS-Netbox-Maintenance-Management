@@ -118,6 +118,7 @@ def is_task_due_today(task):
     today_month = today.month
 
     key = get_task_date(task)
+    logger.warning(f"Logger Key:{key}")
     if not key:
         return False
 
@@ -189,19 +190,24 @@ class AutoCreateMaintenancePlans(JobRunner):
             if not window:
                 continue
             
-            if not is_task_due_today(task):
-                continue
+            due_today = is_task_due_today(task)
 
             # Gruppierungskey oder Datum bestimmen
             task_date_or_key = get_task_date(task)
+            
             if not task_date_or_key:
                 continue
+            
+            dictionary_key = task_date_or_key
+            if due_today == True:
+                dictionary_key = "Today"
                 
             # Aufgaben nach Key gruppieren
-            grouped_tasks.setdefault(task_date_or_key, []).append(task)
+            grouped_tasks.setdefault(dictionary_key, []).append(task)
 
         # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
+            
             plan_name = f"Plan for Tasks {key}"
 
             # Wartungsplan anhand des Gruppierungsschlüssels erstellen oder abrufen
@@ -210,11 +216,5 @@ class AutoCreateMaintenancePlans(JobRunner):
                 defaults={"name": plan_name},
             )
 
-            # Alle Aufgaben dieser Gruppe dem Plan zuordnen
-            for task in tasks:
-                if not plan.maintenance_tasks.filter(pk=task.pk).exists():
-                    plan.maintenance_tasks.add(task)
-                    assigned_count += 1
-
-
-
+            plan.maintenance_tasks.set(tasks)
+            assigned_count += len(tasks)
