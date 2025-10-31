@@ -72,11 +72,8 @@ class AutoCreateMaintenanceTasks(JobRunner):
                             name = f"{window.name} {get_schedule_label_or_today(window)}",
                             maintenance_action=action, 
                             maintenance_windows = window,
-                            comments = action.comments,
-                            # virtual_machine = action.virtual_machine
+                            comments = action.comments
                         )
                         task.virtual_machine.set(action.virtual_machine.all())
                         task.device.set(action.device.all())
-                        # task.maintenance_windows.set([window])
-                        
                         created_count += 1

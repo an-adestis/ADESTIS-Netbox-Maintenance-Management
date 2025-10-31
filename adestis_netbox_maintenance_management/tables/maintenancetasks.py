@@ -11,6 +11,7 @@ from netbox.tables.columns import ManyToManyColumn
 from netbox.tables.columns import BooleanColumn
 from django.utils.safestring import mark_safe
 from netbox.tables.columns import TemplateColumn
+from django.utils.safestring import mark_safe
 
 class MaintenanceTasksTable(NetBoxTable):
     comments = columns.MarkdownColumn()
@@ -23,15 +24,58 @@ class MaintenanceTasksTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    virtual_machine = tables.ManyToManyColumn(
-        linkify=True,
+    virtual_machine = columns.ManyToManyColumn(
+        linkify = True,
         verbose_name="Virtual Machines",
         transform=lambda vm: vm.name,  # oder was du anzeigen willst
         orderable=False
     )
     
+    def render_virtual_machine(self, value, record):
+        # Hole alle VMs geordnet nach Name
+        vms = value.all().order_by("name")
+
+        # HTML für Checkboxen (untereinander mit Abstand)
+        html_parts = []
+        for vm in vms:
+            checkbox_id = f"checkbox_{record.id}_{vm.id}"
+            html_parts.append(f"""
+                <div style="margin-bottom:8px;">
+                    <label for="{checkbox_id}" style="margin-right:6px; pointer-events:none;">{vm.name}</label>
+                    <input 
+                        type="checkbox" 
+                        id="{checkbox_id}" 
+                        onclick="saveCheckboxState('{checkbox_id}')">
+                </div>
+            """)
+
+        # JavaScript nur EINMAL anhängen
+        # → prüft, ob Script schon existiert (damit es nur einmal eingefügt wird)
+        js_script = """
+        <script>
+            if (!window.__vmCheckboxScriptLoaded) {
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.querySelectorAll("input[id^='checkbox_']").forEach(cb => {
+                        const saved = localStorage.getItem(cb.id);
+                        if (saved === "true") cb.checked = true;
+                    });
+                });
+
+                window.saveCheckboxState = function(id) {
+                    const checkbox = document.getElementById(id);
+                    localStorage.setItem(id, checkbox.checked);
+                };
+
+                window.__vmCheckboxScriptLoaded = true;
+            }
+        </script>
+        """
+
+        # HTML + Script zusammen zurückgeben
+        return mark_safe("".join(html_parts) + js_script)
+    
     device = columns.ManyToManyColumn(
-        linkify = True,
+        linkify_item = True,
         verbose_name= "Device"
     )
     
@@ -43,69 +87,12 @@ class MaintenanceTasksTable(NetBoxTable):
         linkify= True
     )
     
-    done = columns.TemplateColumn(
-        template_code="""
-            <input type="checkbox" id="checkbox_{{ record.id }}" onclick="CookiesCheck({{ record.id }})">
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    var checkbox = document.getElementById("checkbox_{{ record.id }}");
-                    if (localStorage.getItem("checkbox_{{ record.id }}") === "true") {
-                        checkbox.checked = true;
-                    }
-                });
-
-                function CookiesCheck(id) {
-                    var checkbox = document.getElementById("checkbox_" + id);
-                    localStorage.setItem("checkbox_" + id, checkbox.checked);
-                }
-            </script>
-        """,
-        verbose_name="Done",
-        orderable=False
-    )
-    
-    from django.utils.safestring import mark_safe
-
-    def render_virtual_machine(self, value, record):
-        vms = value.all().order_by("name")
-
-        # HTML: jede VM + Checkbox + Abstand
-        html_parts = []
-        for vm in vms:
-            html_parts.append(f"""
-                <div style="margin-bottom:10px;">
-                    <input type="checkbox" id="checkbox_{record.id}_{vm.id}" onclick="CookiesCheck({record.id}, {vm.id})">
-                    <label for="checkbox_{record.id}_{vm.id}">{vm}</label>
-                </div>
-            """)
-
-        # JS: DOMContentLoaded + CookiesCheck
-        js = """
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                document.querySelectorAll("input[id^='checkbox_']").forEach(cb => {
-                    if (localStorage.getItem(cb.id) === "true") {
-                        cb.checked = true;
-                    }
-                });
-            });
-
-            function CookiesCheck(recordId, vmId) {
-                var id = 'checkbox_' + recordId + '_' + vmId;
-                var checkbox = document.getElementById(id);
-                localStorage.setItem(id, checkbox.checked);
-            }
-        </script>
-        """
-
-        return mark_safe("".join(html_parts) + js)
-
     class Meta(NetBoxTable.Meta):
 
         model = MaintenanceTasks
         
-        fields = ['virtual_machine', 'device', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments', 'done']
-        default_columns = [ 'name', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device', 'done', 'comments']
+        fields = ['virtual_machine', 'device', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
+        default_columns = [ 'virtual_machine', 'device', 'name', 'maintenance_windows', 'maintenance_action', 'comments']
 
 
         

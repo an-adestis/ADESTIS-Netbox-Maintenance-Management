@@ -23,23 +23,23 @@ class MaintenancePlansTable(NetBoxTable):
     )
         
     maintenance_action = columns.ManyToManyColumn(
-        linkify = True
+        linkify_item = True
     )
     
     maintenance_tasks = columns.ManyToManyColumn(
-        linkify = True
+        linkify_item = True
     )
     
     maintenance_windows = columns.ManyToManyColumn(
-        linkify = True
+        linkify_item = True
     )
     
     virtual_machine = columns.ManyToManyColumn(
-        linkify = True
+        linkify_item = True
     )
     
     device = columns.ManyToManyColumn(
-        linkify = True
+        linkify_item = True
     )
 
     class Meta(NetBoxTable.Meta):
