@@ -33,7 +33,22 @@
                 <span class="text-muted">{% trans "None" %}</span>
               {% endif %}</td>
             </tr>
-
+            <tr>
+              <th scope='row'>{% trans "Start Time" %}</th>
+              <td>{% if object.start_time %}
+                {{ object.start_time|date:"H:i" }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
+            <tr>
+              <th scope='row'>{% trans "End Time" %}</th>
+              <td>{% if object.end_time %}
+                {{ object.end_time|date:"H:i" }}
+              {% else %}
+                <span class="text-muted">{% trans "None" %}</span>
+              {% endif %}</td>
+            </tr>
             <tr>
               <th scope='row'>{% trans "Schedule Type" %}</th>
               <td>{% if object.schedule_type %}
@@ -41,7 +56,7 @@
               {% else %}
                 <span class="text-muted">{% trans "None" %}</span>
               {% endif %}</td>
-            </tr>
+            </tr>             
           </table>
         </div>
       </div>
@@ -58,21 +73,21 @@
           <h5 class="card-header">One Time</h5>
           <div class="card-body">
             <table class="table table-hover attr-table">
-              {% if object.schedule_type == 'one_time' and object.start_time %}
+              {% if object.schedule_type == 'one_time' and object.start_day %}
                 <tr>
-                  <th scope='row'>{% trans "Start Time" %}</th>
-                  <td>{% if object.start_time %}
-                    {{ object.start_time }}
+                  <th scope='row'>{% trans "Start Day" %}</th>
+                  <td>{% if object.start_day %}
+                    {{ object.start_day }}
                   {% else %}
                     <span class="text-muted">{% trans "None" %}</span>
                   {% endif %}</td>
                 </tr>
               {% endif %}
-              {% if object.schedule_type == 'one_time' and object.end_time %}
+              {% if object.schedule_type == 'one_time' and object.end_day %}
                 <tr>
-                  <th scope='row'>{% trans "End Time" %}</th>
-                  <td>{% if object.end_time %}
-                    {{ object.end_time }}
+                  <th scope='row'>{% trans "End Day" %}</th>
+                  <td>{% if object.end_day %}
+                    {{ object.end_day }}
                   {% else %}
                     <span class="text-muted">{% trans "None" %}</span>
                   {% endif %}</td>
@@ -88,7 +103,7 @@
           <div class="card">
             <h5 class="card-header">Recurring</h5>
             <div class="card-body">
-              <table class="table table-hover attr-table">
+            <table class="table table-hover attr-table">
               {% if object.schedule_type == 'recurring' and object.recurrence_type %}
                 <tr>
                   <th scope='row'>{% trans "Recurrence Type" %}</th>
@@ -99,17 +114,32 @@
                   {% endif %}</td>
                 </tr>
               {% endif %}
-              {% if object.schedule_type == 'recurring'%}
-                {% if object.recurrence_type == 'weekly' and object.weekdays %}
-                  <tr>
-                    <th scope='row'>{% trans "Weekdays" %}</th>
-                    <td>{% if object.weekdays %}
-                      {{ object.get_weekdays_display }}
-                    {% else %}
-                      <span class="text-muted">{% trans "None" %}</span>
-                    {% endif %}</td>
-                  </tr>
-                {% endif %}
+              {% if object.schedule_type == 'recurring' %}
+                {% if object.recurrence_type == 'weekly' %}
+                      {% if object.weekdays %}
+                          <tr>
+                              <th scope="row">{% trans "Weekdays" %}</th>
+                              <td>{{ object.get_weekdays_display }}</td>
+                          </tr>
+                      {% else %}
+                          <tr>
+                              <th scope="row">{% trans "Weekdays" %}</th>
+                              <td><span class="text-muted">{% trans "None" %}</span></td>
+                          </tr>
+                      {% endif %}
+
+                      {% if object.week_in_month %}
+                          <tr>
+                              <th scope="row">{% trans "Week in Month" %}</th>
+                              <td>{{ object.get_week_in_month_display }}</td>
+                          </tr>
+                      {% else %}
+                          <tr>
+                              <th scope="row">{% trans "Week in Month" %}</th>
+                              <td><span class="text-muted">{% trans "None" %}</span></td>
+                          </tr>
+                      {% endif %}
+                  {% endif %}
               {% endif %}
               {% if object.schedule_type == 'recurring'%}
                 {% if object.recurrence_type == 'monthly' and object.monthdays %}
@@ -128,8 +158,9 @@
                   {% if object.special_ordinal %}
                   <tr>
                     <th scope='row'>{% trans "Special Ordinal" %}</th>
-                    <td>{% if object.special_ordinal %}
-                      {{ object.special_ordinal }}
+                    <td>
+                      {% if object.special_ordinal %}
+                       <span id="special_ordinal_value">{{ object.special_ordinal }}</span>
                     {% else %}
                       <span class="text-muted">{% trans "None" %}</span>
                     {% endif %}</td>
@@ -143,4 +174,20 @@
       </div>
     </div>
   </div>
+  <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const cronTextElement = document.getElementById("special_ordinal_value");
+      if (cronTextElement) {
+        try {
+          const raw = cronTextElement.textContent.trim();
+          const cron = raw.trim().split(/\s+/).slice(-5).join(" ");  // Normalisieren
+          const description = cronstrue.toString(cron);
+          cronTextElement.textContent = description;
+        } catch (e) {
+          cronTextElement.textContent = "❌ Ungültiger Cron-Ausdruck";
+        }
+      }
+    });
+  </script>
 {% endblock content %}

@@ -6,6 +6,7 @@ from adestis_netbox_maintenance_management.tables import *
 from netbox.views import generic
 from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect
+from utilities.views import ViewTab, register_model_view
 
 __all__ = (
     'MaintenancePlansView',
@@ -52,3 +53,24 @@ class MaintenancePlansBulkImportView(generic.BulkImportView):
     model_form = MaintenancePlansCSVForm
     table = MaintenancePlansTable
     
+    
+@register_model_view(MaintenancePlans, name='plans_tasks')
+class TasksAffectedMaintenancePlansView(generic.ObjectChildrenView):
+    queryset = MaintenancePlans.objects.all()
+    child_model= MaintenanceTasks
+    table = MaintenanceTasksTable
+    # template_name = "adestis_netbox_maintenance_management/maintenance_actions_device.html"
+    actions = {
+        'add': {'add'},
+        'export': {'view'},
+        'bulk_remove_maintenance_tasks': {'change'},
+    }
+
+    tab = ViewTab(
+        label=_('Maintenance Tasks'),
+        badge=lambda obj: obj.maintenance_tasks.count(),
+        hide_if_empty=False
+    )
+
+    def get_children(self, request, parent):
+        return MaintenanceTasks.objects.restrict(request.user, 'view').filter(plans_tasks=parent)

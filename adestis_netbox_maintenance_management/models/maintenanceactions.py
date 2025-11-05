@@ -34,7 +34,7 @@ class MaintenanceActions(NetBoxModel):
     maintenance_window = django_models.ForeignKey(
         to='adestis_netbox_maintenance_management.MaintenanceWindows',
         on_delete= django_models.PROTECT,
-        related_name='maintenance_window',
+        related_name='maintenance_windows',
         blank=False,
         null=False
     )
@@ -52,13 +52,11 @@ class MaintenanceActions(NetBoxModel):
         related_name='maintenance_actions',
         blank = True
     )
-    
-    def __str__(self):
-        return f"{self.get_recurrence_type_display()}"
 
     class Meta:
         verbose_name_plural = "Maintenance Actions"
         verbose_name = 'Maintenance Action'
+        ordering = ('name',)
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenanceactions', args=[self.pk])
@@ -66,4 +64,11 @@ class MaintenanceActions(NetBoxModel):
     def __str__(self):
         return self.name 
     
-    
+    def save(self, *args, **kwargs):
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
+        AutoCreateMaintenanceTasks.enqueue_once()
+        return super().save(*args, **kwargs)
+
+    def sync(self):
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
+        AutoCreateMaintenanceTasks.enqueue()

@@ -5,21 +5,32 @@
 {% load plugins %}
 {% load static %}
 
+
+
+{% block head %}
+    <script type="text/javascript" src="{% static 'adestis_netbox_maintenance_management/js/helloworld.js' %}"></script>
+{% endblock %}
+
+
 {% block content %}
   {{ block.super }}
+    <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+
+
+    <script type="text/javascript" src="{% static 'plugins:adestis_netbox_maintenance_management/helloworld.js' %}"></script>
 
   <script>
         document.addEventListener("DOMContentLoaded", function () {
-            console.log("DOM ready");
 
             var schedulefields = document.getElementById("id_schedule_type");
             
-            var starttimefield = document.getElementById("id_start_time");
-            var stoptimefield = document.getElementById("id_end_time")
+            var starttimefield = document.getElementById("id_start_day");
+            var stoptimefield = document.getElementById("id_end_day")
 
             var recurrencefield = document.getElementById("id_recurrence_type")
 
             var weekdaysfield = document.getElementById("id_weekdays")
+            var weekinmonth = document.getElementById("id_week_in_month-ts-control")
             var monthdaysfield = document.getElementById("id_monthdays")
 
             var specialordinal = document.getElementById("id_special_ordinal")
@@ -30,17 +41,17 @@
             const stopContainer = stoptimefield.closest(".row.mb-3");
 
             const weekdayContainer = weekdaysfield.closest(".row.mb-3");
+            const weekinmonthContainer = weekinmonth.closest(".row.mb-3");
             const monthdayContainer = monthdaysfield.closest(".row.mb-3");
             
             const specialordinalContainer = specialordinal.closest(".row.mb-3")
 
-
-            console.log(recurenceContainer.style)
             startContainer.style.display = 'none'
             stopContainer.style.display = 'none'
             recurenceContainer.style.display = 'none'
 
             weekdayContainer.style.display = 'none'
+            weekinmonthContainer.style.display = 'none'
             monthdayContainer.style.display = 'none'
 
             specialordinalContainer.style.display = 'none'
@@ -48,7 +59,7 @@
         function updateVisibility() {
             const scheduleValue = schedulefields.value;
             const recurrenceValue = recurrencefield.value;
-
+            
             // schedule_type abhängige Felder
             if (scheduleValue === "recurring") {
                 recurenceContainer.style.display = '';
@@ -68,8 +79,10 @@
             if (scheduleValue === "recurring") {
                 if (recurrenceValue === "weekly") {
                     weekdayContainer.style.display = '';
+                    weekinmonthContainer.style.display = '';
                 } else {
                     weekdayContainer.style.display = 'none';
+                    weekinmonthContainer.style.display = 'none';
                 }
 
                 if (recurrenceValue === "monthly") {
@@ -91,6 +104,7 @@
                 weekdayContainer.style.display = 'none';
                 monthdayContainer.style.display = 'none';
                 specialordinalContainer.style.display = 'none';
+                weekinmonthContainer.style.display = 'none';
             }
         }
 
@@ -100,9 +114,97 @@
 
         // Initiale Sichtbarkeit setzen
         updateVisibility();
+        const helpText = document.getElementById("id_special_ordinal_helptext");
 
+        function isValidCronPart(part, min, max) {
+            if (part === '*' || part === '?') return true;
+
+            // Unterstützung für Listen, Ranges und Schritte (einfachste Form)
+            const parts = part.split(',');
+
+            return parts.every(p => {
+                if (p.includes('/')) {
+                    [p] = p.split('/'); // nur linken Teil nehmen (z.B. "5/2" → "5")
+                }
+
+                if (p.includes('-')) {
+                    const [start, end] = p.split('-').map(Number);
+                    return (
+                        !isNaN(start) &&
+                        !isNaN(end) &&
+                        start >= min && start <= max &&
+                        end >= min && end <= max &&
+                        start <= end
+                    );
+                }
+
+                const num = Number(p);
+                return !isNaN(num) && num >= min && num <= max;
+            });
+        }
+
+        function validateCron(raw) {
+            if (typeof raw !== 'string') return false;
+
+            const parts = raw.trim().split(/\s+/);
+            if (parts.length !== 5) return false;
+
+            const [minute, hour, day, month, weekday] = parts;
+
+            return (
+                isValidCronPart(minute, 0, 59) &&
+                isValidCronPart(hour, 0, 23) &&
+                isValidCronPart(day, 1, 31) &&
+                isValidCronPart(month, 1, 12) &&
+                isValidCronPart(weekday, 0, 6)
+            );
+        }
+
+        function updateCronDescription() {
+            const scheduleValue = schedulefields.value;
+            const recurrenceValue = recurrencefield.value;
             
+             if (
+                scheduleValue === "recurring" &&
+                (recurrenceValue === "weekday_occurrence" || recurrenceValue === "workday_occurrence")
+            ) {
+                const raw = specialordinal?.value || "";
+
+                let helpText = document.getElementById("id_special_ordinal_helptext");
+                if (!helpText) {
+                    helpText = document.createElement("small");
+                    helpText.id = "id_special_ordinal_helptext";
+                    helpText.className = "form-text text-muted";
+                    specialordinal.insertAdjacentElement("afterend", helpText);
+                }
+
+                if (!validateCron(raw)) {
+                    helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
+                    specialordinal.setCustomValidity("Ungültiger Cron-Ausdruck");
+                } else {
+                    try {
+                        const description = cronstrue.toString(raw);
+                        helpText.textContent = description;
+                        specialordinal.setCustomValidity("");
+                    } catch (e) {
+                        helpText.textContent = "❌ Fehler beim Interpretieren des Ausdrucks";
+                        specialordinal.setCustomValidity("Fehler beim Interpretieren des Ausdrucks");
+                    }
+                }
+            } else {
+                // Wenn Special Ordinal nicht relevant ist, Fehler zurücksetzen
+                specialordinal.setCustomValidity("");
+                const helpText = document.getElementById("id_special_ordinal_helptext");
+                if (helpText) helpText.textContent = "";
+            }
+        }
+
+        specialordinal.addEventListener("input", updateCronDescription);
+
+        // Initial einmal ausführen
+        updateCronDescription();    
 
         });
     </script>
+    
 {% endblock %}

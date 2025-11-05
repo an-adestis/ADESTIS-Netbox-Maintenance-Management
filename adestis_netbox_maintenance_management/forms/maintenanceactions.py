@@ -33,6 +33,13 @@ __all__ = (
     
     'MaintenanceActionsAssignVirtualMachineForm',
     'MaintenanceActionsRemoveVirtualMachine',
+    
+    'DeviceFormAssignMaintenanceAction',
+    'VirtualMachineFormAssignMaintenanceAction',
+    
+    'VirtualMachineRemoveMaintenanceActions',
+    'DeviceRemoveMaintenanceActions',
+    
 )
 
 
@@ -53,7 +60,7 @@ class MaintenanceActionsForm(NetBoxModelForm):
         null_option='None',
         query_params={
             'cluster_id': '$cluster',
-            'device_id': '$device',
+            # 'device_id': '$device',
         },
         help_text=_("Virtual Machine"),
     )
@@ -61,7 +68,7 @@ class MaintenanceActionsForm(NetBoxModelForm):
     fieldsets = (
         FieldSet('name', 'maintenance_window', 'description', 'tags',  name=_('Maintenance Actions')),
         FieldSet('device', name=_("Device")),
-        FieldSet('virtual_machine', name=_("Virtue Machine")),
+        FieldSet('virtual_machine', name=_("Virtual Machine")),
     )
     
     class Meta:
@@ -116,9 +123,9 @@ class MaintenanceActionsBulkEditForm(NetBoxModelBulkEditForm):
     model = MaintenanceActions
 
     fieldsets = (
-        FieldSet('name', 'maintenance_window', 'description', 'tags', 'comments', name=_('Maintenance Plans')),
+        FieldSet('name', 'maintenance_window', 'description', 'tags', 'comments', name=_('Maintenance Actions')),
         FieldSet('device', name=_("Device")),
-        FieldSet('virtual_machine', name=_("Virtue Machine")),
+        FieldSet('virtual_machine', name=_("Virtual Machine")),
     )
 
     nullable_fields = [
@@ -242,6 +249,64 @@ class MaintenanceActionsAssignVirtualMachineForm(forms.Form):
 
         self.fields['virtual_machine'].choices = []
 
+class DeviceFormAssignMaintenanceAction(forms.Form):
+    
+    maintenance_actions = DynamicModelMultipleChoiceField(
+        label=_('Maintenance Actions'),
+        queryset=MaintenanceActions.objects.all()
+    )
+    
+    def __init__(self, *args, **kwargs):
+        self.device = kwargs.pop('device', None)
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        fields = [
+            'maintenance_actions'
+        ]
+        
+    def _init_(self, device, *args, **kwargs):
+        
+        self.device = device
+        
+        self.device = DynamicModelMultipleChoiceField(
+            label=_('Maintenance Actions'),
+            queryset=MaintenanceActions.objects.all()
+        )
+
+        super().__init__(*args, **kwargs)
+        
+        self.fields['maintenance_actions'].choices = []
+        
+class VirtualMachineFormAssignMaintenanceAction(forms.Form):
+    
+    maintenance_actions = DynamicModelMultipleChoiceField(
+        label=_('Maintenance Actions'),
+        queryset=MaintenanceActions.objects.all()
+    )
+    
+    def __init__(self, *args, **kwargs):
+        self.virtual_machine = kwargs.pop('virtual_machine', None)
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        fields = [
+            'maintenance_actions'
+        ]
+        
+    def _init_(self, virtual_machine, *args, **kwargs):
+        
+        self.virtual_machine = virtual_machine
+        
+        self.virtual_machine = DynamicModelMultipleChoiceField(
+            label=_('Maintenance Actions'),
+            queryset=MaintenanceActions.objects.all()
+        )
+
+        super().__init__(*args, **kwargs)
+        
+        self.fields['maintenance_actions'].choices = []
+        
 class MaintenanceActionsRemoveDevice(ConfirmationForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=Device.objects.all(),
@@ -251,5 +316,17 @@ class MaintenanceActionsRemoveDevice(ConfirmationForm):
 class MaintenanceActionsRemoveVirtualMachine(ConfirmationForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=VirtualMachine.objects.all(),
+        widget=forms.MultipleHiddenInput()
+    ) 
+    
+class VirtualMachineRemoveMaintenanceActions(ConfirmationForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=MaintenanceActions.objects.all(),
+        widget=forms.MultipleHiddenInput()
+    ) 
+    
+class DeviceRemoveMaintenanceActions(ConfirmationForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=MaintenanceActions.objects.all(),
         widget=forms.MultipleHiddenInput()
     ) 

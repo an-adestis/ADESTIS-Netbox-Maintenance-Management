@@ -4,6 +4,7 @@ from adestis_netbox_maintenance_management.models import *
 from adestis_netbox_maintenance_management.views import *
 from django.urls import include
 from utilities.urls import get_model_urls
+from adestis_netbox_maintenance_management import views
 
 urlpatterns = (
 
@@ -29,6 +30,8 @@ urlpatterns = (
     path('maintenancewindows/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancewindows_changelog', kwargs={
         'model': MaintenanceWindows
     }),
+#     path('virtualmachine/maintenancewindows', VirtualMachineAffectedMaintenanceWindowsView.as_view(),
+#          name='maintenancewindowsvirtualmachine_list'),
     
     # Maintenance Actions
     path('maintenanceactions/', MaintenanceActionsListView.as_view(),
@@ -50,14 +53,34 @@ urlpatterns = (
     path('maintenanceactions/<int:pk>/delete/',
          MaintenanceActionsDeleteView.as_view(), name='maintenanceactions_delete'),
     path('maintenanceactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceactions_changelog', kwargs={
-        'model': MaintenanceActions
-    }),
-    
+        'model': MaintenanceActions}),  
     path('maintenanceactions/devices/', DeviceAffectedMaintenanceActionsView.as_view(),
          name='maintenanceactionsdevices_list'),
-    
     path('maintenanceactions/virtualmachines/', VirtualMachineAffectedMaintenanceActionsView.as_view(),
          name='maintenanceactionsvirtualmachines_list'),
+    
+    # Maintenance Tasks
+    path('maintenancetasks/', MaintenanceTasksListView.as_view(),
+         name='maintenancetasks_list'),
+    path('maintenancetasks/add/', MaintenanceTasksEditView.as_view(),
+         name='maintenancetasks_add'),
+    path('maintenancetasks/delete/', MaintenanceTasksBulkDeleteView.as_view(),
+         name='maintenancetasks_bulk_delete'),
+    path('maintenancetasks/edit/', MaintenanceTasksBulkEditView.as_view(),
+         name='maintenancetasks_bulk_edit'),
+    path('maintenancetasks/import/', MaintenanceTasksBulkImportView.as_view(),
+         name='maintenancetasks_bulk_import'),
+    path('maintenancetasks/<int:pk>/',
+         MaintenanceTasksView.as_view(), name='maintenancetasks'),
+    path('maintenancetasks/<int:pk>/',
+         include(get_model_urls("adestis_netbox_maintenance_management", "maintenancetasks"))),
+    path('maintenancetasks/<int:pk>/edit/',
+         MaintenanceTasksEditView.as_view(), name='maintenancetasks_edit'),
+    path('maintenancetasks/<int:pk>/delete/',
+         MaintenanceTasksDeleteView.as_view(), name='maintenancetasks_delete'),
+    path('maintenancetasks/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancetasks_changelog', kwargs={
+        'model': MaintenanceTasks
+    }),
     
     # Maintenance Plans
     path('maintenanceplans/', MaintenancePlansListView.as_view(),
@@ -81,5 +104,24 @@ urlpatterns = (
     path('maintenanceplans/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplans_changelog', kwargs={
         'model': MaintenancePlans
     }),
-
+    
+    # Maintenance Reports
+    path('maintenancereports/', MaintenanceReportsListView.as_view(),
+         name='maintenancereport_list'),
+    path('maintenancereports/add/', MaintenanceReportsEditView.as_view(),
+         name='maintenancereport_add'),
+    path('maintenancereports/<int:pk>/edit/',
+         MaintenanceReportsEditView.as_view(), name='maintenancereport_edit'),
+    path('maintenancereports/delete/', MaintenanceReportsBulkDeleteView.as_view(),
+         name='maintenancereport_bulk_delete'),
+    path('maintenancereports/edit/', MaintenanceReportsBulkEditView.as_view(),
+         name='maintenancereport_bulk_edit'),
+    path('maintenancereports/import/', MaintenanceReportsBulkImportView.as_view(),
+         name='maintenancereport_bulk_import'),
+    path('maintenancereports/<int:pk>/',
+         MaintenanceReportsView.as_view(), name='maintenancereports'),
+    path('maintenancereports/<int:pk>/delete/',
+         MaintenanceReportsDeleteView.as_view(), name='maintenancereport_delete'),
+    path('maintenancereports/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancereport_changelog', kwargs={
+        'model': MaintenanceReport}), 
 )

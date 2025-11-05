@@ -1,7 +1,7 @@
-from adestis_netbox_maintenance_management.models import MaintenanceActions, MaintenanceWindows, MaintenancePlans
-from adestis_netbox_maintenance_management.filtersets import MaintenanceActionsFilterSet, MaintenanceWindowsFilterSet, MaintenancePlansFilterSet
+from adestis_netbox_maintenance_management.models import MaintenanceActions, MaintenanceWindows, MaintenancePlans, MaintenanceReport, MaintenanceTasks
+from adestis_netbox_maintenance_management.filtersets import MaintenanceActionsFilterSet, MaintenanceWindowsFilterSet, MaintenancePlansFilterSet, MaintenanceReportsFilterSet, MaintenanceTasksFilterSet
 from netbox.api.viewsets import NetBoxModelViewSet
-from .serializers import MaintenanceActionsSerializer, MaintenanceWindowsSerializer, MaintenancePlansSerializer
+from .serializers import MaintenanceActionsSerializer, MaintenanceWindowsSerializer, MaintenancePlansSerializer, MaintenanceReportSerializer, MaintenanceTasksSerializer
 
 class MaintenanceWindowsViewSet(NetBoxModelViewSet):
     queryset = MaintenanceWindows.objects.prefetch_related(
@@ -23,3 +23,18 @@ class MaintenancePlansViewSet(NetBoxModelViewSet):
     )
     serializer_class = MaintenancePlansSerializer
     filterset_class = MaintenancePlansFilterSet
+    
+
+class MaintenanceReportsViewSet(NetBoxModelViewSet):
+    queryset = MaintenanceReport.objects.prefetch_related(
+        'tags'
+    )
+    serializer_class = MaintenanceReportSerializer
+    filterset_class = MaintenanceReportsFilterSet
+    
+class MaintenanceTasksViewSet(NetBoxModelViewSet):
+    queryset = MaintenanceTasks.objects.prefetch_related(
+        'tags'
+    )
+    serializer_class = MaintenanceTasksSerializer
+    filterset_class = MaintenanceTasksFilterSet

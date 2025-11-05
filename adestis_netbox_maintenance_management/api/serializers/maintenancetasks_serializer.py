@@ -7,12 +7,12 @@ from dcim.api.serializers import *
 from dcim.models import *
 from virtualization.api.serializers import *
 
-class MaintenanceWindowsSerializer(NetBoxModelSerializer):
+class MaintenanceTasksSerializer(NetBoxModelSerializer):
 
     class Meta:
-        model = MaintenanceWindows
+        model = MaintenanceTasks
         fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                  'custom_field_data', 'comments', 'description', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal')
+                  'custom_field_data', 'description', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device')
         brief_fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                        'custom_field_data', 'comments', 'description', 'schedule_type', 'start_time', 'end_time',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal')
+                        'custom_field_data', 'description', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device')
 

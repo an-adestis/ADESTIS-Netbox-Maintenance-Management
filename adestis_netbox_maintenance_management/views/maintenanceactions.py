@@ -19,6 +19,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+import logging
 
 __all__ = (
     'MaintenanceActionsView',
@@ -32,12 +33,15 @@ __all__ = (
     'DeviceAffectedMaintenanceActionsView',
     'DeviceAffectedMaintenanceActionsView',
     'MaintenanceActionsAssignDevice',
-    'MaintenanceActionsRemoveDeviceView',
+    # 'MaintenanceActionsRemoveDeviceView',
     
     'VirtualMachineAffectedMaintenanceActionsView',
-    'VirtualMachineAffectedMaintenanceActionsView',
+    'MaintenanceActionsAffectVirtualMachineView',
     'MaintenanceActionsAssignDevice',
     'MaintenanceActionsRemoveVirtualMachineView',
+    
+    'MaintenanceActionsAssignVirtualMachine',
+    
 )
 
 class MaintenanceActionsView(generic.ObjectView):
@@ -81,7 +85,7 @@ class MaintenanceActionsBulkImportView(generic.BulkImportView):
 class DeviceAffectedMaintenanceActionsView(generic.ObjectChildrenView):
     queryset = MaintenanceActions.objects.all()
     child_model= Device
-    table = DeviceTableMaintenanceActions
+    table = DeviceTable
     template_name = "adestis_netbox_maintenance_management/device.html"
     actions = {
         'add': {'add'},
@@ -163,7 +167,54 @@ class MaintenanceActionsAssignDevice(generic.ObjectEditView):
             'return_url': maintenance_actions.get_absolute_url(),
             'edit_url': reverse('plugins:adestis_netbox_maintenance_management:maintenance_actions_assign_device', kwargs={'pk': pk}),
         })
+
+logger = logging.getLogger(__name__)
+
+@register_model_view(Device, 'assign_maintenance_actions') 
+class DeviceAssignMaintenanceActions(generic.ObjectEditView):
+    queryset = Device.objects.prefetch_related(
+        'maintenance_actions', 'tags'
+    ).all()
+    
+    form = DeviceFormAssignMaintenanceAction
+    template_name = 'adestis_netbox_maintenance_management/assign_maintenance_actions.html'
+    
+    def get(self, request, pk):
+        device = get_object_or_404(self.queryset, pk=pk)
+        form = self.form(data=request.GET, device = device)
         
+        logger.warning(f"device:{device}")
+        return render (request, self.template_name, {
+            'device': device,
+            'form': form,
+            'return_url': reverse('dcim:device', kwargs={'pk': pk}),
+            'edit_url': reverse('dcim:device_assign_maintenance_actions', kwargs={'pk':pk}),
+        })
+    
+    def post(self, request, pk):
+        device = get_object_or_404(self.queryset, pk=pk)
+        form = self.form(data=request.POST, device=device)
+
+        if form.is_valid():
+            
+            selected_maintenance_actions = form.cleaned_data['maintenance_actions']
+            with transaction.atomic():
+                
+                for maintenance_actions in MaintenanceActions.objects.filter(pk__in=selected_maintenance_actions):
+                    device.maintenance_actions.add(maintenance_actions)
+                    
+            device.save()
+            
+            return redirect(device.get_absolute_url())
+        
+        return render(request, self.template_name,{
+            'device': device,
+            'form': form,
+            'return_url': device.get_absolute_url(),
+            'edit_url': reverse('dcim:device_assign_maintenance_actions', kwargs={'pk': pk}),
+        })
+            
+            
 @register_model_view(MaintenanceActions, 'remove_device', path='device/remove')
 class MaintenanceActionsRemoveDeviceView(generic.ObjectEditView):
     queryset = MaintenanceActions.objects.all()
@@ -204,8 +255,48 @@ class MaintenanceActionsRemoveDeviceView(generic.ObjectEditView):
             'return_url': maintenance_actions.get_absolute_url(),
         })
         
+@register_model_view(Device, 'remove_maintenance_actions', path='maintenance_actions/remove')
+class DeviceRemoveViewMaintenanceActions(generic.ObjectEditView):
+    queryset = Device.objects.all()
+    form = DeviceRemoveMaintenanceActions
+    template_name = 'generic/bulk_remove.html'
+
+    def post(self, request, pk):
+
+        device = get_object_or_404(self.queryset, pk=pk)
+
+        if '_confirm' in request.POST:
+            
+            form = self.form(request.POST)
+            if form.is_valid():
+                
+                maintenance_actions_pks = form.cleaned_data['pk']
+                with transaction.atomic():
+                    device.maintenance_actions.remove(*maintenance_actions_pks)
+                    device.save()
+
+                messages.success(request, _("Removed {count} maintenance windows from device {device}").format(
+                    count=len(maintenance_actions_pks),
+                    device=device
+                ))
+                return redirect(device.get_absolute_url())
+        else:
+            form = self.form(initial={'pk': request.POST.getlist('pk')})
+
+        selected_objects = MaintenanceActions.objects.filter(pk__in=form.initial['pk'])
+        maintenance_actions_table = DeviceTableMaintenanceActions(list(selected_objects), orderable=False)
+        maintenance_actions_table.configure(request)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'parent_obj': device,
+            'table': maintenance_actions_table,
+            'obj_type_plural': 'devices',
+            'return_url': device.get_absolute_url(),
+        })
+        
 @register_model_view(MaintenanceActions, name='virtual_machine')
-class VirtualMachineAffectedMaintenanceActionsView(generic.ObjectChildrenView):
+class MaintenanceActionsAffectVirtualMachineView(generic.ObjectChildrenView):
     queryset = MaintenanceActions.objects.all()
     child_model= VirtualMachine
     table = VirtualMachineTableMaintenanceActions
@@ -249,7 +340,7 @@ class VirtualMachineAffectedMaintenanceActionsView(generic.ObjectChildrenView):
         return MaintenanceActions.objects.restrict(request.user, 'view').filter(virtual_machine=parent)
       
 @register_model_view(MaintenanceActions, 'assign_virtual_machine')
-class MaintenanceActionsAssignDevice(generic.ObjectEditView):
+class MaintenanceActionsAssignVirtualMachine(generic.ObjectEditView):
     queryset = MaintenanceActions.objects.prefetch_related(
         'virtual_machine', 'tags', 
     ).all()
@@ -330,4 +421,88 @@ class MaintenanceActionsRemoveVirtualMachineView(generic.ObjectEditView):
             'obj_type_plural': 'virtual_machines',
             'return_url': maintenance_actions.get_absolute_url(),
         })
+        
+@register_model_view(VirtualMachine, 'assign_maintenance_actions') 
+class VirtualMachineAssignMaintenanceActions(generic.ObjectEditView):
+    queryset = VirtualMachine.objects.prefetch_related(
+        'maintenance_actions', 'tags'
+    ).all()
     
+    form = VirtualMachineFormAssignMaintenanceAction
+    template_name = 'adestis_netbox_maintenance_management/vm_assign_maintenance_actions.html'
+    
+    def get(self, request, pk):
+        virtual_machine = get_object_or_404(self.queryset, pk=pk)
+        form = self.form(data=request.GET, virtual_machine = virtual_machine)
+        
+        
+        return render (request, self.template_name, {
+            'virtual_machine': virtual_machine,
+            'form': form,
+            'return_url': reverse('virtualization:virtualmachine', kwargs={'pk': pk}),
+            'edit_url': reverse('virtualization:virtualmachine_assign_maintenance_actions', kwargs={'pk':pk}),
+        })
+    
+    def post(self, request, pk):
+        virtual_machine = get_object_or_404(self.queryset, pk=pk)
+        form = self.form(data=request.POST, virtual_machine=virtual_machine)
+
+        if form.is_valid():
+            
+            selected_maintenance_actions = form.cleaned_data['maintenance_actions']
+            with transaction.atomic():
+                
+                for maintenance_actions in MaintenanceActions.objects.filter(pk__in=selected_maintenance_actions):
+                    virtual_machine.maintenance_actions.add(maintenance_actions)
+                    
+            virtual_machine.save()
+            
+            return redirect(virtual_machine.get_absolute_url())
+        
+        return render(request, self.template_name,{
+            'virtual_machine': virtual_machine,
+            'form': form,
+            'return_url': virtual_machine.get_absolute_url(),
+            'edit_url': reverse('virtualization:virtualmachine_assign_maintenance_actions', kwargs={'pk': pk}),
+        })
+        
+@register_model_view(VirtualMachine, 'remove_maintenance_actions', path='maintenance_actions/remove')
+class VirtualMachineRemoveViewMaintenanceActions(generic.ObjectEditView):
+    queryset = VirtualMachine.objects.all()
+    form = VirtualMachineRemoveMaintenanceActions
+    template_name = 'generic/bulk_remove.html'
+
+    def post(self, request, pk):
+
+        virtual_machine = get_object_or_404(self.queryset, pk=pk)
+
+        if '_confirm' in request.POST:
+            
+            form = self.form(request.POST)
+            if form.is_valid():
+                
+                maintenance_actions_pks = form.cleaned_data['pk']
+                with transaction.atomic():
+                    virtual_machine.maintenance_actions.remove(*maintenance_actions_pks)
+                    virtual_machine.save()
+
+                messages.success(request, _("Removed {count} maintenance windows from virtual machines{virtual_machine}").format(
+                    count=len(maintenance_actions_pks),
+                    virtual_machine=virtual_machine
+                ))
+                return redirect(virtual_machine.get_absolute_url())
+        else:
+            form = self.form(initial={'pk': request.POST.getlist('pk')})
+
+        selected_objects = MaintenanceActions.objects.filter(pk__in=form.initial['pk'])
+        maintenance_actions_table = VirtualMachineTableMaintenanceActions(list(selected_objects), orderable=False)
+        maintenance_actions_table.configure(request)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'parent_obj': virtual_machine,
+            'table': maintenance_actions_table,
+            'obj_type_plural': 'virtual_machines',
+            'return_url': virtual_machine.get_absolute_url(),
+        })
+        

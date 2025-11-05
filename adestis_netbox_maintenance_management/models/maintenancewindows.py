@@ -4,11 +4,12 @@ from netbox.models import NetBoxModel
 from utilities.choices import ChoiceSet
 from tenancy.models import *
 from dcim.models import *
-from virtualization.models import *
+from virtualization.models import VirtualMachine
 from django.utils.translation import gettext_lazy as _
 from django import forms
 from django.contrib.postgres.fields import ArrayField 
 from datetime import timedelta
+from crontab import CronTab
 
 
 __all__ = (
@@ -16,26 +17,8 @@ __all__ = (
     'Weekday',
     'ScheduleTypeModeChoices',
     'RecurrenceTypeChoices',
-    'HOLIDAYS',
     'Weekday',
-    
 )
-
-class HOLIDAYS(ChoiceSet):
-    Neujahr = "01-01",  # Neujahr
-    Tag_der_Arbeit = "05-01",  # Tag der Arbeit
-    Deutsche_Einheit = "10-03",  # Tag der Deutschen Einheit
-    Weihnachten = "12-25",  # Weihnachten
-    ZweiterWeihnachtstag = "12-26",  # 2. Weihnachtstag
-
-    CHOICES = [
-            (Neujahr, '01-01'),
-            (Tag_der_Arbeit, '05-01'),
-            (Deutsche_Einheit, '10-03'),
-            (Weihnachten, '12-25'),
-            (ZweiterWeihnachtstag, '12-26'),
-        ]
-
 class RecurrenceTypeChoices(ChoiceSet):
 
         DAILY = 'daily'
@@ -54,13 +37,13 @@ class RecurrenceTypeChoices(ChoiceSet):
 class Weekday(ChoiceSet):
         key = 'weekday'
         
-        MON = 'monday'
-        TUE = 'tuesday'
-        WED = 'wednesday'
-        THU = 'thursday'
-        FRI = 'friday'
-        SAT = 'saturday'
-        SUN = 'sunday'
+        MON = 'Monday'
+        TUE = 'Tuesday'
+        WED = 'Wednesday'
+        THU = 'Thursday'
+        FRI = 'Friday'
+        SAT = 'Saturday'
+        SUN = 'Sunday'
 
         CHOICES = [
             (MON, 'Monday'),      
@@ -104,6 +87,19 @@ class ScheduleTypeModeChoices(ChoiceSet):
         ]
     
 class MaintenanceWindows(NetBoxModel):
+    
+    week_in_month = django_models.IntegerField(
+        choices=[
+            (1, "First"),
+            (2, "Second"),
+            (3, "Third"),
+            (4, "Fourth"),
+            (5, "Last"),  # 5 wird als "Last" interpretiert
+        ],
+        blank = True,
+        null = True
+    
+    )
 
     comments = django_models.TextField(
         blank=True
@@ -120,24 +116,25 @@ class MaintenanceWindows(NetBoxModel):
         
     schedule_type = django_models.CharField(max_length=20, choices=ScheduleTypeModeChoices, null=False, blank=False, default=ScheduleTypeModeChoices.SELECT_File)
     
-    start_time = django_models.DateField(
+    start_day = django_models.DateField(
         blank=True,
         null=True,
     )
     
-    end_time = django_models.DateField(
+    end_day = django_models.DateField(
         blank=True,
         null=True,
     )
 
-    recurrence_type =django_models.CharField(
+    recurrence_type = django_models.CharField(
         max_length=20,
         choices=RecurrenceTypeChoices,
+        default=RecurrenceTypeChoices.DAILY,
         blank=True,
         null=True
     )
     
-    weekdays =django_models.CharField(
+    weekdays = django_models.CharField(
         max_length=50, 
         choices=Weekday.CHOICES,
         blank=True,
@@ -151,47 +148,42 @@ class MaintenanceWindows(NetBoxModel):
     )
 
     special_ordinal = django_models.CharField(
+        max_length=100,
         blank=True,
         null=True,
-        help_text="Describe the monthly pattern, e.g.: 'every 2nd Wednesday', 'last Friday of the month', or 'first workday'"
+        help_text=""
     )
     
+    virtual_machine = django_models.ManyToManyField(
+        to='virtualization.VirtualMachine',
+        verbose_name='Virtual Machines',
+        related_name='maintenance_window',
+        blank = True
+    )
     
-    def count_workdays(self) -> int:
-        """
-        Zählt die Werktage (Mo–Fr) zwischen start_time und end_time, inkl. Feiertagsprüfung.
-        """
-        if not self.start_time or not self.end_time:
-            return 0
-
-        begin_date = self.start_time
-        end_date = self.end_time
-
-        diff = end_date - begin_date
-        workday_count = 0
-
-        for i in range(diff.days + 1):  # Python 3 statt xrange
-            actual_day = begin_date + timedelta(days=i)
-            if (
-                actual_day.strftime("%m-%d") not in HOLIDAYS and
-                actual_day.weekday() in Workday
-            ):
-                workday_count += 1
-
-        return workday_count
-
+    start_time = django_models.TimeField(
+        blank=True, 
+        null = True,
+    )
     
-    def __str__(self):
-        return f"{self.get_recurrence_type_display()}"
-
+    end_time = django_models.TimeField(
+        blank= True, 
+        null=True,
+    )
+    
     class Meta:
         verbose_name_plural = "Maintenance Windows"
         verbose_name = 'Maintenance Window'
+        ordering = ('name',)
+
+    def clean_week_in_month(self):
+        value = self.cleaned_data.get('week_in_month')
+        if value == '':
+            return None
+        return value
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenancewindows', args=[self.pk])
 
     def __str__(self):
         return self.name 
-    
-    

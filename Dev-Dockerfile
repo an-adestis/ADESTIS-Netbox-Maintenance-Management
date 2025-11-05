@@ -1,5 +1,5 @@
 ARG FROM_IMAGE=netboxcommunity/netbox
-ARG FROM_TAG=v4.2-3.2.1
+ARG FROM_TAG=v4.3.7-3.3.0
 ARG FROM=${FROM_IMAGE}:${FROM_TAG}
 FROM ${FROM}
 
@@ -14,3 +14,12 @@ COPY ./docker/requirements-container.txt /source/adestis-netbox-maintenance/
 COPY ./docker/configuration/configuration.py /etc/netbox/config/configuration.py
 RUN /usr/local/bin/uv pip install /source/adestis-netbox-maintenance/
 RUN /usr/local/bin/uv pip install -r /source/adestis-netbox-maintenance/requirements-container.txt
+
+# RUN apt-get update && apt-get install -y \
+#     libcairo2 \
+#     pango1.0-tools \
+#     libgdk-pixbuf2.0-0 \
+#     libffi-dev \
+#     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# RUN /usr/local/bin/uv pip install weasyprint

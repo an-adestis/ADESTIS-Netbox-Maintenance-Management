@@ -28,7 +28,6 @@ class MaintenanceActionsFilterSet(NetBoxModelFilterSet):
     )
     
     virtual_machine = django_filters.ModelMultipleChoiceFilter(
-        field_name='virtual_machine',
         queryset=VirtualMachine.objects.all()
     )
     

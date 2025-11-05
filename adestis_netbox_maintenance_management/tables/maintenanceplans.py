@@ -1,5 +1,5 @@
 from netbox.tables import NetBoxTable, ChoiceFieldColumn, columns
-from adestis_netbox_maintenance_management.models import MaintenanceActions
+from adestis_netbox_maintenance_management.models import *
 from adestis_netbox_maintenance_management.filtersets import *
 from dcim.models import *
 from dcim.tables import *
@@ -18,24 +18,36 @@ class MaintenancePlansTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    device = tables.Column(
-            linkify=True
-    )
-    
     tenant = tables.Column(
         linkify=True
     )
         
-    maintenance_action = tables.Column(
-        linkify= True
+    maintenance_action = columns.ManyToManyColumn(
+        linkify_item = True
+    )
+    
+    maintenance_tasks = columns.ManyToManyColumn(
+        linkify_item = True
+    )
+    
+    maintenance_windows = columns.ManyToManyColumn(
+        linkify_item = True
+    )
+    
+    virtual_machine = columns.ManyToManyColumn(
+        linkify_item = True
+    )
+    
+    device = columns.ManyToManyColumn(
+        linkify_item = True
     )
 
     class Meta(NetBoxTable.Meta):
 
-        model = MaintenanceActions
+        model = MaintenancePlans
         
-        fields = ['name', 'maintenance_action', 'tenant', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'maintenance_action', ]
+        fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
+        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device' ]
 
 
         

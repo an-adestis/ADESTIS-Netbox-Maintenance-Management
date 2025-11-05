@@ -35,6 +35,29 @@ _maintenanceplans = [
     ),    
 ]
 
+_maintenancereports = [
+    PluginMenuItem(
+        link='plugins:adestis_netbox_maintenance_management:maintenancereport_list',
+        link_text='Maintenance Reports',
+        permissions=["adestis_netbox_maintenance_management.maintenancereport_list"],
+        buttons=(
+            PluginMenuButton('plugins:adestis_netbox_maintenance_management:maintenancereport_add', 'Add', 'mdi mdi-plus-thick', ButtonColorChoices.GREEN, ["adestis_netbox_maintenance_management.maintenancereport_add"]),
+        )
+    ),    
+]
+
+_maintenancetasks = [
+    PluginMenuItem(
+        link='plugins:adestis_netbox_maintenance_management:maintenancetasks_list',
+        link_text='Maintenance Tasks',
+        permissions=["adestis_netbox_maintenance_management.maintenancetasks_list"],
+        buttons=(
+            PluginMenuButton('plugins:adestis_netbox_maintenance_management:maintenancetasks_add', 'Add', 'mdi mdi-plus-thick', ButtonColorChoices.GREEN, ["adestis_netbox_maintenance_management.maintenancetasks_add"]),
+            
+        )
+    ),
+]
+
 plugin_settings = settings.PLUGINS_CONFIG.get('adestis_netbox_maintenance_management', {})
 
 if plugin_settings.get('top_level_menu'):
@@ -43,7 +66,10 @@ if plugin_settings.get('top_level_menu'):
         groups=(
             ("Maintenance Windows", _maintenancewindows),
             ("Maintenance Actions", _maintenanceactions),
+            ("Maintenance Tasks", _maintenancetasks),
             ("Maintenance Plans", _maintenanceplans),
+            ("Maintenance Reports", _maintenancereports),
+            
         ),
         icon_class="mdi mdi-wrench",
     )

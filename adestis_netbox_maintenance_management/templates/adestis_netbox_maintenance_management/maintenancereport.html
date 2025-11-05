@@ -13,7 +13,7 @@
     <div class="row my-3">
         <div class="col col-md-6">
         <div class="card">
-            <h5 class="card-header">Maintenance Plans</h5>
+            <h5 class="card-header">Maintenance Reports</h5>
             <div class="card-body">
             <table class="table table-hover attr-table">
                 <tr>
@@ -24,20 +24,10 @@
                     <span class="text-muted">{% trans "None" %}</span>
                 {% endif %}</td>
                 </tr>
-
-                {% comment %} <tr>
-                    <th scope='row'>Maintenance Actions</th>
-                    <td>{% if object.maintenance_action %}
-                        <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceactions' object.maintenance_action.id %}"> {{ object.maintenance_action.name|markdown }}</a>
-                        {% else %}
-                        <span class="text-muted">{% trans "None" %}</span>
-                        {% endif %}
-                    </td>
-                </tr> {% endcomment %}
                 <tr>
-                    <th scope='row'>Tenant</th>
-                    <td>{% if object.tenant %}
-                        <a href="{% url 'tenancy:tenant' object.tenant.id %}"> {{ object.tenant.name|markdown }} </a>
+                    <th scope='row'>Maintenance Plans</th>
+                    <td>{% if object.maintenance_plans %}
+                        <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceplans' object.maintenance_plans.id %}"> {{ object.maintenance_plans.name|markdown }}</a>
                         {% else %}
                         <span class="text-muted">{% trans "None" %}</span>
                         {% endif %}
