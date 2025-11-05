@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 task = MaintenanceTasks.objects.all()
 
 MONTH_MAP = {
-    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
-    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12
+    "January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6,
+    "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12
 }
 
 WEEKDAY_MAP = {
@@ -66,7 +66,7 @@ def get_task_date(task):
                 if day.lower() in desc.lower():
                     return f"Weekday {day}"  # gleicher Key wie Weekly
                 
-            month_match = re.search(r"day\s+(\d+).*only in\s+([a-z]+)", desc)
+            month_match = re.search(r"day\s+(\d+).*?only in\s+([a-zA-Z]+)", desc)
             if month_match:
                 day_num = month_match.group(1)
                 month_name = month_match.group(2)
@@ -145,9 +145,6 @@ def is_task_due_today(task):
         except Exception:
             return False
 
-    elif key == "Daily":
-        return True
-
     return False
 
 def get_task_key_for_today(task):
@@ -166,8 +163,6 @@ def get_task_key_for_today(task):
         return f"Monthday_{today.day}_Month_{today.month}"
     elif key.startswith("cron"):
         return f"cron_today_{task.id}"  # eindeutiger Key für Cron-Task
-    elif key == "Daily":
-        return "Daily"
     
     return None
 
@@ -183,6 +178,9 @@ class AutoCreateMaintenancePlans(JobRunner):
     def run(self, *args, **kwargs):
         assigned_count = 0
         grouped_tasks = {}
+        
+        for plan in MaintenancePlans.objects.filter(grouping_key="Today"):
+            plan.maintenance_tasks.clear()
 
         # Alle Wartungsaufgaben inkl. zugehörigem Zeitfenster laden
         for task in MaintenanceTasks.objects.select_related("maintenance_windows").all():
