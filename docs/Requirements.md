@@ -11,7 +11,7 @@
 - monthly sollte first execution heißen 
 - danach eine routine für spezifischer tag im monat 
 
-auch ein monthly ohne festen tag wo ich sagen kann das muss halt einmal im monat gemacht werden
+- auch ein monthly ohne festen tag wo ich sagen kann das muss halt einmal im monat gemacht werden
 
 ## Maintenance Task
 - es gibt eine Task Model
@@ -25,3 +25,4 @@ auch ein monthly ohne festen tag wo ich sagen kann das muss halt einmal im monat
 - datums pläne auch mit den wochentag abgleichen
 - entfernung der tasks aus dem Plan Tasks for Today muss implementiert werden und ich muss mir auch mal um die tasks löschung gedanken machen
 - bei den plänen auch den week_in_month mitnehmen für die weekly
+- ich sollte schaun, das ich vllt ab einem zeitpunk pläne tasks und actions lösche

@@ -92,8 +92,7 @@
                 }
 
                 if (
-                    recurrenceValue === "weekday_occurrence" ||
-                    recurrenceValue === "workday_occurrence"
+                    recurrenceValue === "special_ordinal"
                 ) {
                     specialordinalContainer.style.display = '';
                 } else {
@@ -161,41 +160,34 @@
         }
 
         function updateCronDescription() {
-            const scheduleValue = schedulefields.value;
-            const recurrenceValue = recurrencefield.value;
-            
-             if (
-                scheduleValue === "recurring" &&
-                (recurrenceValue === "weekday_occurrence" || recurrenceValue === "workday_occurrence")
-            ) {
-                const raw = specialordinal?.value || "";
+            const raw = specialordinal?.value || "";
 
-                let helpText = document.getElementById("id_special_ordinal_helptext");
-                if (!helpText) {
-                    helpText = document.createElement("small");
-                    helpText.id = "id_special_ordinal_helptext";
-                    helpText.className = "form-text text-muted";
-                    specialordinal.insertAdjacentElement("afterend", helpText);
-                }
+            let helpText = document.getElementById("id_special_ordinal_helptext");
+            if (!helpText) {
+                helpText = document.createElement("small");
+                helpText.id = "id_special_ordinal_helptext";
+                helpText.className = "form-text text-muted";
+                specialordinal.insertAdjacentElement("afterend", helpText);
+            }
 
-                if (!validateCron(raw)) {
-                    helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
-                    specialordinal.setCustomValidity("Ungültiger Cron-Ausdruck");
-                } else {
-                    try {
-                        const description = cronstrue.toString(raw);
-                        helpText.textContent = description;
-                        specialordinal.setCustomValidity("");
-                    } catch (e) {
-                        helpText.textContent = "❌ Fehler beim Interpretieren des Ausdrucks";
-                        specialordinal.setCustomValidity("Fehler beim Interpretieren des Ausdrucks");
-                    }
-                }
-            } else {
-                // Wenn Special Ordinal nicht relevant ist, Fehler zurücksetzen
+            if (!raw) {
+                helpText.textContent = "Enter a cron expression (e.g., 0 0 * * 1). A readable description will be displayed below.";
                 specialordinal.setCustomValidity("");
-                const helpText = document.getElementById("id_special_ordinal_helptext");
-                if (helpText) helpText.textContent = "";
+                return;
+            }
+
+            if (!validateCron(raw)) {
+                helpText.textContent = "❌ Ungültiger Cron-Ausdruck";
+                specialordinal.setCustomValidity("Ungültiger Cron-Ausdruck");
+            } else {
+                try {
+                    const description = cronstrue.toString(raw);
+                    helpText.textContent = description;  // ersetzt Hinweis durch Beschreibung
+                    specialordinal.setCustomValidity("");
+                } catch (e) {
+                    helpText.textContent = "❌ Fehler beim Interpretieren des Ausdrucks";
+                    specialordinal.setCustomValidity("Fehler beim Interpretieren des Ausdrucks");
+                }
             }
         }
 
@@ -208,3 +200,4 @@
     </script>
     
 {% endblock %}
+

@@ -24,15 +24,15 @@ class RecurrenceTypeChoices(ChoiceSet):
         DAILY = 'daily'
         WEEKLY = 'weekly'
         MONTHLY = 'monthly'
-        WEEKDAY_OCCURRENCE = 'weekday_occurrence'
-        WORKDAY_OCCURRENCE = 'workday_occurrence'
+        Special_Ordinal = 'special_ordinal'
+        
 
         CHOICES = [
             (DAILY, 'Daily'),
             (WEEKLY, 'Weekly'),
             (MONTHLY, 'Monthly'),
-            (WEEKDAY_OCCURRENCE, 'x.  weekday of the month'),
-            (WORKDAY_OCCURRENCE, 'x. workday of the month'),
+            (Special_Ordinal, 'Cron Tab'),
+            
         ]
 class Weekday(ChoiceSet):
         key = 'weekday'
