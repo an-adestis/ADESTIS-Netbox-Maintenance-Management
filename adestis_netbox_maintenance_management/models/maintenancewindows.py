@@ -10,17 +10,18 @@ from django import forms
 from django.contrib.postgres.fields import ArrayField 
 from datetime import timedelta
 from crontab import CronTab
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 __all__ = (
     'MaintenanceWindows',
     'Weekday',
     'ScheduleTypeModeChoices',
-    'RecurrenceTypeChoices',
-    'Weekday',
+    'RecurrenceTypeChoices'
 )
 class RecurrenceTypeChoices(ChoiceSet):
 
+        SELECT = 'select'
         DAILY = 'daily'
         WEEKLY = 'weekly'
         MONTHLY = 'monthly'
@@ -28,12 +29,24 @@ class RecurrenceTypeChoices(ChoiceSet):
         
 
         CHOICES = [
+            (SELECT, 'Select'),
             (DAILY, 'Daily'),
             (WEEKLY, 'Weekly'),
             (MONTHLY, 'Monthly'),
             (Special_Ordinal, 'Cron Tab'),
             
         ]
+        
+        
+DAY_CHOICES = [
+    (1, "1st"), (2, "2nd"), (3, "3rd"), (4, "4th"), (5, "5th"),
+    (6, "6th"), (7, "7th"), (8, "8th"), (9, "9th"), (10, "10th"),
+    (11, "11th"), (12, "12th"), (13, "13th"), (14, "14th"), (15, "15th"),
+    (16, "16th"), (17, "17th"), (18, "18th"), (19, "19th"), (20, "20th"),
+    (21, "21st"), (22, "22nd"), (23, "23rd"), (24, "24th"), (25, "25th"),
+    (26, "26th"), (27, "27th"), (28, "28th"), (29, "29th"), (30, "30th"),
+    (31, "31st"),
+]
 class Weekday(ChoiceSet):
         key = 'weekday'
         
@@ -55,33 +68,16 @@ class Weekday(ChoiceSet):
             (SUN, 'Sunday'),      
         ]
         
-class Workday(ChoiceSet):
-        key = 'weekday'
-        
-        MON = 'monday'
-        TUE = 'tuesday'
-        WED = 'wednesday'
-        THU = 'thursday'
-        FRI = 'friday'
-
-        CHOICES = [
-            (MON, 'Monday'),      
-            (TUE, 'Tuesday'),     
-            (WED, 'Wednesday'),   
-            (THU, 'Thursday'),    
-            (FRI, 'Friday'),            
-        ]
-        
 class ScheduleTypeModeChoices(ChoiceSet):
 
         key = 'schedule_type_mode'
 
-        SELECT_File = 'select'
+        SELECT = 'select'
         RECURRING = 'recurring'
         ONE_TIME = 'one_time'
 
         CHOICES = [
-            (SELECT_File, 'Select'),
+            (SELECT, _('Select')),
             (RECURRING, _('Recurring')),
             (ONE_TIME, _('One-time')),
         ]
@@ -114,7 +110,7 @@ class MaintenanceWindows(NetBoxModel):
         blank = True
     )
         
-    schedule_type = django_models.CharField(max_length=20, choices=ScheduleTypeModeChoices, null=False, blank=False, default=ScheduleTypeModeChoices.SELECT_File)
+    schedule_type = django_models.CharField(max_length=20, choices=ScheduleTypeModeChoices, null=False, blank=False, default=ScheduleTypeModeChoices.SELECT)
     
     start_day = django_models.DateField(
         blank=True,
@@ -129,7 +125,7 @@ class MaintenanceWindows(NetBoxModel):
     recurrence_type = django_models.CharField(
         max_length=20,
         choices=RecurrenceTypeChoices,
-        default=RecurrenceTypeChoices.DAILY,
+        default=RecurrenceTypeChoices.SELECT,
         blank=True,
         null=True
     )
@@ -145,6 +141,16 @@ class MaintenanceWindows(NetBoxModel):
     monthdays = django_models.DateField(
         blank=True,
         null=True,
+        verbose_name=("First Execution")
+    )
+    
+    day_of_month = django_models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Day of Month",
+        help_text="Specify the day of the month for monthly recurrence",
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        choices=DAY_CHOICES
     )
 
     special_ordinal = django_models.CharField(

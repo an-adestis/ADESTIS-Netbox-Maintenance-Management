@@ -56,7 +56,9 @@ class MaintenancePlansBulkImportView(generic.BulkImportView):
     
 @register_model_view(MaintenancePlans, name='plans_tasks')
 class TasksAffectedMaintenancePlansView(generic.ObjectChildrenView):
-    queryset = MaintenancePlans.objects.all()
+    queryset = MaintenancePlans.objects.annotate(
+        min_start_time=Min("maintenance_windows__start_time")
+    )
     child_model= MaintenanceTasks
     table = MaintenanceTasksTable
     # template_name = "adestis_netbox_maintenance_management/maintenance_actions_device.html"

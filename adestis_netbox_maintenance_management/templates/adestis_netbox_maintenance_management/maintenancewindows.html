@@ -144,9 +144,17 @@
               {% if object.schedule_type == 'recurring'%}
                 {% if object.recurrence_type == 'monthly' and object.monthdays %}
                   <tr>
-                    <th scope='row'>{% trans "Monthdays" %}</th>
+                    <th scope='row'>{% trans "First Execution" %}</th>
                     <td>{% if object.monthdays %}
                       {{ object.monthdays }}
+                    {% else %}
+                      <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}</td>
+                  </tr>
+                  <tr>
+                    <th scope='row'>{% trans "Day of Month" %}</th>
+                    <td>{% if object.day_of_month %}
+                      {{ object.day_of_month }}
                     {% else %}
                       <span class="text-muted">{% trans "None" %}</span>
                     {% endif %}</td>

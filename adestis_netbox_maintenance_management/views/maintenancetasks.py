@@ -13,6 +13,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from utilities.views import ViewTab, register_model_view
+from django.db.models import Min
 
 
 __all__ = (
@@ -274,6 +275,7 @@ class DeviceAffectedMaintenanceTasksView(generic.ObjectChildrenView):
 @register_model_view(MaintenanceTasks, name='virtual_machine')
 class MaintenanceTasksAffectVirtualMachineView(generic.ObjectChildrenView):
     queryset = MaintenanceTasks.objects.all()
+
     child_model= VirtualMachine
     table = VirtualMachineTableMaintenanceActions
     # template_name = "adestis_netbox_maintenance_management/virtual_machine.html"

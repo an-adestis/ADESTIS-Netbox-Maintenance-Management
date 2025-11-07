@@ -34,7 +34,7 @@ class MaintenanceWindowsForm(NetBoxModelForm):
     
     
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'monthdays', 'special_ordinal', 'week_in_month', name=_('Maintenance Windows')),
+        FieldSet('name', 'description', 'tags', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'monthdays', 'day_of_month', 'special_ordinal', 'week_in_month', name=_('Maintenance Windows')),
     )
     
     class Meta:
@@ -50,6 +50,7 @@ class MaintenanceWindowsForm(NetBoxModelForm):
             'recurrence_type',
             'weekdays',
             'monthdays', 
+            'day_of_month',
             'special_ordinal',
             'week_in_month'
         ]
@@ -98,7 +99,7 @@ class MaintenanceWindowsBulkEditForm(NetBoxModelBulkEditForm):
     model = MaintenanceWindows
 
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'comments', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal', name=_('Maintenance Windows')),
+        FieldSet('name', 'description', 'tags', 'comments', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', name=_('Maintenance Windows')),
     )
 
     nullable_fields = [
@@ -113,7 +114,7 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
         FieldSet('q', 'index',),
         FieldSet('name', 'tag', 'schedule_type',  name=_('Maintenanc Windows')),
         FieldSet('start_day', 'end_day', name=_("One Time")),
-        FieldSet('recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal', name=_("Recurring")),
+        FieldSet('recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', name=_("Recurring")),
         FieldSet('start_time', 'end_time', name=_("Time"))
     )
     
@@ -142,13 +143,18 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
         choices=Weekday
     )
     
-    week_in_month = forms.IntegerField(
-        required=False
+    day_of_month = forms.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=31,
+        label=_("Day of Month"),
+        help_text=_("Specify the day of the month for monthly recurrence")
     )
     
     monthdays = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label=_("First Execution")
     )
     
     start_time = forms.TimeField(
@@ -173,5 +179,5 @@ class MaintenanceWindowsCSVForm(NetBoxModelImportForm):
 
     class Meta:
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal']
+        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceWindows_list'

@@ -35,7 +35,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 window.weekdays,
                 window.week_in_month,
                 window.monthdays,
-                
+                window.day_of_month,
                 window.start_time,
                 window.end_time,
                 window.recurrence_type,
@@ -46,6 +46,17 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 if window.week_in_month:
                     label += f" ({window.get_week_in_month_display()})"
                 return label
+            
+            if window.monthdays:
+                # Einfach den Tag als Zahl nehmen und als String anhängen
+                label = str(window.monthdays.day)
+                
+                # Wenn day_of_month gesetzt ist (ChoiceField), einfach den Text anhängen
+                if window.day_of_month:
+                    label += f" ({window.get_day_of_month_display()})"
+                
+                return label
+
             
             cron_expr = window.special_ordinal
             if cron_expr:
@@ -65,11 +76,24 @@ class AutoCreateMaintenanceTasks(JobRunner):
         for window in windows:
             actions = MaintenanceActions.objects.filter(maintenance_window=window).all()
 
+            
 
             for action in actions:
-                    if not MaintenanceTasks.objects.filter(maintenance_action=action).exists():
+                
+                
+                    
+                if not MaintenanceTasks.objects.filter(maintenance_action=action).exists():
+                    
+                        schedule_label = get_schedule_label_or_today(window)
+
+                        # Prüfen, ob das Label schon im Window-Namen steht
+                        if schedule_label.lower() in window.name.lower():
+                            task_name = window.name
+                        else:
+                            task_name = f"{window.name} {schedule_label}"
+                            
                         task = MaintenanceTasks.objects.create(
-                            name = f"{window.name} {get_schedule_label_or_today(window)}",
+                            name = task_name,
                             maintenance_action=action, 
                             maintenance_windows = window,
                             comments = action.comments

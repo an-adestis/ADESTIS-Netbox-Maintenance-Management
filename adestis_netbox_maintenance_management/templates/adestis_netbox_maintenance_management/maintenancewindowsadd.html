@@ -5,19 +5,9 @@
 {% load plugins %}
 {% load static %}
 
-
-
-{% block head %}
-    <script type="text/javascript" src="{% static 'adestis_netbox_maintenance_management/js/helloworld.js' %}"></script>
-{% endblock %}
-
-
 {% block content %}
   {{ block.super }}
     <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
-
-
-    <script type="text/javascript" src="{% static 'plugins:adestis_netbox_maintenance_management/helloworld.js' %}"></script>
 
   <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -32,6 +22,7 @@
             var weekdaysfield = document.getElementById("id_weekdays")
             var weekinmonth = document.getElementById("id_week_in_month-ts-control")
             var monthdaysfield = document.getElementById("id_monthdays")
+            var dayofthemonthfield = document.getElementById("id_day_of_month")
 
             var specialordinal = document.getElementById("id_special_ordinal")
             
@@ -43,8 +34,9 @@
             const weekdayContainer = weekdaysfield.closest(".row.mb-3");
             const weekinmonthContainer = weekinmonth.closest(".row.mb-3");
             const monthdayContainer = monthdaysfield.closest(".row.mb-3");
-            
-            const specialordinalContainer = specialordinal.closest(".row.mb-3")
+            const dayofContainer = dayofthemonthfield.closest(".row.mb-3");
+
+            const specialordinalContainer = specialordinal.closest(".row.mb-3");
 
             startContainer.style.display = 'none'
             stopContainer.style.display = 'none'
@@ -53,6 +45,7 @@
             weekdayContainer.style.display = 'none'
             weekinmonthContainer.style.display = 'none'
             monthdayContainer.style.display = 'none'
+            dayofContainer.style.display = 'none'
 
             specialordinalContainer.style.display = 'none'
 
@@ -87,8 +80,10 @@
 
                 if (recurrenceValue === "monthly") {
                     monthdayContainer.style.display = '';
+                    dayofContainer.style.display = '';
                 } else {
                     monthdayContainer.style.display = 'none';
+                    dayofContainer.style.display = 'none';
                 }
 
                 if (
@@ -102,6 +97,7 @@
                 // Alle recurrence-Felder ausblenden, wenn nicht "recurring"
                 weekdayContainer.style.display = 'none';
                 monthdayContainer.style.display = 'none';
+                dayofContainer.style.display = 'none';
                 specialordinalContainer.style.display = 'none';
                 weekinmonthContainer.style.display = 'none';
             }
@@ -113,6 +109,32 @@
 
         // Initiale Sichtbarkeit setzen
         updateVisibility();
+
+        function syncDayOfMonth() {
+            if (!monthdaysfield.value) return;
+
+            const day = new Date(monthdaysfield.value).getDate();
+            console.log("Parsed day:", day);
+
+            // Prüfe, ob TomSelect aktiv ist
+            if (dayofthemonthfield.tomselect) {
+                console.log("TomSelect detected, setting value via TomSelect");
+                dayofthemonthfield.tomselect.setValue(day.toString());
+            } else {
+                console.log("Standard select detected");
+                dayofthemonthfield.value = day.toString();
+                dayofthemonthfield.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            console.log("day_of_month gesetzt auf:", day);
+        }
+
+        monthdaysfield.addEventListener("input", syncDayOfMonth);
+        monthdaysfield.addEventListener("change", syncDayOfMonth);
+        syncDayOfMonth();
+
+
+
         const helpText = document.getElementById("id_special_ordinal_helptext");
 
         function isValidCronPart(part, min, max) {

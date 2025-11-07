@@ -12,6 +12,7 @@ from netbox.tables.columns import BooleanColumn
 from django.utils.safestring import mark_safe
 from netbox.tables.columns import TemplateColumn
 from django.utils.safestring import mark_safe
+from django.db.models import Min, Max
 
 class MaintenanceTasksTable(NetBoxTable):
     comments = columns.MarkdownColumn()
@@ -87,12 +88,37 @@ class MaintenanceTasksTable(NetBoxTable):
         linkify= True
     )
     
+        # 👉 Hier die neuen Felder aus dem verknüpften Modell:
+    start_time = tables.TimeColumn(
+        accessor="maintenance_windows.start_time",
+        verbose_name="Start Time",
+        format="H:i",
+    )
+
+    end_time = tables.TimeColumn(
+        accessor="maintenance_windows.end_time",
+        verbose_name="End Time",
+        format="H:i" 
+    )
+    
     class Meta(NetBoxTable.Meta):
 
         model = MaintenanceTasks
         
-        fields = ['virtual_machine', 'device', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
-        default_columns = [ 'virtual_machine', 'device', 'name', 'maintenance_windows', 'maintenance_action', 'comments']
+        fields = ['virtual_machine', 'device', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
+        default_columns = [ 'virtual_machine', 'device', 'name', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
+
+    # Sortierbar machen
+    def order_start_time(self, queryset, is_descending):
+        queryset = queryset.annotate(min_start=Min('maintenance_windows__start_time'))
+        order_field = '-min_start' if is_descending else 'min_start'
+        return queryset.order_by(order_field), True
+
+    def order_end_time(self, queryset, is_descending):
+        queryset = queryset.annotate(max_end=Max('maintenance_windows__end_time'))
+        order_field = '-max_end' if is_descending else 'max_end'
+        return queryset.order_by(order_field), True
+
 
 
         
