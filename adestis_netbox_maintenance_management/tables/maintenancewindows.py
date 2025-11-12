@@ -36,8 +36,8 @@ class MaintenanceWindowsTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal', 'virtual_machine']
-        default_columns = [ 'name', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal', 'start_day', 'end_day', 'virtual_machine']
+        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'virtual_machine']
+        default_columns = [ 'name', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'start_day', 'end_day', 'virtual_machine']
         
 class MaintenanceWindowsTableTab(MaintenanceWindowsTable):   
     actions = columns.ActionsColumn(
@@ -46,7 +46,7 @@ class MaintenanceWindowsTableTab(MaintenanceWindowsTable):
     
     class Meta(MaintenanceWindowsTable.Meta):
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal', 'actions']
+        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'actions']
         default_columns = [ 'name', 'schedule_type', 'actions' ]
         
 class VirtualMachineTableMaintenanceWindows(VirtualMachineTable):

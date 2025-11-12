@@ -34,7 +34,7 @@ class MaintenanceTasksTable(NetBoxTable):
     
     def render_virtual_machine(self, value, record):
         # Hole alle VMs geordnet nach Name
-        vms = value.all().order_by("name")
+        vms = value.all()
 
         # HTML für Checkboxen (untereinander mit Abstand)
         html_parts = []
@@ -93,31 +93,32 @@ class MaintenanceTasksTable(NetBoxTable):
         accessor="maintenance_windows.start_time",
         verbose_name="Start Time",
         format="H:i",
+        order_by = ('start_time',)
     )
 
     end_time = tables.TimeColumn(
         accessor="maintenance_windows.end_time",
         verbose_name="End Time",
-        format="H:i" 
+        format="H:i",
+    )
+    
+    vm_comments = tables.TemplateColumn(
+        template_code="""
+            {% for vm in record.virtual_machine.all %}
+                <p>{{ vm.comments|default:"-" }}</p>
+            {% endfor %}
+        """,
+        verbose_name="VM Comments",
+        orderable=False
     )
     
     class Meta(NetBoxTable.Meta):
 
         model = MaintenanceTasks
         
-        fields = ['virtual_machine', 'device', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
-        default_columns = [ 'virtual_machine', 'device', 'name', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
-
-    # Sortierbar machen
-    def order_start_time(self, queryset, is_descending):
-        queryset = queryset.annotate(min_start=Min('maintenance_windows__start_time'))
-        order_field = '-min_start' if is_descending else 'min_start'
-        return queryset.order_by(order_field), True
-
-    def order_end_time(self, queryset, is_descending):
-        queryset = queryset.annotate(max_end=Max('maintenance_windows__end_time'))
-        order_field = '-max_end' if is_descending else 'max_end'
-        return queryset.order_by(order_field), True
+        fields = ['virtual_machine', 'vm_comments', 'device', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
+        default_columns = [ 'virtual_machine', 'vm_comments', 'device', 'name', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
+    
 
 
 

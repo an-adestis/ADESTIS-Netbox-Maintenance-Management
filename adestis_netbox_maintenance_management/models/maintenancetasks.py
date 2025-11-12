@@ -64,7 +64,7 @@ class MaintenanceTasks(NetBoxModel):
     class Meta:
         verbose_name_plural = "Maintenance Tasks"
         verbose_name = 'Maintenance Tasks'
-        ordering = ('name',)
+        ordering = ('name', 'maintenance_windows__start_time')
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenancetasks', args=[self.pk])

@@ -91,6 +91,7 @@ class MaintenanceWindows(NetBoxModel):
             (3, "Third"),
             (4, "Fourth"),
             (5, "Last"),  # 5 wird als "Last" interpretiert
+            (6, "Every"),
         ],
         blank = True,
         null = True

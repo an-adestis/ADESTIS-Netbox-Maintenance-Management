@@ -93,8 +93,8 @@ class MaintenancePlans(NetBoxModel):
         verbose_name = 'Maintenance Plans'
         ordering = ('name',)
 
-    def get_absolute_url(self):
-        return reverse('plugins:adestis_netbox_maintenance_management:maintenanceplans', args=[self.pk])
+    # def get_absolute_url(self):
+    #     return reverse('plugins:adestis_netbox_maintenance_management:maintenanceplans', args=[self.pk])
 
     def __str__(self):
         return self.name 

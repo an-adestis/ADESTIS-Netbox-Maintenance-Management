@@ -29,9 +29,6 @@ _maintenanceplans = [
         link='plugins:adestis_netbox_maintenance_management:maintenanceplans_list',
         link_text='Maintenance Plans',
         permissions=["adestis_netbox_maintenance_management.maintenanceplans_list"],
-        buttons=(
-            PluginMenuButton('plugins:adestis_netbox_maintenance_management:maintenanceplans_add', 'Add', 'mdi mdi-plus-thick', ButtonColorChoices.GREEN, ["adestis_netbox_maintenance_management.maintenanceplans_add"]),
-        )
     ),    
 ]
 

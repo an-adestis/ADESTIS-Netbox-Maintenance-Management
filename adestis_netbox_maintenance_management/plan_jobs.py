@@ -101,8 +101,12 @@ def get_task_date(task):
     if window.recurrence_type == "monthly" and getattr(window, "monthdays", None):
         day_num = getattr(window.monthdays, "day", None)
         month_num = getattr(window.monthdays, "month", None)  # falls vorhanden
-        if day_num and month_num:
-            return f"Monthday {day_num} Month {month_num}"
+        if getattr(window, "day_of_month", None):
+            label = f"Monthday {day_num} Month {month_num} Next Month ({window.get_day_of_month_display()})"
+        else:
+            label = f"{day_num} Month {month_num}"
+
+        return label
             
 
     if getattr(window, "start_day", None):
@@ -144,6 +148,16 @@ def is_task_due_today(task):
             return ci.get_next(datetime).date() == today
         except Exception:
             return False
+        
+    elif key.startswith("Date"):
+        # Erwartetes Format: "Date 2025-11-14"
+        try:
+            date_str = key.replace("Date ", "").strip()
+            key_date = datetime.fromisoformat(date_str).date()
+            return key_date == today
+        except ValueError:
+            logger.warning(f"Ungültiges Datumsformat im Key: {key}")
+            return False
 
     return False
 
@@ -163,6 +177,8 @@ def get_task_key_for_today(task):
         return f"Monthday_{today.day}_Month_{today.month}"
     elif key.startswith("cron"):
         return f"cron_today_{task.id}"  # eindeutiger Key für Cron-Task
+    elif key.startswith("Date"):
+        return f"Monthday_{today.day}_Month_{today.month}"
     
     return None
 
@@ -213,6 +229,6 @@ class AutoCreateMaintenancePlans(JobRunner):
                 grouping_key=key,
                 defaults={"name": plan_name},
             )
-
+            
             plan.maintenance_tasks.set(tasks)
             assigned_count += len(tasks)
