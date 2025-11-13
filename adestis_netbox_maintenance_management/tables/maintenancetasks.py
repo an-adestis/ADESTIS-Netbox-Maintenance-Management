@@ -33,22 +33,39 @@ class MaintenanceTasksTable(NetBoxTable):
     )
     
     def render_virtual_machine(self, value, record):
-        # Hole alle VMs geordnet nach Name
         vms = value.all()
+        
+        html_parts = ['<ul style="list-style:none; padding-left:2px; width:500px;">']
 
-        # HTML für Checkboxen (untereinander mit Abstand)
-        html_parts = []
-        for vm in vms:
+        for i, vm in enumerate(vms):
+            # if i == max_visible:
+            #     remaining = len(vms) - max_visible
+            #     html_parts.append(f'<li><a href="#" onclick="document.getElementById(\'extra_vms_{record.id}\').style.display=\'block\'; this.style.display=\'none\'; return false;">+{remaining} more</a></li>')
+            #     html_parts.append(f'<div id="extra_vms_{record.id}" style="display:none;">')
+
             checkbox_id = f"checkbox_{record.id}_{vm.id}"
-            html_parts.append(f"""
-                <div style="margin-bottom:8px;">
-                    <label for="{checkbox_id}" style="margin-right:6px; pointer-events:none;">{vm.name}</label>
-                    <input 
-                        type="checkbox" 
-                        id="{checkbox_id}" 
-                        onclick="saveCheckboxState('{checkbox_id}')">
+            checkbox_html = f'<input type="checkbox" id="{checkbox_id}" onclick="saveCheckboxState(\'{checkbox_id}\')">'
+
+            vm_link = f'<a href="{vm.get_absolute_url()}" style="margin-right:6px;">{vm.name}</a>'
+            
+
+            html_parts.append(f'''
+            <li style="padding:6px 0; border-bottom:1px solid #ccc;">
+                <div style="
+                    display:inline-block; 
+                    width:500px;           /* maximale Breite der VM-Spalte */
+                    white-space:normal;    /* Zeilenumbruch erlauben */
+                    word-break:break-word; /* sehr lange Worte umbrechen */
+                    vertical-align:top;
+                ">
+                    {checkbox_html} {vm_link}
+                    <br>
+                    <small style="color:#ccc;">{getattr(vm, "comments", "-")}</small>
                 </div>
-            """)
+            </li>
+            ''')
+
+
 
         # JavaScript nur EINMAL anhängen
         # → prüft, ob Script schon existiert (damit es nur einmal eingefügt wird)
@@ -102,22 +119,12 @@ class MaintenanceTasksTable(NetBoxTable):
         format="H:i",
     )
     
-    vm_comments = tables.TemplateColumn(
-        template_code="""
-            {% for vm in record.virtual_machine.all %}
-                <p>{{ vm.comments|default:"-" }}</p>
-            {% endfor %}
-        """,
-        verbose_name="VM Comments",
-        orderable=False
-    )
-    
     class Meta(NetBoxTable.Meta):
 
         model = MaintenanceTasks
         
-        fields = ['virtual_machine', 'vm_comments', 'device', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
-        default_columns = [ 'virtual_machine', 'vm_comments', 'device', 'name', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
+        fields = ['virtual_machine', 'device', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
+        default_columns = [ 'virtual_machine', 'device', 'name', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
     
 
 

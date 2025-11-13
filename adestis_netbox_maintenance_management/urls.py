@@ -85,7 +85,7 @@ urlpatterns = (
     # Maintenance Plans
     path('maintenanceplans/', MaintenancePlansListView.as_view(),
          name='maintenanceplans_list'),
-    path('maintenanceplans/add/', MaintenancePlansEditView.as_view(),
+    path('maintenanceplans/', MaintenancePlansEditView.as_view(),
          name='maintenanceplans_add'),
     path('maintenanceplans/delete/', MaintenancePlansBulkDeleteView.as_view(),
          name='maintenanceplans_bulk_delete'),
