@@ -98,15 +98,15 @@ def get_task_date(task):
         return label
 
 
-    if window.recurrence_type == "monthly" and getattr(window, "monthdays", None):
-        day_num = getattr(window.monthdays, "day", None)
-        month_num = getattr(window.monthdays, "month", None)  # falls vorhanden
+    if window.recurrence_type == "monthly":
         if getattr(window, "day_of_month", None):
-            label = f"Monthday {day_num} Month {month_num} Next Month ({window.get_day_of_month_display()})"
-        else:
-            label = f"{day_num} Month {month_num}"
-
-        return label
+            # Verwende das aktuelle Monat, wenn kein month-Feld gesetzt ist
+            current_month = date.today().month
+            return f"Monthday {window.day_of_month} Month {current_month}"
+        elif getattr(window, "monthdays", None):
+            day_num = getattr(window.monthdays, "day", None)
+            month_num = getattr(window.monthdays, "month", date.today().month)
+            return f"Monthday {day_num} Month {month_num}"
             
 
     if getattr(window, "start_day", None):
