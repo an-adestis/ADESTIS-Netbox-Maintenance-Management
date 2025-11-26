@@ -8,6 +8,7 @@ from netbox.jobs import JobRunner
 from adestis_netbox_maintenance_management.models import (
     MaintenanceTasks,
     MaintenancePlannedActions,
+    TaskStatusChoices
 )
 import re
 from croniter import croniter
@@ -216,6 +217,10 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
 
         # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
+
+            # Wenn nach dem Filtern keine Tasks mehr übrig sind → Plan gar nicht erstellen
+            if not tasks:
+                continue
             
             plan_name = f"Plan for Tasks {key}"
 
