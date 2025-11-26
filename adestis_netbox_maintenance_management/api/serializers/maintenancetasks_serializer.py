@@ -12,7 +12,7 @@ class MaintenanceTasksSerializer(NetBoxModelSerializer):
     class Meta:
         model = MaintenanceTasks
         fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                  'custom_field_data', 'description', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device')
+                  'custom_field_data', 'description', 'status', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device')
         brief_fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                        'custom_field_data', 'description', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device')
+                        'custom_field_data', 'description', 'status', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device')
 

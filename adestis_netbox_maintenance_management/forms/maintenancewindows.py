@@ -32,15 +32,19 @@ __all__ = (
 
 class MaintenanceWindowsForm(NetBoxModelForm):
     
+    tenant = DynamicModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False
+    )
     
     fieldsets = (
-        FieldSet('name', 'description', 'tags', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'monthdays', 'day_of_month', 'special_ordinal', 'week_in_month', name=_('Maintenance Windows')),
+        FieldSet('name', 'tenant', 'description', 'tags', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'monthdays', 'day_of_month', 'special_ordinal', 'week_in_month', name=_('Maintenance Windows')),
     )
     
     class Meta:
         model = MaintenanceWindows
         
-        fields = ['name', 'description', 'tags', 'comments', 
+        fields = ['name', 'tenant', 'description', 'tags', 'comments', 
             'start_time',
             'end_time', 
             'schedule_type',
@@ -100,6 +104,7 @@ class MaintenanceWindowsBulkEditForm(NetBoxModelBulkEditForm):
 
     fieldsets = (
         FieldSet('name', 'description', 'tags', 'comments', 'start_time', 'end_time', 'schedule_type', 'start_day', 'end_day',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', name=_('Maintenance Windows')),
+        FieldSet('tenant', name=_("Tenant")),
     )
 
     nullable_fields = [
@@ -113,9 +118,16 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
     fieldsets = (
         FieldSet('q', 'index',),
         FieldSet('name', 'tag', 'schedule_type',  name=_('Maintenanc Windows')),
+        FieldSet('tenant_id', name=_("Tenant")),
         FieldSet('start_day', 'end_day', name=_("One Time")),
         FieldSet('recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', name=_("Recurring")),
         FieldSet('start_time', 'end_time', name=_("Time"))
+    )
+    
+    tenant_id = DynamicModelMultipleChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        label=_('Tenant')
     )
     
     schedule_type = forms.MultipleChoiceField(
@@ -176,8 +188,16 @@ class MaintenanceWindowsFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(model)
 
 class MaintenanceWindowsCSVForm(NetBoxModelImportForm):
+    
+    tenant = CSVModelChoiceField(
+        label=_('Tenant'),
+        queryset=Tenant.objects.all(),
+        required=True,
+        to_field_name='name',
+        help_text=_('Name of assigned tenant')
+    )
 
     class Meta:
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal']
+        fields = ['name', 'tenant', 'description', 'tags', 'comments', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceWindows_list'

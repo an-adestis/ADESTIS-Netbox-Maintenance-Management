@@ -49,22 +49,12 @@ class MaintenanceReportsBulkEditView(generic.BulkEditView):
     queryset = MaintenanceReport.objects.all()
     filterset = MaintenanceReportsFilterSet
     table = MaintenanceReportsTable
-    form =  MaintenancePlansBulkEditForm
+    form =  MaintenancePlannedActionsBulkEditForm
     
 
 class MaintenanceReportsBulkImportView(generic.BulkImportView):
     queryset = MaintenanceReport.objects.all()
-    model_form = MaintenancePlansCSVForm
+    model_form = MaintenancePlannedActionsCSVForm
     table = MaintenanceReportsTable
 
-# def report_pdf_kunde(request, tenant_id):
-#     context = get_kunden_report_data(tenant_id)
-#     html = get_template('reports/pdf_kunde.html').render(context)
-#     pdf = weasyprint.HTML(string=html).write_pdf()
-#     return HttpResponse(pdf, content_type='application/pdf')
 
-# def report_pdf_adestis(request):
-#     context = get_adestis_report_data()
-#     html = get_template('reports/pdf_adestis.html').render(context)
-#     pdf = weasyprint.HTML(string=html).write_pdf()
-#     return HttpResponse(pdf, content_type='application/pdf')

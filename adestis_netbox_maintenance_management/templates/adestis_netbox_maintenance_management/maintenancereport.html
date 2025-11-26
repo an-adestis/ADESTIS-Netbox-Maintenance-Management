@@ -25,9 +25,9 @@
                 {% endif %}</td>
                 </tr>
                 <tr>
-                    <th scope='row'>Maintenance Plans</th>
-                    <td>{% if object.maintenance_plans %}
-                        <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceplans' object.maintenance_plans.id %}"> {{ object.maintenance_plans.name|markdown }}</a>
+                    <th scope='row'>Planned Actions</th>
+                    <td>{% if object.maintenance_planned_actions %}
+                        <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceplannedactions' object.maintenance_planned_actions.id %}"> {{ object.maintenance_planned_actions.name|markdown }}</a>
                         {% else %}
                         <span class="text-muted">{% trans "None" %}</span>
                         {% endif %}

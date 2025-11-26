@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+import json
 from croniter import croniter
 from cron_descriptor import get_description
 import logging
@@ -6,14 +7,16 @@ import logging
 from netbox.jobs import JobRunner
 from adestis_netbox_maintenance_management.models import (
     MaintenanceTasks,
-    MaintenancePlans,
+    MaintenancePlannedActions,
 )
 import re
 from croniter import croniter
+from core.choices import JobIntervalChoices
+from netbox.jobs import JobRunner, system_job
 
 logger = logging.getLogger(__name__)
 
-task = MaintenanceTasks.objects.all()
+# task = MaintenanceTasks.objects.all()
 
 MONTH_MAP = {
     "January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6,
@@ -50,11 +53,19 @@ def get_grouping_key_for_date(day) -> str:
 
 
 def get_task_date(task):
-    
-    window = task.maintenance_windows
-    if not window:
-        return None
 
+    # try:
+    #     # logger.error("Type: "+type(task).__name__)
+    #     logger.error(task.__dict__)
+
+    #     window = task.maintenance_windows
+    #     logger.warning(f"Window: {window}")
+    # except Exception as e:
+    #     logger.error(f"ERROR in window: {e!r}")
+    logger.error(task)
+    logger.error(task.__dict__)
+    window = task.maintenance_windows
+    logger.warning(f"Window: {window}")
     # --- CRON-Logik ---
     if window.special_ordinal:
         try:
@@ -161,53 +172,37 @@ def is_task_due_today(task):
 
     return False
 
-def get_task_key_for_today(task):
-    """Gibt einen eindeutigen Key für die Gruppierung zurück, nur für heute fällige Tasks."""
-    if not is_task_due_today(task):
-        return None
-
-    key = get_task_date(task)
-    today = date.today()
-    
-    if key.startswith("date_"):
-        return key  # z. B. "date_20251031"
-    elif key.startswith("Weekday"):
-        return f"Weekday_{today.strftime('%A')}"  # z. B. "Weekday_Friday"
-    elif key.startswith("Monthday"):
-        return f"Monthday_{today.day}_Month_{today.month}"
-    elif key.startswith("cron"):
-        return f"cron_today_{task.id}"  # eindeutiger Key für Cron-Task
-    elif key.startswith("Date"):
-        return f"Monthday_{today.day}_Month_{today.month}"
-    
-    return None
-
-
-class AutoCreateMaintenancePlans(JobRunner):
+@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
     und Aufgaben anhand ihrer Zeitfenster gruppiert.
     """
     class Meta:
-        name = "Automatically Generated Maintenance Plans"
+        name = "Automatically Generated Planned Actions"
 
     def run(self, *args, **kwargs):
         assigned_count = 0
         grouped_tasks = {}
         
-        for plan in MaintenancePlans.objects.filter(grouping_key="Today"):
+        for plan in MaintenancePlannedActions.objects.filter(grouping_key="Today"):
             plan.maintenance_tasks.clear()
 
         # Alle Wartungsaufgaben inkl. zugehörigem Zeitfenster laden
-        for task in MaintenanceTasks.objects.select_related("maintenance_windows").all():
+        tasks = MaintenanceTasks.objects.select_related("maintenance_windows").all()
+        logger.error(f"Tasks:{tasks}")
+        for task in tasks:
             window = task.maintenance_windows
+            logger.error(f"Fancy task: {task}")
+            logger.error(f"Fancy window: {window}")
             if not window:
                 continue
+            # Gruppierungskey oder Datum bestimmen
+            task_date_or_key = get_task_date(task)
+            
             
             due_today = is_task_due_today(task)
 
-            # Gruppierungskey oder Datum bestimmen
-            task_date_or_key = get_task_date(task)
             
             if not task_date_or_key:
                 continue
@@ -225,7 +220,7 @@ class AutoCreateMaintenancePlans(JobRunner):
             plan_name = f"Plan for Tasks {key}"
 
             # Wartungsplan anhand des Gruppierungsschlüssels erstellen oder abrufen
-            plan, created = MaintenancePlans.objects.get_or_create(
+            plan, created = MaintenancePlannedActions.objects.get_or_create(
                 grouping_key=key,
                 defaults={"name": plan_name},
             )

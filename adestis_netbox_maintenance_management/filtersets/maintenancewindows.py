@@ -21,9 +21,22 @@ __all__ = (
 
 class MaintenanceWindowsFilterSet(NetBoxModelFilterSet):
     
+    tenant_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=Tenant.objects.all(),
+        label=_('Tenant (ID)'),
+    )
+    
+    tenant = django_filters.ModelMultipleChoiceFilter(
+        queryset=Tenant.objects.all(),
+        required=False,
+        field_name='tenant__name',
+        to_field_name='tenant',
+        label=_('Tenant (name)'),
+    )
+    
     class Meta:
         model = MaintenanceWindows
-        fields = ['id', 'name', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal']
+        fields = ['id', 'name', 'tenant', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal']
     
 
     def search(self, queryset, name, value):

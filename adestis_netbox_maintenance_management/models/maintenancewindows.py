@@ -95,7 +95,6 @@ class MaintenanceWindows(NetBoxModel):
         ],
         blank = True,
         null = True
-    
     )
 
     comments = django_models.TextField(
@@ -176,6 +175,15 @@ class MaintenanceWindows(NetBoxModel):
     end_time = django_models.TimeField(
         blank= True, 
         null=True,
+    )
+    
+    tenant = django_models.ForeignKey(
+         to = 'tenancy.Tenant',
+         on_delete = django_models.PROTECT,
+         related_name = 'windows_tenant',
+         null = True,
+         verbose_name='Tenant',
+         blank = True
     )
     
     class Meta:

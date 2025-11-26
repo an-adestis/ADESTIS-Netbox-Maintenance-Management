@@ -21,6 +21,10 @@ class MaintenanceWindowsTable(NetBoxTable):
         linkify=True
     )
     
+    tenant = tables.Column(
+        linkify=True
+    )
+    
     virtual_machine = columns.ManyToManyColumn(
         linkify=True
     )
@@ -36,8 +40,8 @@ class MaintenanceWindowsTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = MaintenanceWindows
-        fields = ['name', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'virtual_machine']
-        default_columns = [ 'name', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'start_day', 'end_day', 'virtual_machine']
+        fields = ['name', 'tenant', 'description', 'tags', 'comments', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'virtual_machine']
+        default_columns = [ 'name', 'tenant', 'schedule_type', 'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'day_of_month', 'special_ordinal', 'start_day', 'end_day', 'virtual_machine']
         
 class MaintenanceWindowsTableTab(MaintenanceWindowsTable):   
     actions = columns.ActionsColumn(

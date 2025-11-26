@@ -29,7 +29,8 @@ services:
     command:
     - /opt/netbox/venv/bin/python
     - /opt/netbox/netbox/manage.py
-    - rqworker
+    - rqworker 
+    - -v 3
     env_file: env/netbox.env
     user: 'unit:root'
     healthcheck:

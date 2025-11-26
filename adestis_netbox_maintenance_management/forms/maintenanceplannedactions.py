@@ -1,6 +1,7 @@
 from django import forms
 from netbox.forms import NetBoxModelForm, NetBoxModelFilterSetForm, NetBoxModelBulkEditForm, NetBoxModelImportForm
 from utilities.forms.fields import CommentField, CSVChoiceField, TagFilterField
+from adestis_netbox_maintenance_management.models.maintenanceactions import MaintenanceActions
 from utilities.forms import ConfirmationForm
 from django.utils.translation import gettext_lazy as _
 from utilities.forms.rendering import FieldSet
@@ -18,17 +19,17 @@ from utilities.forms import BulkEditForm, add_blank_choice, form_from_model
 from utilities.forms import get_field_value
 from utilities.forms.widgets import DatePicker
 from utilities.forms import get_field_value
-from adestis_netbox_maintenance_management.models import MaintenancePlans
+from adestis_netbox_maintenance_management.models import MaintenancePlannedActions
 
 __all__ = (
-    'MaintenancePlansForm',
-    'MaintenancePlansFilterForm',
-    'MaintenancePlansBulkEditForm',
-    'MaintenancePlansCSVForm',
+    'MaintenancePlannedActionsForm',
+    'MaintenancePlannedActionsFilterForm',
+    'MaintenancePlannedActionsBulkEditForm',
+    'MaintenancePlannedActionsCSVForm',
 )
 
 
-class MaintenancePlansForm(NetBoxModelForm):
+class MaintenancePlannedActionsForm(NetBoxModelForm):
     
     tenant = DynamicModelChoiceField(
         queryset=Tenant.objects.all(),
@@ -36,18 +37,18 @@ class MaintenancePlansForm(NetBoxModelForm):
     )
     
     fieldsets = (
-        FieldSet('name', 'refrence_number', 'description', 'tags',  name=_('Maintenance Plans')),
+        FieldSet('name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'maintenance_tasks', 'device', 'description', 'tags',  name=_('Planned Actions')),
         FieldSet('tenant', name=_("Tenant")),
     )
     
     class Meta:
-        model = MaintenancePlans
+        model = MaintenancePlannedActions
         
-        fields = ['name', 'refrence_number', 'tenant', 'description', 'tags']
+        fields = ['name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'maintenance_tasks', 'device', 'tenant', 'description', 'tags', 'comments']
         
-class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
+class MaintenancePlannedActionsBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
-        queryset=MaintenancePlans.objects.all(),
+        queryset=MaintenanceActions.objects.all(),
         widget=forms.MultipleHiddenInput, 
     )
     
@@ -55,11 +56,6 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         max_length = 150,
         label=_("Name"),
-    )
-    
-    refrence_number = forms.IntegerField(
-        required=False,
-        label=_("Refrence Number")
     )
     
     comments = forms.CharField(
@@ -73,11 +69,17 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         label=_("Description"),
     )
+    
+    maintenance_action = DynamicModelChoiceField(
+        queryset=MaintenanceActions.objects.all(),
+        required= False,
+        label=_('Maintenance Action'),
+    )
 
-    model = MaintenancePlans
+    model = MaintenancePlannedActions
 
     fieldsets = (
-        FieldSet('name', 'refrence_number', 'description', 'tags', name=_('Maintenance Plans')),
+        FieldSet('name', 'maintenance_action', 'description', 'tags', 'comments', name=_('Planned Actions')),
         FieldSet('tenant', name=_("Tenant")),
         
     )
@@ -86,7 +88,7 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
         'add_tags', 'remove_tags', 'description',
     ]
     
-class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
+class MaintenancePlannedActionsFilterForm(NetBoxModelFilterSetForm):
     
     tenant_id = DynamicModelMultipleChoiceField(
         queryset=Tenant.objects.all(),
@@ -94,11 +96,17 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
         label=_('Tenant')
     )
     
-    model = MaintenancePlans
+    maintenance_action = DynamicModelMultipleChoiceField(
+        queryset=MaintenanceActions.objects.all(),
+        required=False,
+        label=_('Maintenance Actions')
+    )
+    
+    model = MaintenancePlannedActions
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'tag', 'refrence_number', name=_('Maintenance Plans')),
+        FieldSet('name', 'tag', 'maintenance_action', name=_('Planned Actions')),
         FieldSet('tenant_id', name=_("Tenant")),
         
     )
@@ -109,8 +117,15 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
 
     tag = TagFilterField(model)
 
-class MaintenancePlansCSVForm(NetBoxModelImportForm):
-
+class MaintenancePlannedActionsCSVForm(NetBoxModelImportForm):
+    
+    maintenance_action = CSVModelChoiceField(
+        label=_('Maintenance Windows'),
+        queryset=MaintenanceActions.objects.all(),
+        required=True,
+        to_field_name='name',
+        help_text=_('Name of assigned maintenance window')
+    )
     
     tenant = CSVModelChoiceField(
         label=_('Tenant'),
@@ -121,8 +136,8 @@ class MaintenancePlansCSVForm(NetBoxModelImportForm):
     )
     
     class Meta:
-        model = MaintenancePlans
-        fields = ['name', 'tenant', 'refrence_number', 'description', 'tags']
-        default_return_url = 'plugins:adestis_netbox_maintenance_management:maintenanceplans_list'
+        model = MaintenancePlannedActions
+        fields = ['name', 'maintenance_action', 'tenant', 'description', 'tags', 'comments']
+        default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceActions_list'
 
 

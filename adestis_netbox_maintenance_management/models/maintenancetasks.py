@@ -12,14 +12,38 @@ from datetime import timedelta
 from adestis_netbox_maintenance_management.models import MaintenanceActions
 from core.choices import JobIntervalChoices
 
+from django.utils import timezone
+from datetime import timedelta
+
 __all__ = (
     'MaintenanceTasks',
+    'TaskStatusChoices',
 )
+
+class TaskStatusChoices(ChoiceSet):
+    key = 'MaintenanceTasks.status'
+
+    STATUS_ACTIVE = 'active'
+    STATUS_ARCHIVED = 'archived'
+    STATUS_PLANNED = 'planned'
+
+    CHOICES = [
+        (STATUS_ACTIVE, 'Active', 'green'),
+        (STATUS_ARCHIVED, 'Archived', 'red'),
+        (STATUS_PLANNED, 'Planned', 'blue'),
+    ]
 
 class MaintenanceTasks(NetBoxModel):
 
     comments = django_models.TextField(
         blank=True
+    )
+    
+    status = django_models.CharField(
+        max_length=50,
+        choices=TaskStatusChoices,
+        verbose_name='Status',
+        help_text='Status'
     )
     
     name = django_models.CharField(
@@ -68,17 +92,22 @@ class MaintenanceTasks(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse('plugins:adestis_netbox_maintenance_management:maintenancetasks', args=[self.pk])
+    
+    def get_status_color(self):
+        return TaskStatusChoices.colors.get(self.status)
 
     def __str__(self):
         return self.name 
     
     def save(self, *args, **kwargs):
-        from adestis_netbox_maintenance_management.plan_jobs import AutoCreateMaintenancePlans
-        AutoCreateMaintenancePlans.enqueue_once()
+        from adestis_netbox_maintenance_management.plan_jobs import AutoCreateMaintenancePlannedActions
+        AutoCreateMaintenancePlannedActions.enqueue(interval=JobIntervalChoices.INTERVAL_MINUTELY)
         return super().save(*args, **kwargs)
-
+    
     def sync(self):
-        from adestis_netbox_maintenance_management.plan_jobs import AutoCreateMaintenancePlans
-        AutoCreateMaintenancePlans.enqueue()
+        from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenancePlannedActions
+        AutoCreateMaintenancePlannedActions.enqueue()
+
+
     
     

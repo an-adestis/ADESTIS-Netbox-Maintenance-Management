@@ -32,7 +32,7 @@ __all__ = (
 class MaintenanceTasksForm(NetBoxModelForm):
     
     fieldsets = (
-        FieldSet('name', 'maintenance_action', 'maintenance_windows', 'description', 'tags',  name=_('Maintenance Tasks')),
+        FieldSet('name', 'status', 'maintenance_action', 'maintenance_windows', 'description', 'tags',  name=_('Maintenance Tasks')),
         FieldSet('virtual_machine', name=_("Virtual Machine")),
         FieldSet('device', name=_("Device")),
     )
@@ -40,7 +40,7 @@ class MaintenanceTasksForm(NetBoxModelForm):
     class Meta:
         model = MaintenanceTasks
         
-        fields = ['name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device', 'description', 'tags', 'comments']
+        fields = ['name', 'status', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device', 'description', 'tags', 'comments']
         
 class MaintenanceTasksBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
@@ -52,6 +52,11 @@ class MaintenanceTasksBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         max_length = 150,
         label=_("Name"),
+    )
+    
+    status = forms.ChoiceField(
+        required=False,
+        choices=TaskStatusChoices,
     )
     
     comments = forms.CharField(
@@ -93,7 +98,7 @@ class MaintenanceTasksBulkEditForm(NetBoxModelBulkEditForm):
     model = MaintenanceTasks
 
     fieldsets = (
-        FieldSet('name', 'maintenance_action', 'maintenance_windows', 'description', 'tags', 'comments', name=_('Maintenance Tasks')),
+        FieldSet('name', 'status', 'maintenance_action', 'maintenance_windows', 'description', 'tags', 'comments', name=_('Maintenance Tasks')),
         FieldSet('virtual_machine', name=_("Virtual Machine")),
         FieldSet('device', name=_("Device")),
         
@@ -104,6 +109,12 @@ class MaintenanceTasksBulkEditForm(NetBoxModelBulkEditForm):
     ]
     
 class MaintenanceTasksFilterForm(NetBoxModelFilterSetForm):
+    
+    status = forms.MultipleChoiceField(
+        choices=TaskStatusChoices,
+        required=False,
+        label=_('Status')
+    )
     
     maintenance_windows = DynamicModelMultipleChoiceField(
         queryset=MaintenanceActions.objects.all(),
@@ -133,7 +144,7 @@ class MaintenanceTasksFilterForm(NetBoxModelFilterSetForm):
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'tag', 'maintenance_action', 'maintenance_windows', name=_('Maintenance Tasks')),
+        FieldSet('name', 'status', 'tag', 'maintenance_action', 'maintenance_windows', name=_('Maintenance Tasks')),
         FieldSet('virtual_machine', name=_("Virtual Machine")), 
         FieldSet('device', name=_("Device")), 
     )
@@ -145,6 +156,12 @@ class MaintenanceTasksFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(model)
 
 class MaintenanceTasksCSVForm(NetBoxModelImportForm):
+    
+    status = CSVChoiceField(
+        choices=TaskStatusChoices,
+        help_text=_('Status'),
+        required=True,
+    )
     
     maintenance_action = CSVModelChoiceField(
         label=_('Maintenance Windows'),
@@ -180,7 +197,7 @@ class MaintenanceTasksCSVForm(NetBoxModelImportForm):
     
     class Meta:
         model = MaintenanceTasks
-        fields = ['name', 'maintenance_action', 'virtual_machine', 'device', 'description', 'tags', 'comments']
+        fields = ['name', 'status', 'maintenance_action', 'virtual_machine', 'device', 'description', 'tags', 'comments']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:MaintenanceActions_list'
 
 

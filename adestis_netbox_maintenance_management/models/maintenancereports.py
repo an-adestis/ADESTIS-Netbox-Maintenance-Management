@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from adestis_netbox_maintenance_management.models import MaintenancePlans, MaintenanceActions
+from adestis_netbox_maintenance_management.models import MaintenancePlannedActions, MaintenanceActions
 from django.db import models as django_models
 from django.urls import reverse
 from netbox.models import NetBoxModel
@@ -16,10 +16,10 @@ from adestis_netbox_maintenance_management.models import MaintenanceActions
 
 class MaintenanceReport(NetBoxModel):
     
-    maintenance_plans = django_models.ForeignKey(
-        to='adestis_netbox_maintenance_management.MaintenancePlans',
+    maintenance_planned_actions = django_models.ForeignKey(
+        to='adestis_netbox_maintenance_management.MaintenancePlannedActions',
         on_delete= django_models.PROTECT,
-        related_name='maintenance_plans',
+        related_name='maintenance_planned_actions',
         blank=False,
         null=False
     )

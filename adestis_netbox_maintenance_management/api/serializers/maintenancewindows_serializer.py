@@ -12,7 +12,7 @@ class MaintenanceWindowsSerializer(NetBoxModelSerializer):
     class Meta:
         model = MaintenanceWindows
         fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                  'custom_field_data', 'comments', 'description', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal')
+                  'custom_field_data', 'comments', 'description', 'tenant', 'schedule_type', 'start_day', 'end_day', 'start_time', 'end_time',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal')
         brief_fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                        'custom_field_data', 'comments', 'description', 'schedule_type', 'start_time', 'end_time',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal')
+                        'custom_field_data', 'comments', 'description', 'tenant', 'schedule_type', 'start_time', 'end_time',  'recurrence_type', 'weekdays', 'week_in_month', 'monthdays', 'special_ordinal')
 

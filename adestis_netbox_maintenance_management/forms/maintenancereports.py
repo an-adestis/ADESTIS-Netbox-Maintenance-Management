@@ -1,7 +1,7 @@
 from django import forms
 from netbox.forms import NetBoxModelForm, NetBoxModelFilterSetForm, NetBoxModelBulkEditForm, NetBoxModelImportForm
 from utilities.forms.fields import CommentField, CSVChoiceField, TagFilterField
-from adestis_netbox_maintenance_management.models.maintenanceplans import MaintenancePlans
+from adestis_netbox_maintenance_management.models.maintenanceplannedactions import MaintenancePlannedActions
 from utilities.forms import ConfirmationForm
 from django.utils.translation import gettext_lazy as _
 from utilities.forms.rendering import FieldSet
@@ -32,28 +32,28 @@ class MaintenanceReportsForm(NetBoxModelForm):
     
     
     fieldsets = (
-        FieldSet('name', 'maintenance_plans', name=_('Maintenance Reports')),
+        FieldSet('name', 'maintenance_planned_actions', name=_('Maintenance Reports')),
         
     )
     
     class Meta:
         model = MaintenanceReport
         
-        fields = ['name', 'maintenance_plans']
+        fields = ['name', 'maintenance_planned_actions']
         
 class MaintenanceReportsFilterForm(NetBoxModelFilterSetForm):
     
     
     
-    maintenance_plans_id = DynamicModelMultipleChoiceField(
-        queryset=MaintenancePlans.objects.all(),
+    maintenance_planned_actions_id = DynamicModelMultipleChoiceField(
+        queryset=MaintenancePlannedActions.objects.all(),
         required=False,
-        label=_('Maintenance Plans')
+        label=_('Planned Actions')
     )
     
     model = MaintenanceReport
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'maintenance_plans_id', 'tag',  name=_('Maintenanc Plans')),
+        FieldSet('name', 'maintenance_planned_actions_id', 'tag',  name=_('Maintenanc Planned Actions')),
     )

@@ -22,6 +22,8 @@ class MaintenanceTasksTable(NetBoxTable):
     name = columns.MarkdownColumn(
         linkify=True
     )
+    
+    status = ChoiceFieldColumn()
 
     description = columns.MarkdownColumn()
     
@@ -123,8 +125,8 @@ class MaintenanceTasksTable(NetBoxTable):
 
         model = MaintenanceTasks
         
-        fields = ['virtual_machine', 'device', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
-        default_columns = [ 'virtual_machine', 'device', 'name', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
+        fields = ['virtual_machine', 'device', 'status', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
+        default_columns = [ 'virtual_machine', 'device', 'name', 'status', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
     
 
 

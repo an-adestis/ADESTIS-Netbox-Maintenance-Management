@@ -10,6 +10,7 @@ from django import forms
 from django.contrib.postgres.fields import ArrayField 
 from datetime import timedelta
 from adestis_netbox_maintenance_management.models import MaintenanceWindows
+from core.choices import JobIntervalChoices
 
 
 __all__ = (
@@ -34,7 +35,7 @@ class MaintenanceActions(NetBoxModel):
     maintenance_window = django_models.ForeignKey(
         to='adestis_netbox_maintenance_management.MaintenanceWindows',
         on_delete= django_models.PROTECT,
-        related_name='maintenance_windows',
+        related_name='action_windows',
         blank=False,
         null=False
     )
@@ -66,7 +67,10 @@ class MaintenanceActions(NetBoxModel):
     
     def save(self, *args, **kwargs):
         from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
-        AutoCreateMaintenanceTasks.enqueue_once()
+        AutoCreateMaintenanceTasks.enqueue(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+        
+        self.object_type = "MaintenanceActions"
+        
         return super().save(*args, **kwargs)
 
     def sync(self):

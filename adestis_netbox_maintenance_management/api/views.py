@@ -1,7 +1,7 @@
-from adestis_netbox_maintenance_management.models import MaintenanceActions, MaintenanceWindows, MaintenancePlans, MaintenanceReport, MaintenanceTasks
-from adestis_netbox_maintenance_management.filtersets import MaintenanceActionsFilterSet, MaintenanceWindowsFilterSet, MaintenancePlansFilterSet, MaintenanceReportsFilterSet, MaintenanceTasksFilterSet
+from adestis_netbox_maintenance_management.models import MaintenanceActions, MaintenanceWindows, MaintenancePlannedActions, MaintenanceReport, MaintenanceTasks, MaintenancePlans
+from adestis_netbox_maintenance_management.filtersets import MaintenanceActionsFilterSet, MaintenanceWindowsFilterSet, MaintenancePlannedActionsFilterSet, MaintenanceReportsFilterSet, MaintenanceTasksFilterSet, MaintenancePlansFilterSet
 from netbox.api.viewsets import NetBoxModelViewSet
-from .serializers import MaintenanceActionsSerializer, MaintenanceWindowsSerializer, MaintenancePlansSerializer, MaintenanceReportSerializer, MaintenanceTasksSerializer
+from .serializers import MaintenanceActionsSerializer, MaintenanceWindowsSerializer, MaintenancePlannedActionsSerializer, MaintenanceReportSerializer, MaintenanceTasksSerializer, MaintenancePlansSerializer
 
 class MaintenanceWindowsViewSet(NetBoxModelViewSet):
     queryset = MaintenanceWindows.objects.prefetch_related(
@@ -17,12 +17,12 @@ class MaintenanceActionsViewSet(NetBoxModelViewSet):
     serializer_class = MaintenanceActionsSerializer
     filterset_class = MaintenanceActionsFilterSet
     
-class MaintenancePlansViewSet(NetBoxModelViewSet):
-    queryset = MaintenancePlans.objects.prefetch_related(
+class MaintenancePlannedActionsViewSet(NetBoxModelViewSet):
+    queryset = MaintenancePlannedActions.objects.prefetch_related(
         'tags'
     )
-    serializer_class = MaintenancePlansSerializer
-    filterset_class = MaintenancePlansFilterSet
+    serializer_class = MaintenancePlannedActionsSerializer
+    filterset_class = MaintenancePlannedActionsFilterSet
     
 
 class MaintenanceReportsViewSet(NetBoxModelViewSet):
@@ -38,3 +38,10 @@ class MaintenanceTasksViewSet(NetBoxModelViewSet):
     )
     serializer_class = MaintenanceTasksSerializer
     filterset_class = MaintenanceTasksFilterSet
+    
+class MaintenancePlansViewSet(NetBoxModelViewSet):
+    queryset = MaintenancePlans.objects.prefetch_related(
+        'tags'
+    )
+    serializer_class = MaintenancePlansSerializer
+    filterset_class = MaintenancePlansFilterSet

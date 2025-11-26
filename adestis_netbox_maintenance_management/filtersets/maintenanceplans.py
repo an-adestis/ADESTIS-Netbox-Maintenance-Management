@@ -1,4 +1,3 @@
-from adestis_netbox_maintenance_management.models import MaintenanceActions
 from adestis_netbox_maintenance_management.models import MaintenancePlans
 from netbox.filtersets import NetBoxModelFilterSet
 
@@ -36,16 +35,9 @@ class MaintenancePlansFilterSet(NetBoxModelFilterSet):
         label=_('Tenant (name)'),
     )
     
-    maintenance_action = django_filters.ModelMultipleChoiceFilter(
-        queryset=MaintenanceActions.objects.all(),
-        required = False,
-        field_name='maintenance_action',
-        label=_('Maintenance Action (name)'),
-    )
-    
     class Meta:
         model = MaintenancePlans
-        fields = ['id', 'name', 'maintenance_action', 'tenant']
+        fields = ['id', 'name', 'tenant', 'refrence_number']
     
 
     def search(self, queryset, name, value):

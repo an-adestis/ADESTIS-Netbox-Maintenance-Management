@@ -12,7 +12,7 @@ class MaintenanceReportSerializer(NetBoxModelSerializer):
     class Meta:
         model = MaintenanceReport
         fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                  'custom_field_data', 'maintenance_plans')
+                  'custom_field_data', 'maintenance_planned_actions')
         brief_fields = ('id', 'tags', 'custom_fields', 'display', 'created', 'last_updated',
-                        'custom_field_data', 'maintenance_plans')
+                        'custom_field_data', 'maintenance_planned_actions')
 

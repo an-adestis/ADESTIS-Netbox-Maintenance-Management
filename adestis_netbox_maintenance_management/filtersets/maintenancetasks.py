@@ -40,7 +40,7 @@ class MaintenanceTasksFilterSet(NetBoxModelFilterSet):
     
     class Meta:
         model = MaintenanceTasks
-        fields = ['id', 'name', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device']
+        fields = ['id', 'name', 'status', 'maintenance_action', 'maintenance_windows', 'virtual_machine', 'device']
     
 
     def search(self, queryset, name, value):
