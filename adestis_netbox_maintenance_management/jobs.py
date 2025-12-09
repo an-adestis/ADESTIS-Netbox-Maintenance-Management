@@ -11,7 +11,7 @@ from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today
 logger = logging.getLogger(__name__)
 
 
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+
 class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"
@@ -24,7 +24,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
 
         windows = MaintenanceWindows.objects.all()
         
-        logger.error(f"Test:{windows}")
+        # logger.error(f"Test:{windows}")
 
         for window in windows:
             actions = MaintenanceActions.objects.filter(maintenance_window=window).all()
@@ -34,17 +34,14 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 maintenance_tasks = MaintenanceTasks.objects.filter(maintenance_action=action).first()
 
                 if maintenance_tasks:
-                    # existing.maintenance_windows (NICHT existing.window)
                     if not is_task_due_today(maintenance_tasks):
                         maintenance_tasks.status = TaskStatusChoices.STATUS_ARCHIVED
                         maintenance_tasks.save()
+                    else:
+                        maintenance_tasks.status = TaskStatusChoices.STATUS_ACTIVE
+                        maintenance_tasks.save()
                     continue
-
-                # # action.maintenance_window (NICHT action.window)
-                # if not is_task_due_today(action.maintenance_window):
-                #     task_status = TaskStatusChoices.STATUS_ARCHIVED
-                # else:
-                #     task_status = TaskStatusChoices.STATUS_ACTIVE
+                    
 
                 # Taskname erstellen
                 schedule_label = str(window.start_day or window.weekdays or window.day_of_month or "Schedule")

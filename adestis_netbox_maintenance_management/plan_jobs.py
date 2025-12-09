@@ -63,10 +63,7 @@ def get_task_date(task):
     #     logger.warning(f"Window: {window}")
     # except Exception as e:
     #     logger.error(f"ERROR in window: {e!r}")
-    logger.error(task)
-    logger.error(task.__dict__)
     window = task.maintenance_windows
-    logger.warning(f"Window: {window}")
     # --- CRON-Logik ---
     if window.special_ordinal:
         try:
@@ -134,7 +131,7 @@ def is_task_due_today(task):
     today_month = today.month
 
     key = get_task_date(task)
-    logger.warning(f"Logger Key:{key}")
+    # logger.warning(f"Logger Key:{key}")
     if not key:
         return False
 
@@ -168,12 +165,11 @@ def is_task_due_today(task):
             key_date = datetime.fromisoformat(date_str).date()
             return key_date == today
         except ValueError:
-            logger.warning(f"Ungültiges Datumsformat im Key: {key}")
+            # logger.warning(f"Ungültiges Datumsformat im Key: {key}")
             return False
 
     return False
 
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
@@ -191,11 +187,10 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
 
         # Alle Wartungsaufgaben inkl. zugehörigem Zeitfenster laden
         tasks = MaintenanceTasks.objects.select_related("maintenance_windows").all()
-        logger.error(f"Tasks:{tasks}")
+        
+        # logger.error(f"Tasks:{tasks}")
         for task in tasks:
             window = task.maintenance_windows
-            logger.error(f"Fancy task: {task}")
-            logger.error(f"Fancy window: {window}")
             if not window:
                 continue
             # Gruppierungskey oder Datum bestimmen
@@ -217,9 +212,9 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
 
         # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
+            active_tasks = [task for task in tasks if task.status != TaskStatusChoices.STATUS_ARCHIVED]
 
-            # Wenn nach dem Filtern keine Tasks mehr übrig sind → Plan gar nicht erstellen
-            if not tasks:
+            if not active_tasks:
                 continue
             
             plan_name = f"Plan for Tasks {key}"
@@ -230,5 +225,5 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
                 defaults={"name": plan_name},
             )
             
-            plan.maintenance_tasks.set(tasks)
-            assigned_count += len(tasks)
+            plan.maintenance_tasks.set(active_tasks)
+            assigned_count += len(active_tasks)

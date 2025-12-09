@@ -183,7 +183,7 @@ class DeviceAssignMaintenanceActions(generic.ObjectEditView):
         device = get_object_or_404(self.queryset, pk=pk)
         form = self.form(data=request.GET, device = device)
         
-        logger.warning(f"device:{device}")
+        
         return render (request, self.template_name, {
             'device': device,
             'form': form,
