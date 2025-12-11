@@ -170,6 +170,7 @@ def is_task_due_today(task):
 
     return False
 
+@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
@@ -188,7 +189,7 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
         # Alle Wartungsaufgaben inkl. zugehörigem Zeitfenster laden
         tasks = MaintenanceTasks.objects.select_related("maintenance_windows").all()
         
-        # logger.error(f"Tasks:{tasks}")
+        logger.error(f"Job wurde ausgeführt")
         for task in tasks:
             window = task.maintenance_windows
             if not window:
@@ -212,10 +213,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
 
         # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
-            active_tasks = [task for task in tasks if task.status != TaskStatusChoices.STATUS_ARCHIVED]
-
-            if not active_tasks:
-                continue
             
             plan_name = f"Plan for Tasks {key}"
 
@@ -225,5 +222,5 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
                 defaults={"name": plan_name},
             )
             
-            plan.maintenance_tasks.set(active_tasks)
-            assigned_count += len(active_tasks)
+            plan.maintenance_tasks.set(tasks)
+            assigned_count += len(tasks)

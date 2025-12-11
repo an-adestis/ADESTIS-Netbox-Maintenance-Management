@@ -11,7 +11,7 @@ from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today
 logger = logging.getLogger(__name__)
 
 
-
+@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"
@@ -23,13 +23,12 @@ class AutoCreateMaintenanceTasks(JobRunner):
         skipped_count = 0
 
         windows = MaintenanceWindows.objects.all()
-        
-        # logger.error(f"Test:{windows}")
 
         for window in windows:
             actions = MaintenanceActions.objects.filter(maintenance_window=window).all()
 
             for action in actions:
+                logger.error(f"Tasks Job wurde ausgeführt")
 
                 maintenance_tasks = MaintenanceTasks.objects.filter(maintenance_action=action).first()
 
