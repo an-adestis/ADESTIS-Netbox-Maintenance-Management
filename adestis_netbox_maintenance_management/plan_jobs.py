@@ -170,6 +170,68 @@ def is_task_due_today(task):
 
     return False
 
+def is_task_due_in_future(task):
+    """Prüft, ob ein Task in der Zukunft fällig ist."""
+    today = date.today()
+    key = get_task_date(task)
+
+    if not key:
+        return False
+
+    # Normales Datumsformat
+    if key.startswith("date_"):
+        key_date = datetime.strptime(key.replace("date_", ""), "%Y%m%d").date()
+        return key_date > today
+
+    # Wochentag-Tasks → nächster Wochentag ermitteln
+    elif key.startswith("Weekday"):
+        today_weekday = today.weekday()
+        target_weekday = None
+
+        for day_name, wd_index in WEEKDAY_MAP.items():
+            if day_name in key:
+                target_weekday = wd_index
+                break
+
+        if target_weekday is None:
+            return False
+
+        # nächsten Vorkommnis-Tag berechnen
+        days_ahead = (target_weekday - today_weekday) % 7
+        if days_ahead == 0:
+            return False  # heute
+
+        return True  # liegt in der Zukunft
+
+    # Monatstag mit Monat
+    elif key.startswith("Monthday"):
+        parts = key.split()
+        day_num = int(parts[1])
+        month_num = int(parts[3])
+        key_date = date(today.year, month_num, day_num)
+        return key_date > today
+
+    # Cron Expression → nächstes Datum prüfen
+    elif key.startswith("cron"):
+        cron_expr = task.maintenance_windows.special_ordinal
+        try:
+            next_date = croniter(cron_expr, today).get_next(datetime).date()
+            return next_date > today
+        except Exception:
+            return False
+
+    # Single-Date Task
+    elif key.startswith("Date"):
+        try:
+            date_str = key.replace("Date ", "").strip()
+            key_date = datetime.fromisoformat(date_str).date()
+            return key_date > today
+        except ValueError:
+            return False
+
+    return False
+
+
 @system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
@@ -214,6 +276,11 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
         # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
             
+            all_archived = all(task.status == TaskStatusChoices.STATUS_ARCHIVED for task in tasks)
+
+            if all_archived:
+                continue  # → Nichts erstellen
+            
             plan_name = f"Plan for Tasks {key}"
 
             # Wartungsplan anhand des Gruppierungsschlüssels erstellen oder abrufen
@@ -224,3 +291,19 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             
             plan.maintenance_tasks.set(tasks)
             assigned_count += len(tasks)
+            
+        # ----------------------------------------------------
+        #   JETZT ARCHIVIERTE TASKS AUS PLÄNEN ENTFERNEN
+        #   UND LEERE PLÄNE LÖSCHEN
+        # ----------------------------------------------------
+        plans = MaintenancePlannedActions.objects.prefetch_related("maintenance_tasks")
+
+        for plan in plans:
+            archived_tasks = plan.maintenance_tasks.filter(
+                status=TaskStatusChoices.STATUS_ARCHIVED
+            )
+            if archived_tasks.exists():
+                plan.maintenance_tasks.remove(*archived_tasks)
+
+            if plan.maintenance_tasks.count() == 0:
+                plan.delete()

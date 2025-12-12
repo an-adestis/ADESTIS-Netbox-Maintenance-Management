@@ -6,7 +6,7 @@ import logging
 # from extras.jobs import Job
 from adestis_netbox_maintenance_management.models import MaintenanceWindows, MaintenanceActions, MaintenancePlannedActions, MaintenanceTasks, TaskStatusChoices
 from cron_descriptor import get_description, ExpressionDescriptor
-from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today
+from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today, is_task_due_in_future
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +33,18 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 maintenance_tasks = MaintenanceTasks.objects.filter(maintenance_action=action).first()
 
                 if maintenance_tasks:
-                    if not is_task_due_today(maintenance_tasks):
-                        maintenance_tasks.status = TaskStatusChoices.STATUS_ARCHIVED
-                        maintenance_tasks.save()
-                    else:
+                    if is_task_due_today(maintenance_tasks):
                         maintenance_tasks.status = TaskStatusChoices.STATUS_ACTIVE
                         maintenance_tasks.save()
-                    continue
-                    
+
+                    elif is_task_due_in_future(maintenance_tasks):
+                        maintenance_tasks.status = TaskStatusChoices.STATUS_PLANNED
+                        maintenance_tasks.save()
+
+                    else:
+                        # liegt in der Vergangenheit oder ohne Datum
+                        maintenance_tasks.status = TaskStatusChoices.STATUS_ARCHIVED
+                        maintenance_tasks.save()
 
                 # Taskname erstellen
                 schedule_label = str(window.start_day or window.weekdays or window.day_of_month or "Schedule")

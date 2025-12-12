@@ -67,7 +67,7 @@ class MaintenanceActions(NetBoxModel):
     
     def save(self, *args, **kwargs):
         from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
-        AutoCreateMaintenanceTasks.enqueue()        
+        AutoCreateMaintenanceTasks.enqueue(interval=JobIntervalChoices.INTERVAL_MINUTELY)        
         return super().save(*args, **kwargs)
 
     def sync(self):
