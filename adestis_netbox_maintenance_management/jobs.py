@@ -30,40 +30,51 @@ class AutoCreateMaintenanceTasks(JobRunner):
             for action in actions:
                 logger.error(f"Tasks Job wurde ausgeführt")
 
-                maintenance_tasks = MaintenanceTasks.objects.filter(maintenance_action=action).first()
+                # maintenance_tasks = MaintenanceTasks.objects.filter(maintenance_action=action).first()
 
-                if maintenance_tasks:
-                    if is_task_due_today(maintenance_tasks):
-                        maintenance_tasks.status = TaskStatusChoices.STATUS_ACTIVE
-                        maintenance_tasks.save()
+                     
+                # Prüfen, ob für diese Action bereits ein Task existiert
+                task = MaintenanceTasks.objects.filter(
+                    maintenance_action=action
+                ).first()
 
-                    elif is_task_due_in_future(maintenance_tasks):
-                        maintenance_tasks.status = TaskStatusChoices.STATUS_PLANNED
-                        maintenance_tasks.save()
+                # Wenn kein Task existiert → neuen erstellen
+                if not task:
 
+                    schedule_label = (
+                        str(window.start_day or window.weekdays or window.day_of_month or "Schedule")
+                    )
+
+                    if schedule_label.lower() in window.name.lower():
+                        task_name = window.name
                     else:
-                        # liegt in der Vergangenheit oder ohne Datum
-                        maintenance_tasks.status = TaskStatusChoices.STATUS_ARCHIVED
-                        maintenance_tasks.save()
+                        task_name = f"{window.name} {schedule_label}"
 
-                # Taskname erstellen
-                schedule_label = str(window.start_day or window.weekdays or window.day_of_month or "Schedule")
-                if schedule_label.lower() in window.name.lower():
-                    task_name = window.name
+                    task = MaintenanceTasks.objects.create(
+                        name=task_name,
+                        status=TaskStatusChoices.STATUS_PLANNED,  # Standard
+                        maintenance_action=action,
+                        maintenance_windows=window,
+                        comments=action.comments,
+                    )
+
+                    # Beziehungen setzen
+                    task.virtual_machine.set(action.virtual_machine.all())
+                    task.device.set(action.device.all())
+
+                    created_count += 1
+
+                # --- Status setzen ---
+                new_status = None
+
+                if is_task_due_today(task):
+                    new_status = TaskStatusChoices.STATUS_ACTIVE
+                elif is_task_due_in_future(task):
+                    new_status = TaskStatusChoices.STATUS_PLANNED
                 else:
-                    task_name = f"{window.name} {schedule_label}"
+                    new_status = TaskStatusChoices.STATUS_ARCHIVED
 
-                # Task erstellen
-                task = MaintenanceTasks.objects.create(
-                    name=task_name,
-                    status=TaskStatusChoices.STATUS_ACTIVE,
-                    maintenance_action=action,
-                    maintenance_windows=window,
-                    comments=action.comments
-                )
-
-                # VM/Device Beziehungen setzen
-                task.virtual_machine.set(action.virtual_machine.all())
-                task.device.set(action.device.all())
-
-                created_count += 1
+                # Nur speichern, wenn wirklich geändert
+                if task.status != new_status:
+                    task.status = new_status
+                    task.save()
