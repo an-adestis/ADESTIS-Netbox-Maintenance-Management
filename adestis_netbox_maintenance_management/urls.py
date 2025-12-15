@@ -125,7 +125,7 @@ urlpatterns = (
     path('maintenancereports/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancereport_changelog', kwargs={
         'model': MaintenanceReport}), 
 
-     path('maintenancereports/<int:pk>/generate-pdf/', views.generate_pdf, name='generate_pdf'),
+     # path('maintenancereports/<int:pk>/generate-pdf/', views.generate_pdf, name='generate_pdf'),
      
      # Maintenance Plans
     path('maintenanceplans/', MaintenancePlansListView.as_view(),
@@ -149,4 +149,5 @@ urlpatterns = (
     path('maintenanceplans/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplans_changelog', kwargs={
         'model': MaintenancePlans
     }),
+     path('maintenanceplans/<int:pk>/pdf/', views.export_pdf, name='export_plannes_pdf'),
 )

@@ -27,6 +27,7 @@ class MaintenancePlansListView(generic.ObjectListView):
     table = MaintenancePlansTable
     filterset = MaintenancePlansFilterSet
     filterset_form = MaintenancePlansFilterForm
+    template_name = "adestis_netbox_maintenance_management/maintenance_planned_tasks.html"
     
 
 class MaintenancePlansEditView(generic.ObjectEditView):

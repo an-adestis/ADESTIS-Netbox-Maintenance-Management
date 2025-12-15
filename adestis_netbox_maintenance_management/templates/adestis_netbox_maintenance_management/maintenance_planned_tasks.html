@@ -7,10 +7,11 @@
 
 {% block content %}
   {{ block.super }}
-  <form action="{% url 'plugins:adestis_netbox_maintenance_management:generate_pdf' object.pk %}" method="get">
-    <button type="submit" class="btn btn-primary">
-        📄 PDF generieren
-    </button>
-  </form>
+  {% for obj in object_list %}
+    <form action="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf' obj.pk %}" method="get">
+        <button type="submit" class="btn btn-primary">📄 PDF generieren</button>
+    </form>
+  {% endfor %}
+
   
 {% endblock content %}

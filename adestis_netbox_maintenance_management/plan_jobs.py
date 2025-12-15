@@ -16,6 +16,7 @@ from core.choices import JobIntervalChoices
 from netbox.jobs import JobRunner, system_job
 
 logger = logging.getLogger(__name__)
+import calendar
 
 # task = MaintenanceTasks.objects.all()
 
@@ -170,10 +171,51 @@ def is_task_due_today(task):
 
     return False
 
+def next_weekday_in_month(today: date, target_weekday: int, week_in_month: int) -> date:
+    cal = calendar.Calendar()
+    year, month = today.year, today.month
+
+    def get_month_days(y, m):
+        return [d for d in cal.itermonthdates(y, m) 
+                if d.weekday() == target_weekday and d.month == m]
+
+    while True:
+        month_days = get_month_days(year, month)
+
+        if not month_days:
+            # Kein Wochentag im Monat? Nächster Monat
+            month += 1
+            if month > 12:
+                month = 1
+                year += 1
+            continue
+
+        if week_in_month == 6:
+            # nächster verfügbarer Tag
+            for d in month_days:
+                if d > today:
+                    return d
+
+        elif 1 <= week_in_month <= 4:
+            idx = week_in_month - 1
+            if idx < len(month_days) and month_days[idx] > today:
+                return month_days[idx]
+
+        elif week_in_month == 5:  # letzte Woche
+            if month_days[-1] > today:
+                return month_days[-1]
+
+        # nächsten Monat prüfen
+        month += 1
+        if month > 12:
+            month = 1
+            year += 1
+
 def is_task_due_in_future(task):
     """Prüft, ob ein Task in der Zukunft fällig ist."""
     today = date.today()
     key = get_task_date(task)
+    week_in_month = task.maintenance_windows.week_in_month
 
     if not key:
         return False
@@ -185,23 +227,11 @@ def is_task_due_in_future(task):
 
     # Wochentag-Tasks → nächster Wochentag ermitteln
     elif key.startswith("Weekday"):
-        today_weekday = today.weekday()
-        target_weekday = None
-
-        for day_name, wd_index in WEEKDAY_MAP.items():
-            if day_name in key:
-                target_weekday = wd_index
-                break
-
+        target_weekday = next((WEEKDAY_MAP[day_name] for day_name in WEEKDAY_MAP if day_name in key), None)
         if target_weekday is None:
             return False
-
-        # nächsten Vorkommnis-Tag berechnen
-        days_ahead = (target_weekday - today_weekday) % 7
-        if days_ahead == 0:
-            return False  # heute
-
-        return True  # liegt in der Zukunft
+        next_date = next_weekday_in_month(today, target_weekday, week_in_month)
+        return next_date > today
 
     # Monatstag mit Monat
     elif key.startswith("Monthday"):
@@ -230,7 +260,6 @@ def is_task_due_in_future(task):
             return False
 
     return False
-
 
 @system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenancePlannedActions(JobRunner):
