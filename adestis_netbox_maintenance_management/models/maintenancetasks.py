@@ -107,7 +107,3 @@ class MaintenanceTasks(NetBoxModel):
     def sync(self):
         from adestis_netbox_maintenance_management.plan_jobs import AutoCreateMaintenancePlannedActions
         AutoCreateMaintenancePlannedActions.enqueue()
-
-
-    
-    

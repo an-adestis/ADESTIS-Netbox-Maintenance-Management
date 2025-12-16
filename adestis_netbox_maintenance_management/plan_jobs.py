@@ -17,6 +17,7 @@ from netbox.jobs import JobRunner, system_job
 
 logger = logging.getLogger(__name__)
 import calendar
+from typing import Optional
 
 # task = MaintenanceTasks.objects.all()
 
@@ -171,46 +172,6 @@ def is_task_due_today(task):
 
     return False
 
-def next_weekday_in_month(today: date, target_weekday: int, week_in_month: int) -> date:
-    cal = calendar.Calendar()
-    year, month = today.year, today.month
-
-    def get_month_days(y, m):
-        return [d for d in cal.itermonthdates(y, m) 
-                if d.weekday() == target_weekday and d.month == m]
-
-    while True:
-        month_days = get_month_days(year, month)
-
-        if not month_days:
-            # Kein Wochentag im Monat? Nächster Monat
-            month += 1
-            if month > 12:
-                month = 1
-                year += 1
-            continue
-
-        if week_in_month == 6:
-            # nächster verfügbarer Tag
-            for d in month_days:
-                if d > today:
-                    return d
-
-        elif 1 <= week_in_month <= 4:
-            idx = week_in_month - 1
-            if idx < len(month_days) and month_days[idx] > today:
-                return month_days[idx]
-
-        elif week_in_month == 5:  # letzte Woche
-            if month_days[-1] > today:
-                return month_days[-1]
-
-        # nächsten Monat prüfen
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
-
 def is_task_due_in_future(task):
     """Prüft, ob ein Task in der Zukunft fällig ist."""
     today = date.today()
@@ -230,8 +191,33 @@ def is_task_due_in_future(task):
         target_weekday = next((WEEKDAY_MAP[day_name] for day_name in WEEKDAY_MAP if day_name in key), None)
         if target_weekday is None:
             return False
-        next_date = next_weekday_in_month(today, target_weekday, week_in_month)
-        return next_date > today
+         
+        week_in_month: Optional[int] = task.maintenance_windows.week_in_month 
+        if week_in_month:
+            # 6 = Every → jeden Wochentag berücksichtigen
+            if week_in_month == 6:
+                # Nächster Wochentag im Monat
+                next_date = today + timedelta((target_weekday - today.weekday() + 7) % 7)
+            else:
+                # Bestimmte Woche im Monat: 1,2,3,4,5 (Last)
+                year = today.year
+                month = today.month
+                if week_in_month == 5:  # "Last"
+                    # Letzten target_weekday des Monats finden
+                    last_day = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year, 12, 31)
+                    day_diff = (last_day.weekday() - target_weekday) % 7
+                    next_date = last_day - timedelta(days=day_diff)
+                else:
+                    # N-ten Wochentag des Monats
+                    first_day = date(year, month, 1)
+                    first_target = first_day + timedelta((target_weekday - first_day.weekday() + 7) % 7)
+                    next_date = first_target + timedelta(weeks=week_in_month-1)
+
+            return next_date > today
+        else:
+            # Kein week_in_month angegeben → nächster Wochentag
+            next_date = today + timedelta((target_weekday - today.weekday() + 7) % 7)
+            return next_date > today
 
     # Monatstag mit Monat
     elif key.startswith("Monthday"):
