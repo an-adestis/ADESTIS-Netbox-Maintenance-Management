@@ -65,11 +65,11 @@ if '*' not in ALLOWED_HOSTS and 'localhost' not in ALLOWED_HOSTS:
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 DATABASE = {
-    'NAME': environ.get('DB_NAME', 'netbox'),       # Database name
+    'NAME': environ.get('DB_NAME', 'nbdevl'),       # Database name
     'USER': environ.get('DB_USER', ''),             # PostgreSQL username
-    'PASSWORD': _read_secret('db_password', environ.get('DB_PASSWORD', '')),
+    'PASSWORD': _read_secret('db_password', environ.get('DB_PASSWORD', 'ctCWJiKgINLZ8FTxl7uI')),
                                                     # PostgreSQL password
-    'HOST': environ.get('DB_HOST', 'localhost'),    # Database server
+    'HOST': environ.get('DB_HOST', 'psql-03-dev-svc-ad.acm.adestis.net'),    # Database server
     'PORT': environ.get('DB_PORT', ''),             # Database port (leave blank for default)
     'OPTIONS': {'sslmode': environ.get('DB_SSLMODE', 'prefer')},
                                                     # Database connection SSLMODE
