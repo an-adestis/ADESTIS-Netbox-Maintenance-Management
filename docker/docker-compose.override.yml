@@ -7,7 +7,7 @@ services:
       context: ../
       dockerfile: Dev-Dockerfile
     depends_on:
-    - postgres
+    # postgres
     - redis
     - redis-cache
     ports:
