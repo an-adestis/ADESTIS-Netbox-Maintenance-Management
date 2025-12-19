@@ -7,6 +7,8 @@ from virtualization.models import *
 from virtualization.forms import *
 from virtualization.tables import *
 import django_tables2 as tables
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 class MaintenancePlansTable(NetBoxTable):
     comments = columns.MarkdownColumn()
 
@@ -23,13 +25,22 @@ class MaintenancePlansTable(NetBoxTable):
     )
     
     refrence_number = tables.Column()
+    
+    pdf = tables.Column(empty_values=(), verbose_name="PDF", orderable=False)
 
     class Meta(NetBoxTable.Meta):
 
         model = MaintenancePlans
         
-        fields = ['name',  'tenant', 'refrence_number', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'refrence_number' ]
+        fields = ['name',  'tenant', 'refrence_number', 'description', 'tags', 'comments', 'pdf']
+        default_columns = [ 'name', 'tenant', 'refrence_number', 'pdf' ]
+        
+    def render_pdf(self, record):
+        url = reverse(
+            "plugins:adestis_netbox_maintenance_management:export_pdf",
+            args=[record.pk],
+        )
+        return mark_safe(f'<a class="btn btn-sm btn-primary" href="{url}">PDF</a>')
 
 
         

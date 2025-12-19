@@ -8,6 +8,24 @@ from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect
 from utilities.views import ViewTab, register_model_view
 
+from .maintenancewindows import *
+from .maintenanceactions import *
+from .maintenanceplannedactions import *
+from .maintenancereports import *
+from .maintenancetasks import *
+from .maintenanceplans import *
+from datetime import datetime, date, timedelta
+
+from django.http import FileResponse
+from reportlab.pdfgen import canvas
+
+from django.shortcuts import redirect, render
+from adestis_netbox_maintenance_management.models import MaintenancePlans
+from io import BytesIO
+from django.http import HttpResponse
+from fpdf import FPDF, HTMLMixin
+
+
 __all__ = (
     'MaintenancePlansView',
     'MaintenancePlansListView',
@@ -27,7 +45,7 @@ class MaintenancePlansListView(generic.ObjectListView):
     table = MaintenancePlansTable
     filterset = MaintenancePlansFilterSet
     filterset_form = MaintenancePlansFilterForm
-    template_name = "adestis_netbox_maintenance_management/maintenance_planned_tasks.html"
+    template_name = "adestis_netbox_maintenance_management/maintenance_plans.html"
     
 
 class MaintenancePlansEditView(generic.ObjectEditView):
@@ -53,3 +71,6 @@ class MaintenancePlansBulkImportView(generic.BulkImportView):
     queryset = MaintenancePlans.objects.all()
     model_form = MaintenancePlansCSVForm
     table = MaintenancePlansTable
+    
+    
+    

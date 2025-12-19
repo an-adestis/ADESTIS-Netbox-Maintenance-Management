@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 import calendar
 from typing import Optional
 
+from tenancy.models import *
+from dcim.models import *
+from virtualization.models import *
+
 # task = MaintenanceTasks.objects.all()
 
 MONTH_MAP = {
@@ -305,6 +309,18 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             )
             
             plan.maintenance_tasks.set(tasks)
+
+            # ManyToMany: assign related objects
+            plan.virtual_machine.set(
+                VirtualMachine.objects.filter(id__in=[vm.id for task in tasks for vm in task.virtual_machine.all()])
+            )
+            plan.device.set(
+                Device.objects.filter(id__in=[dev.id for task in tasks for dev in task.device.all()])
+            )
+
+            plan.save()
+
+
             assigned_count += len(tasks)
             
         # ----------------------------------------------------

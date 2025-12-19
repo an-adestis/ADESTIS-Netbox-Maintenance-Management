@@ -30,8 +30,32 @@ urlpatterns = (
     path('maintenancewindows/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancewindows_changelog', kwargs={
         'model': MaintenanceWindows
     }),
-#     path('virtualmachine/maintenancewindows', VirtualMachineAffectedMaintenanceWindowsView.as_view(),
-#          name='maintenancewindowsvirtualmachine_list'),
+    
+     # Maintenance Plans
+    path('maintenanceplans/', MaintenancePlansListView.as_view(),
+         name='maintenanceplans_list'),
+    path('maintenanceplans/add', MaintenancePlansEditView.as_view(),
+         name='maintenanceplans_add'),
+    path('maintenanceplans/delete/', MaintenancePlansBulkDeleteView.as_view(),
+         name='maintenanceplans_bulk_delete'),
+    path('maintenanceplans/edit/', MaintenancePlansBulkEditView.as_view(),
+         name='maintenanceplans_bulk_edit'),
+    path('maintenanceplans/import/', MaintenancePlansBulkImportView.as_view(),
+         name='maintenanceplans_bulk_import'),
+    path('maintenanceplans/<int:pk>/',
+         MaintenancePlansView.as_view(), name='maintenanceplans'),
+    path('maintenanceplans/<int:pk>/',
+         include(get_model_urls("adestis_netbox_maintenance_management", "maintenanceplans"))),
+    path('maintenanceplans/<int:pk>/edit/',
+         MaintenancePlansEditView.as_view(), name='maintenanceplans_edit'),
+    path('maintenanceplans/<int:pk>/delete/',
+         MaintenancePlansDeleteView.as_view(), name='maintenanceplans_delete'),
+    path('maintenanceplans/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplans_changelog', kwargs={
+        'model': MaintenancePlans
+    }),
+    
+    
+    path('maintenanceplans/<int:pk>/pdf/', views.export_pdf, name='export_pdf'),
     
     # Maintenance Actions
     path('maintenanceactions/', MaintenanceActionsListView.as_view(),
@@ -105,6 +129,8 @@ urlpatterns = (
         'model': MaintenancePlannedActions
     }),
     
+    path('maintenanceplannedactions/<int:pk>/pdf/', views.export_planned_action_pdf, name='export_planned_action_pdf'),
+    
     # Maintenance Reports
     path('maintenancereports/', MaintenanceReportsListView.as_view(),
          name='maintenancereport_list'),
@@ -124,30 +150,4 @@ urlpatterns = (
          MaintenanceReportsDeleteView.as_view(), name='maintenancereport_delete'),
     path('maintenancereports/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancereport_changelog', kwargs={
         'model': MaintenanceReport}), 
-
-     # path('maintenancereports/<int:pk>/generate-pdf/', views.generate_pdf, name='generate_pdf'),
-     
-     # Maintenance Plans
-    path('maintenanceplans/', MaintenancePlansListView.as_view(),
-         name='maintenanceplans_list'),
-    path('maintenanceplans/add', MaintenancePlansEditView.as_view(),
-         name='maintenanceplans_add'),
-    path('maintenanceplans/delete/', MaintenancePlansBulkDeleteView.as_view(),
-         name='maintenanceplans_bulk_delete'),
-    path('maintenanceplans/edit/', MaintenancePlansBulkEditView.as_view(),
-         name='maintenanceplans_bulk_edit'),
-    path('maintenanceplans/import/', MaintenancePlansBulkImportView.as_view(),
-         name='maintenanceplans_bulk_import'),
-    path('maintenanceplans/<int:pk>/',
-         MaintenancePlansView.as_view(), name='maintenanceplans'),
-    path('maintenanceplans/<int:pk>/',
-         include(get_model_urls("adestis_netbox_maintenance_management", "maintenanceplans"))),
-    path('maintenanceplans/<int:pk>/edit/',
-         MaintenancePlansView.as_view(), name='maintenanceplans_edit'),
-    path('maintenanceplans/<int:pk>/delete/',
-         MaintenancePlansDeleteView.as_view(), name='maintenanceplans_delete'),
-    path('maintenanceplans/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplans_changelog', kwargs={
-        'model': MaintenancePlans
-    }),
-     path('maintenanceplans/<int:pk>/pdf/', views.export_pdf, name='export_plannes_pdf'),
 )

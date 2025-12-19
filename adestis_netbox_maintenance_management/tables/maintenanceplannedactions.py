@@ -7,6 +7,9 @@ from virtualization.models import *
 from virtualization.forms import *
 from virtualization.tables import *
 import django_tables2 as tables
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+
 class MaintenancePlannedActionsTable(NetBoxTable):
     comments = columns.MarkdownColumn()
 
@@ -41,13 +44,19 @@ class MaintenancePlannedActionsTable(NetBoxTable):
     device = columns.ManyToManyColumn(
         linkify_item = True
     )
+    
+    pdf = tables.Column(empty_values=(), verbose_name="PDF", orderable=False)
 
     class Meta(NetBoxTable.Meta):
 
         model = MaintenancePlannedActions
         
-        fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device' ]
-
-
+        fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments', 'pdf']
+        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device', 'pdf']
         
+    def render_pdf(self, record):
+        url = reverse(
+            "plugins:adestis_netbox_maintenance_management:export_planned_action_pdf",
+            args=[record.pk],
+        )
+        return mark_safe(f'<a class="btn btn-sm btn-primary" href="{url}">PDF</a>')

@@ -10,108 +10,118 @@ from django.http import FileResponse
 from reportlab.pdfgen import canvas
 
 from django.shortcuts import redirect, render
-from adestis_netbox_maintenance_management.models import MaintenancePlans
+from adestis_netbox_maintenance_management.models import MaintenancePlans, MaintenancePlannedActions, MaintenanceTasks
 from io import BytesIO
 from django.http import HttpResponse
 from fpdf import FPDF, HTMLMixin
 
-# def generate_pdf(request, pk):
-#     today = date.today()
-#     return FileResponse(
-#         generate_pdf_file(request, pk), 
-#         as_attachment=True,
-#         filename=f"{today}_maintenance_plan_{pk}.pdf"
-#     )
-
-# def generate_pdf_file(request, pk):
-#     plan = MaintenancePlannedActions.objects.get(pk=pk)
-#     # Filter: Nur Tasks zu diesem Plan
-#     maintenance_tasks = plan.maintenance_tasks.all()
-
-#     buffer = BytesIO()
-#     p = canvas.Canvas(buffer)
-
-#     y = 750
-#     for task in maintenance_tasks:
-#         window = task.maintenance_windows.name if task.maintenance_windows else "-"
-#         action = task.maintenance_action.name if task.maintenance_action else "-"
-#         vms = ", ".join([str(vm) for vm in task.virtual_machine.all()])
-#         devices = ", ".join([str(d) for d in task.device.all()])
-
-#         p.drawString(100, y, f"Window: {window}")
-#         p.drawString(100, y - 15, f"Action: {action}")
-#         p.drawString(100, y - 30, f"VMs: {vms if vms else '-'}")
-#         p.drawString(100, y - 45, f"Devices: {devices if devices else '-'}")
-
-#         y -= 80
-#         if y < 50:
-#             p.showPage()
-#             y = 750
-
-#     p.save()
-#     buffer.seek(0)
-#     return buffer
-
-class MyFPDF(FPDF, HTMLMixin):
+class MaintenancePlansPDF(FPDF, HTMLMixin):
     pass
 
-
 def export_pdf(request, pk):
-    obj = MaintenancePlans.objects.get(pk=pk)
+    plan = MaintenancePlans.objects.get(pk=pk)
 
-    html = f"""
-    <h1>Planned Action: {obj.name}</h1>
-
-    <h3>Description</h3>
-    <p>{obj.description}</p>
-
-    <h3>Comments</h3>
-    <p>{obj.comments}</p>
-
-    <h3>Tenant</h3>
-    <p>{obj.tenant}</p>
-
-    <h3>Maintenance Actions</h3>
-    <ul>
-        {''.join(f'<li>{a}</li>' for a in obj.maintenance_action.all())}
-    </ul>
-
-    <h3>Maintenance Windows</h3>
-    <ul>
-        {''.join(f'<li>{w}</li>' for w in obj.maintenance_windows.all())}
-    </ul>
-
-    <h3>Maintenance Tasks</h3>
-    <ul>
-        {''.join(f'<li>{t}</li>' for t in obj.maintenance_tasks.all())}
-    </ul>
-
-    <h3>Virtual Machines</h3>
-    <ul>
-        {''.join(f'<li>{vm}</li>' for vm in obj.virtual_machine.all())}
-    </ul>
-
-    <h3>Devices</h3>
-    <ul>
-        {''.join(f'<li>{d}</li>' for d in obj.device.all())}
-    </ul>
-
-    <h3>Grouping Key</h3>
-    <p>{obj.grouping_key}</p>
-    """
-
-    pdf = MyFPDF()
+    pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.write_html(html)
+    pdf.set_auto_page_break(auto=True, margin=15)
+
+    pdf.set_font("Helvetica", size=12)
+
+    pdf.multi_cell(0, 10, f"Maintenance Plan: {plan.name}")
+    pdf.ln(3)
+    
+    pdf.multi_cell(0, 10, f"Tenant: {plan.tenant}")
+
+    pdf.multi_cell(0, 8, f"Reference: {plan.refrence_number}")
+    pdf.ln(3)
+
+    pdf.multi_cell(0, 8, f"Description:\n{plan.description or ''}")
 
     response = HttpResponse(
-        pdf.output(dest='S').encode('latin1'),
-        content_type='application/pdf'
+        pdf.output(dest="S").encode("latin-1"),
+        content_type="application/pdf",
     )
-    response['Content-Disposition'] = f'attachment; filename="{obj.name}.pdf"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="maintenance_plan_{plan.name}.pdf"'
+    )
 
     return response
 
-# Report engine auf html ebene arbeiten statt mit canvas 
-# html jinja2 html report pdf 
+def export_planned_action_pdf(request, pk):
+    # Objekt holen
+    action = MaintenancePlannedActions.objects.get(pk=pk)
+    tasks_window = MaintenanceTasks
+
+    # Neues PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Helvetica", size=12)
+
+    # Header
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, f"Planned Action: {action.name}", ln=True)
+    pdf.ln(5)
+
+    # Description
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Description:", ln=True)
+    pdf.set_font("Helvetica", size=12)
+    pdf.multi_cell(0, 6, action.description or "-")
+    pdf.ln(3)
+
+    # Maintenance Actions (ManyToMany)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Maintenance Actions:", ln=True)
+    pdf.set_font("Helvetica", size=12)
+    actions_list = "\n".join(str(a) for a in action.maintenance_action.all())
+    pdf.multi_cell(0, 6, actions_list or "-")
+
+    pdf.ln(3)
+
+    # Maintenance Windows (ManyToMany)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Maintenance Windows:", ln=True)
+    pdf.set_font("Helvetica", size=12)
+    windows_list = "\n".join(str(w) for w in action.maintenance_windows.all())
+    pdf.multi_cell(0, 6, windows_list or "-")
+    pdf.ln(3)
+
+    # Maintenance Tasks (ManyToMany)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Maintenance Tasks:", ln=True)
+    tasks_list = "\n".join(str(t) for t in action.maintenance_tasks.all())
+    pdf.multi_cell(0, 6, tasks_list or "-")
+    pdf.ln(3)
+
+    # Virtual Machines (ManyToMany)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Virtual Machines:", ln=True)
+    pdf.set_font("Helvetica", size=12)
+    vm_list = "\n".join(str(vm) for vm in action.virtual_machine.all())
+    pdf.multi_cell(0, 6, vm_list or "-")
+    pdf.ln(3)
+
+    # Devices (ManyToMany)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Devices:", ln=True)
+    pdf.set_font("Helvetica", size=12)
+    devices_list = "\n".join(str(dev) for dev in action.device.all())
+    pdf.multi_cell(0, 6, devices_list or "-")
+    pdf.ln(3)
+
+    # Comments
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Comments:", ln=True)
+    pdf.set_font("Helvetica", size=12)
+    pdf.multi_cell(0, 6, action.comments or "-")
+    pdf.ln(3)
+
+    # PDF zurückgeben
+    response = HttpResponse(
+        pdf.output(dest="S").encode("latin-1"),
+        content_type="application/pdf",
+    )
+    response["Content-Disposition"] = f'attachment; filename="planned_action_{action.pk}.pdf"'
+
+    return response
