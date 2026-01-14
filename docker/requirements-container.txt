@@ -9,6 +9,7 @@ python-crontab==3.3.0
 cron-descriptor
 croniter==6.0.0
 reportlab
+pandas 
 fpdf==1.7.2
 netbox-bgp~=0.15.0
 netbox-data-flows~=1.1.0
