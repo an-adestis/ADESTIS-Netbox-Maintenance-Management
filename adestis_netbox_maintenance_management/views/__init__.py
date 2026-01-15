@@ -8,6 +8,7 @@ from datetime import datetime, date, timedelta
 
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
+from netbox.views import generic
 
 from django.shortcuts import redirect, render
 from adestis_netbox_maintenance_management.models import MaintenancePlans, MaintenancePlannedActions, MaintenanceTasks
@@ -15,35 +16,65 @@ from io import BytesIO
 from django.http import HttpResponse
 from fpdf import FPDF, HTMLMixin
 
-class MaintenancePlansPDF(FPDF, HTMLMixin):
-        def header(self):
-            # Titel
-            self.set_font("Helvetica", "B", 14)
-            self.cell(0, 10, "Maintenance Plan by Time", 0, 0, "L")
-            # Optionales Logo
-            # self.image('static/images/adestis_logo.png', x=170, y=8, w=30)
-            self.ln(15)
-            # KW und Datum zentriert
-            self.set_font("Helvetica", "B", 12)
-            from datetime import datetime
-            today = datetime.today()
-            self.cell(0, 10, f"KW {today.isocalendar()[1]}, {today.strftime('%d.%m.%Y')}", 0, 1, "C")
-            self.ln(5)
+class MaintenancePlansPDF(FPDF, HTMLMixin, generic.ObjectListView):
+    queryset = MaintenancePlans.objects.all()
+    template_name = "adestis_netbox_maintenance_management/maintenance_plans.html"
 
+    def header(self):
+        self.set_font("Helvetica", "B", 14)
+        self.cell(0, 10, "Maintenance Plan by Time", 0, 1, "L")
+
+        self.set_font("Helvetica", "", 11)
+        self.cell(0, 8, datetime.today().strftime('%d.%m.%Y'), 0, 1, "C")
+        self.ln(5)
+
+
+# =====================================================
+# Hilfsfunktion: echte Zeilenanzahl berechnen
+# =====================================================
+def get_line_count(pdf, text, col_width):
+    if not text:
+        return 1
+
+    text = str(text).replace("\r", "")
+    words = text.split(" ")
+    lines = 1
+    line_width = 0
+
+    for word in words:
+        word_width = pdf.get_string_width(word + " ")
+        if line_width + word_width <= col_width:
+            line_width += word_width
+        else:
+            lines += 1
+            line_width = word_width
+
+    return lines
+
+
+# =====================================================
+# PDF Export View
+# =====================================================
 def export_pdf(request, pk):
+
     plan = MaintenancePlans.objects.get(pk=pk)
-    entries = plan.entries.all().order_by('sched_start')  # alle Termine des Plans
 
     pdf = MaintenancePlansPDF()
-    pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
     pdf.set_font("Helvetica", size=10)
 
-    # Tabelle: Spalten und Breiten
-    headers = ["Scheduled Start", "Scheduled End", "Done?", "Details", "Name", "Management URL", "ActionName", "Site"]
-    col_widths = [25, 25, 15, 30, 40, 40, 30, 25]
+    # -------------------------------------------------
+    # Tabellen-Definition
+    # -------------------------------------------------
+    headers = ["Ref Number", "Done", "Name", "Description", "Tenant"]
+    col_widths = [30, 12, 45, 73, 30]  # Summe = 190 (A4)
 
+    LINE_HEIGHT = 5
+
+    # -------------------------------------------------
     # Tabellenkopf
+    # -------------------------------------------------
     pdf.set_font("Helvetica", "B", 10)
     for i, header in enumerate(headers):
         pdf.cell(col_widths[i], 8, header, border=1, align="C")
@@ -51,60 +82,81 @@ def export_pdf(request, pk):
 
     pdf.set_font("Helvetica", "", 10)
 
-    for entry in entries:
-        # dynamische Werte holen
-        start = entry.sched_start.strftime("%H:%M") if entry.sched_start else ""
-        end = entry.sched_end.strftime("%H:%M") if entry.sched_end else ""
-        done = "✓" if entry.is_done else ""
-        details = entry.details or ""
-        name = entry.name or ""
-        management_url = entry.management_url or ""
-        action_name = entry.action_name or ""
-        site = entry.site or ""
+    # -------------------------------------------------
+    # Daten
+    # -------------------------------------------------
+    ref_number = plan.refrence_number or ""
+    done = "X"
+    name = plan.name or ""
+    description = plan.description or ""
+    tenant = str(plan.tenant) if plan.tenant else ""
 
-        # Maximum Zeilenhöhe für MultiCell (falls Name oder Details lang sind)
-        lines_name = max(name.count('\n') + 1, 1)
-        lines_details = max(details.count('\n') + 1, 1)
-        max_lines = max(lines_name, lines_details, 1)
+    # -------------------------------------------------
+    # Dynamische Zeilenhöhe bestimmen
+    # -------------------------------------------------
+    line_counts = [
+        get_line_count(pdf, ref_number, col_widths[0]),
+        get_line_count(pdf, done, col_widths[1]),
+        get_line_count(pdf, name, col_widths[2]),
+        get_line_count(pdf, description, col_widths[3]),
+        get_line_count(pdf, tenant, col_widths[4]),
+    ]
 
-        pdf.cell(col_widths[0], 8*max_lines, start, border=1)
-        pdf.cell(col_widths[1], 8*max_lines, end, border=1)
-        pdf.cell(col_widths[2], 8*max_lines, done, border=1, align="C")
+    max_lines = max(line_counts)
+    row_height = max_lines * LINE_HEIGHT
 
-        # Details
-        x_before = pdf.get_x()
-        y_before = pdf.get_y()
-        pdf.multi_cell(col_widths[3], 8, details, border=1)
-        pdf.set_xy(x_before + col_widths[3], y_before)
+    x_start = pdf.get_x()
+    y_start = pdf.get_y()
 
-        # Name
-        x_before = pdf.get_x()
-        y_before = pdf.get_y()
-        pdf.multi_cell(col_widths[4], 8, name, border=1)
-        pdf.set_xy(x_before + col_widths[4], y_before)
+    # -------------------------------------------------
+    # Rahmen für komplette Tabellenzeile
+    # -------------------------------------------------
+    x = x_start
+    for width in col_widths:
+        pdf.rect(x, y_start, width, row_height)
+        x += width
 
-        # Management URL
-        x_before = pdf.get_x()
-        y_before = pdf.get_y()
-        pdf.multi_cell(col_widths[5], 8, management_url, border=1)
-        pdf.set_xy(x_before + col_widths[5], y_before)
+    # -------------------------------------------------
+    # Zellinhalte (ohne Border!)
+    # -------------------------------------------------
+    pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(ref_number), align="C")
+    pdf.set_xy(x_start + col_widths[0], y_start)
 
-        # ActionName
-        x_before = pdf.get_x()
-        y_before = pdf.get_y()
-        pdf.multi_cell(col_widths[6], 8, action_name, border=1)
-        pdf.set_xy(x_before + col_widths[6], y_before)
+    pdf.multi_cell(col_widths[1], LINE_HEIGHT, done, align="C")
+    pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
 
-        # Site
-        pdf.cell(col_widths[7], 8*max_lines, site, border=1)
-        pdf.ln()
-
-    # PDF als Response
-    response = HttpResponse(
-        pdf.output(dest="S").encode("latin-1", errors="replace"),  # Haken ✓ wird ersetzt, sonst UTF-8 nötig
-        content_type="application/pdf",
+    pdf.multi_cell(col_widths[2], LINE_HEIGHT, name, align="C")
+    pdf.set_xy(
+        x_start + col_widths[0] + col_widths[1] + col_widths[2],
+        y_start
     )
-    response["Content-Disposition"] = f'attachment; filename="maintenance_plan_{plan.pk}.pdf"'
+
+    pdf.multi_cell(col_widths[3], LINE_HEIGHT, description)
+    pdf.set_xy(
+        x_start
+        + col_widths[0]
+        + col_widths[1]
+        + col_widths[2]
+        + col_widths[3],
+        y_start
+    )
+
+    pdf.multi_cell(col_widths[4], LINE_HEIGHT, tenant, align="C")
+
+    # Cursor unter die Zeile setzen
+    pdf.set_xy(x_start, y_start + row_height)
+
+    # -------------------------------------------------
+    # HTTP Response → DOWNLOAD erzwingen
+    # -------------------------------------------------
+    response = HttpResponse(
+        pdf.output(dest="S").encode("latin-1"),
+        content_type="application/pdf"
+    )
+    response["Content-Disposition"] = (
+        'attachment; filename="maintenance_plan.pdf"'
+    )
+
     return response
 
 

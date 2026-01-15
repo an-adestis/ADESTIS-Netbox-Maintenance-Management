@@ -7,8 +7,10 @@
 
 {% block extra_controls %}
 
-  {% comment %} <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf' object.pk %}"
-     class="btn btn-sm btn-primary">
+
+  <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf'%} {% querystring request %}" class="btn btn-sm btn-primary">
     PDF
-  </a> {% endcomment %}
+  </a>
+
+
 {% endblock %}

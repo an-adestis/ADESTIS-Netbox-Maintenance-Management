@@ -39,7 +39,6 @@ __all__ = (
 class MaintenancePlansView(generic.ObjectView):
     queryset = MaintenancePlans.objects.all()
     
-
 class MaintenancePlansListView(generic.ObjectListView):
     queryset = MaintenancePlans.objects.all()
     table = MaintenancePlansTable
@@ -47,7 +46,6 @@ class MaintenancePlansListView(generic.ObjectListView):
     filterset_form = MaintenancePlansFilterForm
     template_name = "adestis_netbox_maintenance_management/maintenance_plans.html"
     
-
 class MaintenancePlansEditView(generic.ObjectEditView):
     queryset = MaintenancePlans.objects.all()
     form = MaintenancePlansForm
@@ -66,11 +64,7 @@ class MaintenancePlansBulkEditView(generic.BulkEditView):
     table = MaintenancePlansTable
     form =  MaintenancePlansBulkEditForm
     
-
 class MaintenancePlansBulkImportView(generic.BulkImportView):
     queryset = MaintenancePlans.objects.all()
     model_form = MaintenancePlansCSVForm
     table = MaintenancePlansTable
-    
-    
-    
