@@ -58,7 +58,6 @@ def get_grouping_key_for_date(day) -> str:
     
     return f"date_{day.strftime('%Y%m%d')}"
 
-
 def get_task_date(task):
 
     # try:

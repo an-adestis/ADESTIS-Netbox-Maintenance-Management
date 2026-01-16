@@ -51,8 +51,12 @@ urlpatterns = (
     path('maintenanceplans/<int:pk>/delete/',
          MaintenancePlansDeleteView.as_view(), name='maintenanceplans_delete'),
     
-    path('maintenanceplans/<int:pk>/pdf/', 
-         MaintenancePlansPDF.as_view(), name='export_pdf'),
+    path(
+     'maintenanceplans/pdf/',
+     MaintenancePlanPDFView.as_view(),
+     name='export_pdf'
+     ),
+
     
     path('maintenanceplans/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplans_changelog', kwargs={
         'model': MaintenancePlans
@@ -130,8 +134,7 @@ urlpatterns = (
         'model': MaintenancePlannedActions
     }),
     
-    path('maintenanceplannedactions/<int:pk>/pdf/', views.export_planned_action_pdf, name='export_planned_action_pdf'),
-    
+    path('maintenanceplannedactions/pdf/', MaintenanceActionPlanPDFView.as_view(), name='export_planned_action_pdf'),
     # Maintenance Reports
     path('maintenancereports/', MaintenanceReportsListView.as_view(),
          name='maintenancereport_list'),

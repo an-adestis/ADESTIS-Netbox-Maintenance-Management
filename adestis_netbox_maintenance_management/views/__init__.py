@@ -16,9 +16,7 @@ from io import BytesIO
 from django.http import HttpResponse
 from fpdf import FPDF, HTMLMixin
 
-class MaintenancePlansPDF(FPDF, HTMLMixin, generic.ObjectListView):
-    queryset = MaintenancePlans.objects.all()
-    template_name = "adestis_netbox_maintenance_management/maintenance_plans.html"
+class MaintenancePlansPDF(FPDF, HTMLMixin):
 
     def header(self):
         self.set_font("Helvetica", "B", 14)
@@ -29,14 +27,11 @@ class MaintenancePlansPDF(FPDF, HTMLMixin, generic.ObjectListView):
         self.ln(5)
 
 
-# =====================================================
-# Hilfsfunktion: echte Zeilenanzahl berechnen
-# =====================================================
 def get_line_count(pdf, text, col_width):
-    if not text:
-        return 1
+    # Alles in String umwandeln – None, int, bool etc. safe
+    text = "" if text is None else str(text)
 
-    text = str(text).replace("\r", "")
+    # Lines berechnen – wir splitten einfach an Leerzeichen
     words = text.split(" ")
     lines = 1
     line_width = 0
@@ -52,189 +47,165 @@ def get_line_count(pdf, text, col_width):
     return lines
 
 
-# =====================================================
-# PDF Export View
-# =====================================================
-def export_pdf(request, pk):
+from django.http import HttpResponse
+from django.views import View
 
-    plan = MaintenancePlans.objects.get(pk=pk)
+class MaintenancePlanPDFView(View):
 
-    pdf = MaintenancePlansPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    pdf.set_font("Helvetica", size=10)
+    def get(self, request):
+        plans = MaintenancePlans.objects.all()
 
-    # -------------------------------------------------
-    # Tabellen-Definition
-    # -------------------------------------------------
-    headers = ["Ref Number", "Done", "Name", "Description", "Tenant"]
-    col_widths = [30, 12, 45, 73, 30]  # Summe = 190 (A4)
+        pdf = MaintenancePlansPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=10)
 
-    LINE_HEIGHT = 5
+        headers = ["Ref Number", "Done", "Name", "Description", "Tenant"]
+        col_widths = [30, 12, 45, 73, 30]
+        LINE_HEIGHT = 5
 
-    # -------------------------------------------------
-    # Tabellenkopf
-    # -------------------------------------------------
-    pdf.set_font("Helvetica", "B", 10)
-    for i, header in enumerate(headers):
-        pdf.cell(col_widths[i], 8, header, border=1, align="C")
-    pdf.ln()
+        # Tabellenkopf
+        pdf.set_font("Helvetica", "B", 10)
+        for i, header in enumerate(headers):
+            pdf.cell(col_widths[i], 8, header, border=1, align="C")
+        pdf.ln()
+        pdf.set_font("Helvetica", "", 10)
 
-    pdf.set_font("Helvetica", "", 10)
+        # ---------------------------------------------
+        # ÜBER ALLE PLÄNE ITERIEREN
+        # ---------------------------------------------
+        for plan in plans:
 
-    # -------------------------------------------------
-    # Daten
-    # -------------------------------------------------
-    ref_number = plan.refrence_number or ""
-    done = "X"
-    name = plan.name or ""
-    description = plan.description or ""
-    tenant = str(plan.tenant) if plan.tenant else ""
+            ref_number = plan.refrence_number or ""
+            done = "X"
+            name = plan.name or ""
+            description = plan.description or ""
+            tenant = str(plan.tenant) if plan.tenant else ""
 
-    # -------------------------------------------------
-    # Dynamische Zeilenhöhe bestimmen
-    # -------------------------------------------------
-    line_counts = [
-        get_line_count(pdf, ref_number, col_widths[0]),
-        get_line_count(pdf, done, col_widths[1]),
-        get_line_count(pdf, name, col_widths[2]),
-        get_line_count(pdf, description, col_widths[3]),
-        get_line_count(pdf, tenant, col_widths[4]),
-    ]
+            line_counts = [
+                get_line_count(pdf, ref_number, col_widths[0]),
+                get_line_count(pdf, done, col_widths[1]),
+                get_line_count(pdf, name, col_widths[2]),
+                get_line_count(pdf, description, col_widths[3]),
+                get_line_count(pdf, tenant, col_widths[4]),
+            ]
 
-    max_lines = max(line_counts)
-    row_height = max_lines * LINE_HEIGHT
+            row_height = max(line_counts) * LINE_HEIGHT
+            x_start = pdf.get_x()
+            y_start = pdf.get_y()
 
-    x_start = pdf.get_x()
-    y_start = pdf.get_y()
+            # Rahmen
+            x = x_start
+            for width in col_widths:
+                pdf.rect(x, y_start, width, row_height)
+                x += width
 
-    # -------------------------------------------------
-    # Rahmen für komplette Tabellenzeile
-    # -------------------------------------------------
-    x = x_start
-    for width in col_widths:
-        pdf.rect(x, y_start, width, row_height)
-        x += width
+            # Inhalte
+            pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(ref_number), align="C")
+            pdf.set_xy(x_start + col_widths[0], y_start)
 
-    # -------------------------------------------------
-    # Zellinhalte (ohne Border!)
-    # -------------------------------------------------
-    pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(ref_number), align="C")
-    pdf.set_xy(x_start + col_widths[0], y_start)
+            pdf.multi_cell(col_widths[1], LINE_HEIGHT, str(done), align="C")
+            pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
 
-    pdf.multi_cell(col_widths[1], LINE_HEIGHT, done, align="C")
-    pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
+            pdf.multi_cell(col_widths[2], LINE_HEIGHT, str(name), align="C")
+            pdf.set_xy(
+                x_start + col_widths[0] + col_widths[1] + col_widths[2],
+                y_start
+            )
 
-    pdf.multi_cell(col_widths[2], LINE_HEIGHT, name, align="C")
-    pdf.set_xy(
-        x_start + col_widths[0] + col_widths[1] + col_widths[2],
-        y_start
-    )
+            pdf.multi_cell(col_widths[3], LINE_HEIGHT, str(description))
+            pdf.set_xy(
+                x_start
+                + col_widths[0]
+                + col_widths[1]
+                + col_widths[2]
+                + col_widths[3],
+                y_start
+            )
 
-    pdf.multi_cell(col_widths[3], LINE_HEIGHT, description)
-    pdf.set_xy(
-        x_start
-        + col_widths[0]
-        + col_widths[1]
-        + col_widths[2]
-        + col_widths[3],
-        y_start
-    )
+            pdf.multi_cell(col_widths[4], LINE_HEIGHT, str(tenant))
 
-    pdf.multi_cell(col_widths[4], LINE_HEIGHT, tenant, align="C")
+            pdf.set_xy(x_start, y_start + row_height)
 
-    # Cursor unter die Zeile setzen
-    pdf.set_xy(x_start, y_start + row_height)
+        response = HttpResponse(
+            pdf.output(dest="S").encode("latin-1"),
+            content_type="application/pdf"
+        )
+        
+        response["Content-Disposition"] = f'attachment; filename="maintenance_plans_{datetime.today()}.pdf"'
+        return response
 
-    # -------------------------------------------------
-    # HTTP Response → DOWNLOAD erzwingen
-    # -------------------------------------------------
-    response = HttpResponse(
-        pdf.output(dest="S").encode("latin-1"),
-        content_type="application/pdf"
-    )
-    response["Content-Disposition"] = (
-        'attachment; filename="maintenance_plan.pdf"'
-    )
+class MaintenanceActionPlanPDFView(View):
 
-    return response
+    def get(self, request):
+        
+        actions = MaintenancePlannedActions.objects.all()
+        pdf = MaintenancePlansPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=10)
 
+        headers = ["Maintenance Window", "Maintenance Action", "Virtual Machine", "Description", "Device"]
+        col_widths = [40, 40, 40, 40, 30]
+        LINE_HEIGHT = 5
+        
+        for action in actions:
+            maintenance_window = action.maintenance_windows
+            maintenance_action = action.maintenance_action
+            description = action.description
+            vm = action.virtual_machine
+            device = action.device
+            
+            line_counts = [
+                get_line_count(pdf, maintenance_window, col_widths[0]),
+                get_line_count(pdf, maintenance_action, col_widths[1]),
+                get_line_count(pdf, vm, col_widths[2]),
+                get_line_count(pdf, description, col_widths[3]),
+                get_line_count(pdf, device, col_widths[4]),
+            ]
 
-def export_planned_action_pdf(request, pk):
-    # Objekt holen
-    action = MaintenancePlannedActions.objects.get(pk=pk)
-    tasks_window = MaintenanceTasks
+            row_height = max(line_counts) * LINE_HEIGHT
+            x_start = pdf.get_x()
+            y_start = pdf.get_y()
 
-    # Neues PDF
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Helvetica", size=12)
+            # Rahmen
+            x = x_start
+            for width in col_widths:
+                pdf.rect(x, y_start, width, row_height)
+                x += width
 
-    # Header
-    pdf.set_font("Helvetica", "B", 14)
-    pdf.cell(0, 10, f"Planned Action: {action.name}", ln=True)
-    pdf.ln(5)
+            # Inhalte
+            pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(maintenance_window), align="C")
+            pdf.set_xy(x_start + col_widths[0], y_start)
 
-    # Description
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Description:", ln=True)
-    pdf.set_font("Helvetica", size=12)
-    pdf.multi_cell(0, 6, action.description or "-")
-    pdf.ln(3)
+            pdf.multi_cell(col_widths[1], LINE_HEIGHT, str(maintenance_action), align="C")
+            pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
 
-    # Maintenance Actions (ManyToMany)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Maintenance Actions:", ln=True)
-    pdf.set_font("Helvetica", size=12)
-    actions_list = "\n".join(str(a) for a in action.maintenance_action.all())
-    pdf.multi_cell(0, 6, actions_list or "-")
+            pdf.multi_cell(col_widths[2], LINE_HEIGHT, str(vm), align="C")
+            pdf.set_xy(
+                x_start + col_widths[0] + col_widths[1] + col_widths[2],
+                y_start
+            )
 
-    pdf.ln(3)
+            pdf.multi_cell(col_widths[3], LINE_HEIGHT, str(description))
+            pdf.set_xy(
+                x_start
+                + col_widths[0]
+                + col_widths[1]
+                + col_widths[2]
+                + col_widths[3],
+                y_start
+            )
 
-    # Maintenance Windows (ManyToMany)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Maintenance Windows:", ln=True)
-    pdf.set_font("Helvetica", size=12)
-    windows_list = "\n".join(str(w) for w in action.maintenance_windows.all())
-    pdf.multi_cell(0, 6, windows_list or "-")
-    pdf.ln(3)
+            pdf.multi_cell(col_widths[4], LINE_HEIGHT, str(device))
 
-    # Maintenance Tasks (ManyToMany)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Maintenance Tasks:", ln=True)
-    tasks_list = "\n".join(str(t) for t in action.maintenance_tasks.all())
-    pdf.multi_cell(0, 6, tasks_list or "-")
-    pdf.ln(3)
+            pdf.set_xy(x_start, y_start + row_height)
 
-    # Virtual Machines (ManyToMany)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Virtual Machines:", ln=True)
-    pdf.set_font("Helvetica", size=12)
-    vm_list = "\n".join(str(vm) for vm in action.virtual_machine.all())
-    pdf.multi_cell(0, 6, vm_list or "-")
-    pdf.ln(3)
+        # PDF zurückgeben
+        response = HttpResponse(
+            pdf.output(dest="S").encode("latin-1"),
+            content_type="application/pdf",
+        )
+        response["Content-Disposition"] = f'attachment; filename="planned_action_{action.pk}.pdf"'
 
-    # Devices (ManyToMany)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Devices:", ln=True)
-    pdf.set_font("Helvetica", size=12)
-    devices_list = "\n".join(str(dev) for dev in action.device.all())
-    pdf.multi_cell(0, 6, devices_list or "-")
-    pdf.ln(3)
-
-    # Comments
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Comments:", ln=True)
-    pdf.set_font("Helvetica", size=12)
-    pdf.multi_cell(0, 6, action.comments or "-")
-    pdf.ln(3)
-
-    # PDF zurückgeben
-    response = HttpResponse(
-        pdf.output(dest="S").encode("latin-1"),
-        content_type="application/pdf",
-    )
-    response["Content-Disposition"] = f'attachment; filename="planned_action_{action.pk}.pdf"'
-
-    return response
+        return response

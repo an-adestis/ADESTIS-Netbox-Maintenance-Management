@@ -6,11 +6,8 @@
 {% load static %}
 
 {% block extra_controls %}
-
-
-  <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf'%} {% querystring request %}" class="btn btn-sm btn-primary">
-    PDF
+  <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf' %}"
+     class="btn btn-primary">
+    Alle als PDF
   </a>
-
-
 {% endblock %}
