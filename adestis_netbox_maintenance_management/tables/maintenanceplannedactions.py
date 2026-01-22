@@ -45,7 +45,15 @@ class MaintenancePlannedActionsTable(NetBoxTable):
         linkify_item = True
     )
     
-    pdf = tables.Column(empty_values=(), verbose_name="PDF", orderable=False)
+    pdf = tables.TemplateColumn(
+        template_code="""
+        <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_planned_action_pdf' record.pk %}"
+           class="btn btn-sm btn-primary">
+           PDF
+        </a>
+        """,
+        orderable=False
+    )
 
     class Meta(NetBoxTable.Meta):
 

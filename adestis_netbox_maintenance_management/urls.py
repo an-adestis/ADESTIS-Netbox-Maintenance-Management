@@ -134,7 +134,12 @@ urlpatterns = (
         'model': MaintenancePlannedActions
     }),
     
-    path('maintenanceplannedactions/pdf/', MaintenanceActionPlanPDFView.as_view(), name='export_planned_action_pdf'),
+    path(
+          'maintenanceplannedactions/pdf/<int:pk>/',
+          MaintenanceActionPlanPDFView.as_view(),
+          name='export_planned_action_pdf'
+     ),
+
     # Maintenance Reports
     path('maintenancereports/', MaintenanceReportsListView.as_view(),
          name='maintenancereport_list'),

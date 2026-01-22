@@ -279,7 +279,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             
             
             due_today = is_task_due_today(task)
-
             
             if not task_date_or_key:
                 continue
@@ -318,7 +317,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             )
 
             plan.save()
-
 
             assigned_count += len(tasks)
             

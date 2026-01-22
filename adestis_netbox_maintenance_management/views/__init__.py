@@ -46,6 +46,11 @@ def get_line_count(pdf, text, col_width):
 
     return lines
 
+def m2m_to_string(qs, empty="-"):
+    values = [str(obj) for obj in qs.all()]
+    
+
+
 
 from django.http import HttpResponse
 from django.views import View
@@ -137,8 +142,8 @@ class MaintenancePlanPDFView(View):
 
 class MaintenanceActionPlanPDFView(View):
 
-    def get(self, request):
-        
+    def get(self, request, pk):
+
         actions = MaintenancePlannedActions.objects.all()
         pdf = MaintenancePlansPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -148,20 +153,25 @@ class MaintenanceActionPlanPDFView(View):
         headers = ["Maintenance Window", "Maintenance Action", "Virtual Machine", "Description", "Device"]
         col_widths = [40, 40, 40, 40, 30]
         LINE_HEIGHT = 5
-        
+
         for action in actions:
-            maintenance_window = action.maintenance_windows
-            maintenance_action = action.maintenance_action
-            description = action.description
-            vm = action.virtual_machine
-            device = action.device
-            
+            maintenance_window = m2m_to_string(action.maintenance_windows)
+            maintenance_action = m2m_to_string(action.maintenance_action)
+            vm = m2m_to_string(action.virtual_machine)
+            device = m2m_to_string(action.device)
+            description = action.description or "-"
+
+            values = [
+                maintenance_window,
+                maintenance_action,
+                vm,
+                description,
+                device,
+            ]
+
             line_counts = [
-                get_line_count(pdf, maintenance_window, col_widths[0]),
-                get_line_count(pdf, maintenance_action, col_widths[1]),
-                get_line_count(pdf, vm, col_widths[2]),
-                get_line_count(pdf, description, col_widths[3]),
-                get_line_count(pdf, device, col_widths[4]),
+                get_line_count(pdf, values[i], col_widths[i])
+                for i in range(len(values))
             ]
 
             row_height = max(line_counts) * LINE_HEIGHT
@@ -175,33 +185,14 @@ class MaintenanceActionPlanPDFView(View):
                 x += width
 
             # Inhalte
-            pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(maintenance_window), align="C")
-            pdf.set_xy(x_start + col_widths[0], y_start)
-
-            pdf.multi_cell(col_widths[1], LINE_HEIGHT, str(maintenance_action), align="C")
-            pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
-
-            pdf.multi_cell(col_widths[2], LINE_HEIGHT, str(vm), align="C")
-            pdf.set_xy(
-                x_start + col_widths[0] + col_widths[1] + col_widths[2],
-                y_start
-            )
-
-            pdf.multi_cell(col_widths[3], LINE_HEIGHT, str(description))
-            pdf.set_xy(
-                x_start
-                + col_widths[0]
-                + col_widths[1]
-                + col_widths[2]
-                + col_widths[3],
-                y_start
-            )
-
-            pdf.multi_cell(col_widths[4], LINE_HEIGHT, str(device))
+            x = x_start
+            for i, value in enumerate(values):
+                pdf.set_xy(x, y_start)
+                pdf.multi_cell(col_widths[i], LINE_HEIGHT, value, align="C")
+                x += col_widths[i]
 
             pdf.set_xy(x_start, y_start + row_height)
 
-        # PDF zurückgeben
         response = HttpResponse(
             pdf.output(dest="S").encode("latin-1"),
             content_type="application/pdf",
