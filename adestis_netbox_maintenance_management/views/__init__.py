@@ -45,13 +45,7 @@ def get_line_count(pdf, text, col_width):
             line_width = word_width
 
     return lines
-
-def m2m_to_string(qs, empty="-"):
-    values = [str(obj) for obj in qs.all()]
     
-
-
-
 from django.http import HttpResponse
 from django.views import View
 
@@ -142,54 +136,113 @@ class MaintenancePlanPDFView(View):
 
 class MaintenanceActionPlanPDFView(View):
 
+    LINE_HEIGHT = 5
+
+    def render_m2m_cell(self, pdf, x, y, width, relation):
+        pdf.set_xy(x, y)
+
+        if relation is None:
+            return
+
+        # ManyToMany / QuerySet
+        if hasattr(relation, "all"):
+            for obj in relation.all():
+                pdf.multi_cell(width, self.LINE_HEIGHT, str(obj), border=0, align='C')
+                y += self.LINE_HEIGHT * self.get_num_lines(pdf, str(obj), width)
+                pdf.set_xy(x, y)
+            return
+
+        # ForeignKey / einzelnes Objekt
+        pdf.multi_cell(width, self.LINE_HEIGHT, str(relation), border=0, align='C')
+
+    def get_relation_text(self, relation):
+        if relation is None:
+            return ""
+
+        if hasattr(relation, "all"):
+            return "\n".join([str(obj) for obj in relation.all()])
+
+        return str(relation)
+
+    def get_num_lines(self, pdf, text, width):
+        if not text:
+            return 1
+
+        words = str(text).split(' ')
+        line = ""
+        lines = 1
+
+        for word in words:
+            if pdf.get_string_width(line + " " + word) <= width:
+                line += " " + word
+            else:
+                lines += 1
+                line = word
+
+        return lines
+
     def get(self, request, pk):
 
-        actions = MaintenancePlannedActions.objects.all()
+        actions = MaintenanceTasks.objects.all()
+
         pdf = MaintenancePlansPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
         pdf.set_font("Helvetica", size=10)
 
-        headers = ["Maintenance Window", "Maintenance Action", "Virtual Machine", "Description", "Device"]
         col_widths = [40, 40, 40, 40, 30]
-        LINE_HEIGHT = 5
 
         for action in actions:
-            maintenance_window = m2m_to_string(action.maintenance_windows)
-            maintenance_action = m2m_to_string(action.maintenance_action)
-            vm = m2m_to_string(action.virtual_machine)
-            device = m2m_to_string(action.device)
-            description = action.description or "-"
+            description = action.description or ""
 
-            values = [
-                maintenance_window,
-                maintenance_action,
-                vm,
-                description,
-                device,
-            ]
-
-            line_counts = [
-                get_line_count(pdf, values[i], col_widths[i])
-                for i in range(len(values))
-            ]
-
-            row_height = max(line_counts) * LINE_HEIGHT
             x_start = pdf.get_x()
             y_start = pdf.get_y()
 
-            # Rahmen
+            # === Dynamische Zeilenhöhe berechnen ===
+            lines = []
+
+            # Maintenance Windows
+            mw_text = self.get_relation_text(action.maintenance_windows)
+            lines.append(self.get_num_lines(pdf, mw_text, col_widths[0]))
+
+            # Maintenance Actions
+            ma_text = self.get_relation_text(action.maintenance_action)
+            lines.append(self.get_num_lines(pdf, ma_text, col_widths[1]))
+
+            # Virtual Machines
+            vm_text = self.get_relation_text(action.virtual_machine)
+            lines.append(self.get_num_lines(pdf, vm_text, col_widths[2]))
+
+            # Description
+            lines.append(self.get_num_lines(pdf, description, col_widths[3]))
+
+            # Devices
+            dev_text = self.get_relation_text(action.device)
+            lines.append(self.get_num_lines(pdf, dev_text, col_widths[4]))
+
+            row_height = max(lines) * self.LINE_HEIGHT
+
+            # === Rahmen zeichnen ===
             x = x_start
             for width in col_widths:
                 pdf.rect(x, y_start, width, row_height)
                 x += width
 
-            # Inhalte
-            x = x_start
-            for i, value in enumerate(values):
-                pdf.set_xy(x, y_start)
-                pdf.multi_cell(col_widths[i], LINE_HEIGHT, value, align="C")
-                x += col_widths[i]
+            # === Inhalte ===
+            self.render_m2m_cell(pdf, x_start, y_start, col_widths[0], action.maintenance_windows)
+            self.render_m2m_cell(pdf, x_start + col_widths[0], y_start, col_widths[1], action.maintenance_action)
+            self.render_m2m_cell(pdf, x_start + col_widths[0] + col_widths[1], y_start, col_widths[2], action.virtual_machine)
+
+            pdf.set_xy(x_start + col_widths[0] + col_widths[1] + col_widths[2], y_start)
+            pdf.multi_cell(col_widths[3], self.LINE_HEIGHT, description)
+
+            self.render_m2m_cell(
+                pdf,
+                x_start + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3],
+                y_start,
+                col_widths[4],
+                action.device
+            )
 
             pdf.set_xy(x_start, y_start + row_height)
 
@@ -197,6 +250,7 @@ class MaintenanceActionPlanPDFView(View):
             pdf.output(dest="S").encode("latin-1"),
             content_type="application/pdf",
         )
-        response["Content-Disposition"] = f'attachment; filename="planned_action_{action.pk}.pdf"'
-
+        response["Content-Disposition"] = f'attachment; filename="planned_actions_{datetime.today()}.pdf"'
         return response
+
+

@@ -58,6 +58,7 @@ class TasksAffectedMaintenancePlannedActionsView(generic.ObjectChildrenView):
     queryset = MaintenancePlannedActions.objects.all()
     child_model= MaintenanceTasks
     table = MaintenanceTasksTable
+    template_name = "adestis_netbox_maintenance_management/tasks_affect_plannedactions.html"
     actions = {
         'add': {'add'},
         'export': {'view'},

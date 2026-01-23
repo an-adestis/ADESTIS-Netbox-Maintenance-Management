@@ -87,7 +87,7 @@ class MaintenanceTasks(NetBoxModel):
 
     class Meta:
         verbose_name_plural = "Maintenance Tasks"
-        verbose_name = 'Maintenance Tasks'
+        verbose_name = 'Maintenance Task'
         ordering = ('name', 'maintenance_windows__start_time')
 
     def get_absolute_url(self):
