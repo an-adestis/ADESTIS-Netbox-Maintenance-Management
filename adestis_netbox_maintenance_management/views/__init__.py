@@ -168,33 +168,53 @@ class MaintenanceActionPlanPDFView(View):
         if not text:
             return 1
 
-        words = str(text).split(' ')
-        line = ""
-        lines = 1
-
-        for word in words:
-            if pdf.get_string_width(line + " " + word) <= width:
-                line += " " + word
-            else:
+        lines = 0
+        for paragraph in str(text).split("\n"):
+            words = paragraph.split(" ")
+            line = ""
+            if not words:
                 lines += 1
-                line = word
+                continue
+
+            for word in words:
+                if line == "":
+                    new_line = word
+                else:
+                    new_line = line + " " + word
+
+                if pdf.get_string_width(new_line) <= width:
+                    line = new_line
+                else:
+                    lines += 1
+                    line = word
+
+            lines += 1
 
         return lines
 
-    def get(self, request, pk):
 
-        actions = MaintenanceTasks.objects.all()
+    def get(self, request, *args, **kwargs):
+        parent = kwargs["pk"]
+
+        actions = MaintenanceTasks.objects.filter(plans_tasks=parent)
 
         pdf = MaintenancePlansPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
         pdf.set_font("Helvetica", size=10)
+        
+        headers = ["Maintenance Windows", "Maintenance Actions", "Virtual Machine", "Comments", "Device"]
 
         col_widths = [40, 40, 40, 40, 30]
+        
+        pdf.set_font("Helvetica", "B", 10)
+        for i, header in enumerate(headers):
+            pdf.cell(col_widths[i], 8, header, border=1, align="C")
+        pdf.ln()
+        pdf.set_font("Helvetica", "", 10)
 
         for action in actions:
-            description = action.description or ""
-
+            
             x_start = pdf.get_x()
             y_start = pdf.get_y()
 
@@ -213,8 +233,13 @@ class MaintenanceActionPlanPDFView(View):
             vm_text = self.get_relation_text(action.virtual_machine)
             lines.append(self.get_num_lines(pdf, vm_text, col_widths[2]))
 
-            # Description
-            lines.append(self.get_num_lines(pdf, description, col_widths[3]))
+            # Comments
+            comments = "\n".join(
+                " ".join(vm.comments.split())
+                for vm in action.virtual_machine.all()
+                if vm.comments
+            )
+            lines.append(self.get_num_lines(pdf, comments, col_widths[3]))
 
             # Devices
             dev_text = self.get_relation_text(action.device)
@@ -234,7 +259,13 @@ class MaintenanceActionPlanPDFView(View):
             self.render_m2m_cell(pdf, x_start + col_widths[0] + col_widths[1], y_start, col_widths[2], action.virtual_machine)
 
             pdf.set_xy(x_start + col_widths[0] + col_widths[1] + col_widths[2], y_start)
-            pdf.multi_cell(col_widths[3], self.LINE_HEIGHT, description)
+            pdf.multi_cell(
+                col_widths[3],
+                self.LINE_HEIGHT,
+                comments,
+                border=0,
+                align="L"   # ← EXTREM WICHTIG
+            )
 
             self.render_m2m_cell(
                 pdf,
@@ -252,5 +283,3 @@ class MaintenanceActionPlanPDFView(View):
         )
         response["Content-Disposition"] = f'attachment; filename="planned_actions_{datetime.today()}.pdf"'
         return response
-
-
