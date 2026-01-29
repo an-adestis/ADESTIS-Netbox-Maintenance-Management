@@ -136,7 +136,7 @@ class MaintenancePlanPDFView(View):
 
 class MaintenanceActionPlanPDFView(View):
 
-    LINE_HEIGHT = 5
+    LINE_HEIGHT = 6
 
     def render_m2m_cell(self, pdf, x, y, width, relation):
         pdf.set_xy(x, y)
@@ -148,6 +148,8 @@ class MaintenanceActionPlanPDFView(View):
         if hasattr(relation, "all"):
             for obj in relation.all():
                 pdf.multi_cell(width, self.LINE_HEIGHT, str(obj), border=0, align='C')
+
+                # <-- hier darf nur get_num_lines genutzt werden
                 y += self.LINE_HEIGHT * self.get_num_lines(pdf, str(obj), width)
                 pdf.set_xy(x, y)
             return
@@ -163,6 +165,17 @@ class MaintenanceActionPlanPDFView(View):
             return "\n".join([str(obj) for obj in relation.all()])
 
         return str(relation)
+
+    def get_num_lines_for_relation(self, pdf, relation, width):
+        if relation is None:
+            return 1
+
+        if hasattr(relation, "all"):
+            text = "\n".join([str(obj) for obj in relation.all()])
+        else:
+            text = str(relation)
+
+        return self.get_num_lines(pdf, text, width)
 
     def get_num_lines(self, pdf, text, width):
         if not text:
@@ -192,7 +205,6 @@ class MaintenanceActionPlanPDFView(View):
 
         return lines
 
-
     def get(self, request, *args, **kwargs):
         parent = kwargs["pk"]
 
@@ -202,11 +214,10 @@ class MaintenanceActionPlanPDFView(View):
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
         pdf.set_font("Helvetica", size=10)
-        
-        headers = ["Maintenance Windows", "Maintenance Actions", "Virtual Machine", "Comments", "Device"]
 
+        headers = ["Maintenance Windows", "Maintenance Actions", "Virtual Machine", "Comments", "Device"]
         col_widths = [40, 40, 40, 40, 30]
-        
+
         pdf.set_font("Helvetica", "B", 10)
         for i, header in enumerate(headers):
             pdf.cell(col_widths[i], 8, header, border=1, align="C")
@@ -214,7 +225,7 @@ class MaintenanceActionPlanPDFView(View):
         pdf.set_font("Helvetica", "", 10)
 
         for action in actions:
-            
+
             x_start = pdf.get_x()
             y_start = pdf.get_y()
 
@@ -222,28 +233,25 @@ class MaintenanceActionPlanPDFView(View):
             lines = []
 
             # Maintenance Windows
-            mw_text = self.get_relation_text(action.maintenance_windows)
-            lines.append(self.get_num_lines(pdf, mw_text, col_widths[0]))
+            lines.append(self.get_num_lines_for_relation(pdf, action.maintenance_windows, col_widths[0]))
 
             # Maintenance Actions
-            ma_text = self.get_relation_text(action.maintenance_action)
-            lines.append(self.get_num_lines(pdf, ma_text, col_widths[1]))
+            lines.append(self.get_num_lines_for_relation(pdf, action.maintenance_action, col_widths[1]))
 
             # Virtual Machines
-            vm_text = self.get_relation_text(action.virtual_machine)
-            lines.append(self.get_num_lines(pdf, vm_text, col_widths[2]))
+            lines.append(self.get_num_lines_for_relation(pdf, action.virtual_machine, col_widths[2]))
 
             # Comments
             comments = "\n".join(
-                " ".join(vm.comments.split())
+                " ".join(line.split())
                 for vm in action.virtual_machine.all()
                 if vm.comments
+                for line in vm.comments.splitlines()
             )
             lines.append(self.get_num_lines(pdf, comments, col_widths[3]))
 
             # Devices
-            dev_text = self.get_relation_text(action.device)
-            lines.append(self.get_num_lines(pdf, dev_text, col_widths[4]))
+            lines.append(self.get_num_lines_for_relation(pdf, action.device, col_widths[4]))
 
             row_height = max(lines) * self.LINE_HEIGHT
 
@@ -258,15 +266,11 @@ class MaintenanceActionPlanPDFView(View):
             self.render_m2m_cell(pdf, x_start + col_widths[0], y_start, col_widths[1], action.maintenance_action)
             self.render_m2m_cell(pdf, x_start + col_widths[0] + col_widths[1], y_start, col_widths[2], action.virtual_machine)
 
+            # Comments
             pdf.set_xy(x_start + col_widths[0] + col_widths[1] + col_widths[2], y_start)
-            pdf.multi_cell(
-                col_widths[3],
-                self.LINE_HEIGHT,
-                comments,
-                border=0,
-                align="L"   # ← EXTREM WICHTIG
-            )
+            pdf.multi_cell(col_widths[3], self.LINE_HEIGHT, comments, border=0, align="L")
 
+            # Device
             self.render_m2m_cell(
                 pdf,
                 x_start + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3],
@@ -275,11 +279,12 @@ class MaintenanceActionPlanPDFView(View):
                 action.device
             )
 
+            # Cursor für nächste Zeile setzen
             pdf.set_xy(x_start, y_start + row_height)
 
         response = HttpResponse(
             pdf.output(dest="S").encode("latin-1"),
             content_type="application/pdf",
         )
-        response["Content-Disposition"] = f'attachment; filename="planned_actions_{datetime.today()}.pdf"'
+        response["Content-Disposition"] = f'attachment; filename=\"planned_actions_{datetime.today()}.pdf\"'
         return response
