@@ -5,13 +5,20 @@ class AdestisMaintenanceManagementAppConfig(AppConfig):
 
     def ready(self):
         from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
-        from adestis_netbox_maintenance_management.plan_jobs import AutoCreateMaintenancePlannedActions
-        AutoCreateMaintenanceTasks.schedule(
-            name="plan_metadata_extractor",
-            interval=15  
+        from adestis_netbox_maintenance_management.plan_jobs import (
+            AutoCreateMaintenancePlannedActions,
         )
-        
+
+        # Task 1
+        AutoCreateMaintenanceTasks.schedule(
+            name="auto_create_maintenance_tasks",
+            interval=15,   # Minuten
+            overwrite=True,
+        )
+
+        # Task 2
         AutoCreateMaintenancePlannedActions.schedule(
-            name="plan_metadata_extractor",
-            interval=15  
+            name="auto_create_maintenance_planned_actions",
+            interval=1,    # 1 Minute
+            overwrite=True,
         )

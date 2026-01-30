@@ -150,7 +150,7 @@ class MaintenanceActionPlanPDFView(View):
                 pdf.multi_cell(width, self.LINE_HEIGHT, str(obj), border=0, align='C')
 
                 # <-- hier darf nur get_num_lines genutzt werden
-                y += self.LINE_HEIGHT * self.get_num_lines(pdf, str(obj), width)
+                y += self.LINE_HEIGHT * self.get_num_lines_for_relation(pdf, str(obj), width)
                 pdf.set_xy(x, y)
             return
 
@@ -175,35 +175,13 @@ class MaintenanceActionPlanPDFView(View):
         else:
             text = str(relation)
 
-        return self.get_num_lines(pdf, text, width)
-
-    def get_num_lines(self, pdf, text, width):
-        if not text:
-            return 1
-
         lines = 0
-        for paragraph in str(text).split("\n"):
-            words = paragraph.split(" ")
-            line = ""
-            if not words:
-                lines += 1
-                continue
 
-            for word in words:
-                if line == "":
-                    new_line = word
-                else:
-                    new_line = line + " " + word
+        for paragraph in text.split("\n"):
+            split_lines = pdf.multi_cell(width, self.LINE_HEIGHT, paragraph, border=0, align="C", split_only=True)
+            lines += len(split_lines)
 
-                if pdf.get_string_width(new_line) <= width:
-                    line = new_line
-                else:
-                    lines += 1
-                    line = word
-
-            lines += 1
-
-        return lines
+        return max(1, lines)
 
     def get(self, request, *args, **kwargs):
         parent = kwargs["pk"]
@@ -248,7 +226,7 @@ class MaintenanceActionPlanPDFView(View):
                 if vm.comments
                 for line in vm.comments.splitlines()
             )
-            lines.append(self.get_num_lines(pdf, comments, col_widths[3]))
+            lines.append(self.get_num_lines_for_relation(pdf, comments, col_widths[3]))
 
             # Devices
             lines.append(self.get_num_lines_for_relation(pdf, action.device, col_widths[4]))
@@ -287,4 +265,4 @@ class MaintenanceActionPlanPDFView(View):
             content_type="application/pdf",
         )
         response["Content-Disposition"] = f'attachment; filename=\"planned_actions_{datetime.today()}.pdf\"'
-        return response
+        return responseks
