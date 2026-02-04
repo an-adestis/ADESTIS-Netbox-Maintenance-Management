@@ -9,16 +9,16 @@ class AdestisMaintenanceManagementAppConfig(AppConfig):
             AutoCreateMaintenancePlannedActions,
         )
 
-        # Task 1
+        
         AutoCreateMaintenanceTasks.schedule(
             name="auto_create_maintenance_tasks",
-            interval=15,   # Minuten
+            interval=15,   
             overwrite=True,
         )
 
-        # Task 2
+        
         AutoCreateMaintenancePlannedActions.schedule(
             name="auto_create_maintenance_planned_actions",
-            interval=1,    # Minute
+            interval=1,    
             overwrite=True,
         )

@@ -37,7 +37,7 @@ class MaintenancePlansFilterSet(NetBoxModelFilterSet):
     
     class Meta:
         model = MaintenancePlans
-        fields = ['id', 'name', 'tenant', 'refrence_number']
+        fields = ['id', 'name', 'tenant', 'reference_number']
     
 
     def search(self, queryset, name, value):
