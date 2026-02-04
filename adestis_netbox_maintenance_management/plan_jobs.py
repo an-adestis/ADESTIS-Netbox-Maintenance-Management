@@ -60,14 +60,6 @@ def get_grouping_key_for_date(day) -> str:
 
 def get_task_date(task):
 
-    # try:
-    #     # logger.error("Type: "+type(task).__name__)
-    #     logger.error(task.__dict__)
-
-    #     window = task.maintenance_windows
-    #     logger.warning(f"Window: {window}")
-    # except Exception as e:
-    #     logger.error(f"ERROR in window: {e!r}")
     window = task.maintenance_windows
     # --- CRON-Logik ---
     if window.special_ordinal:
@@ -139,7 +131,7 @@ def is_task_due_today(task):
     # logger.warning(f"Logger Key:{key}")
     if not key:
         return False
-
+    
     if key.startswith("date_"):
         key_date = datetime.strptime(key.replace("date_", ""), "%Y%m%d").date()
         return key_date == today
@@ -148,7 +140,7 @@ def is_task_due_today(task):
         for day_name, wd_index in WEEKDAY_MAP.items():
             if day_name in key and wd_index == today_weekday:
                 return True
-
+            
     elif key.startswith("Monthday"):
         parts = key.split()
         day_num = int(parts[1])
@@ -238,6 +230,9 @@ def is_task_due_in_future(task):
             return next_date > today
         except Exception:
             return False
+        
+    elif key.startswith("Daily"):
+        return True
 
     # Single-Date Task
     elif key.startswith("Date"):

@@ -41,7 +41,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 if not task:
 
                     schedule_label = (
-                        str(window.start_day or window.weekdays or window.day_of_month or "Schedule")
+                        str(window.start_day or window.weekdays or window.day_of_month or "")
                     )
 
                     if schedule_label.lower() in window.name.lower():
