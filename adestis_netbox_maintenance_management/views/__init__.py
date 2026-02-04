@@ -265,4 +265,4 @@ class MaintenanceActionPlanPDFView(View):
             content_type="application/pdf",
         )
         response["Content-Disposition"] = f'attachment; filename=\"planned_actions_{datetime.today()}.pdf\"'
-        return responseks
+        return response

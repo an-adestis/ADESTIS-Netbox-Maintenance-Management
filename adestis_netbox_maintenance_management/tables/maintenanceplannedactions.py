@@ -44,23 +44,13 @@ class MaintenancePlannedActionsTable(NetBoxTable):
     device = columns.ManyToManyColumn(
         linkify_item = True
     )
-    
-    pdf = tables.TemplateColumn(
-        template_code="""
-        <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_planned_action_pdf' record.pk %}"
-           class="btn btn-sm btn-primary">
-           PDF
-        </a>
-        """,
-        orderable=False
-    )
 
     class Meta(NetBoxTable.Meta):
 
         model = MaintenancePlannedActions
         
-        fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments', 'pdf']
-        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device', 'pdf']
+        fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
+        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device']
         
     def render_pdf(self, record):
         url = reverse(

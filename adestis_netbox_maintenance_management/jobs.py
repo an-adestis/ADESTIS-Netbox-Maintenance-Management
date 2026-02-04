@@ -15,7 +15,6 @@ class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"
         
-
     def run(self, *args, **kwargs):
         today = date.today()
         created_count = 0
@@ -28,10 +27,6 @@ class AutoCreateMaintenanceTasks(JobRunner):
 
             for action in actions:
                 logger.error(f"Tasks Job wurde ausgeführt")
-
-                # maintenance_tasks = MaintenanceTasks.objects.filter(maintenance_action=action).first()
-
-                     
                 # Prüfen, ob für diese Action bereits ein Task existiert
                 task = MaintenanceTasks.objects.filter(
                     maintenance_action=action
