@@ -42,10 +42,10 @@ def get_grouping_key_for_date(day) -> str:
     """Erzeugt einen eindeutigen Key für das Tagesdatum (nimmt auch Strings entgegen)."""
     if isinstance(day, str):
         try:
-            # String in Datum konvertieren (ISO-Format)
+            
             day = datetime.fromisoformat(day).date()
         except ValueError:
-            # default: today
+            
             day = date.today()
     elif isinstance(day, datetime):
         day = day.date()
@@ -59,16 +59,16 @@ def get_grouping_key_for_date(day) -> str:
 def get_task_date(task):
 
     window = task.maintenance_windows
-    # --- CRON-Logik ---
+    
     if window.special_ordinal:
         try:
-            # cron description
-            desc = get_description(window.special_ordinal)  # z. B. "Every minute, only on Monday"
             
-            # Prüfe, ob ein Wochentag im Beschreibungstext vorkommt
+            desc = get_description(window.special_ordinal)  
+            
+            
             for day in WEEKDAY_MAP:
                 if day.lower() in desc.lower():
-                    return f"Weekday {day}"  # gleicher Key wie Weekly
+                    return f"Weekday {day}"  
                 
             month_match = re.search(r"day\s+(\d+).*?only in\s+([a-zA-Z]+)", desc)
             if month_match:
@@ -77,15 +77,14 @@ def get_task_date(task):
                 month_num = MONTH_MAP.get(month_name, date.today().month)
                 return f"Monthday {day_num} Month {month_num}"
 
-            # Prüfe auf 'on day X of the month' (ohne konkreten Monat)
+            
             simple_month_match = re.search(r"day\s+(\d+)\s+of\s+the\s+month", desc)
             if simple_month_match:
                 day_num = simple_month_match.group(1)
-                # Füge aktuellen Monat hinzu, damit es mit normalen Monthly-Tasks übereinstimmt
                 current_month = date.today().month
                 return f"Monthday {day_num} Month {current_month}"
                 
-            return f"cron {desc}"  # fallback
+            return f"cron {desc}"  
         except Exception:
             return f"cron {desc}"
 
@@ -94,17 +93,15 @@ def get_task_date(task):
         return "Daily"
 
     if window.recurrence_type == "weekly" and window.weekdays:
-        # Kann entweder ein String ("Monday, Tuesday") oder eine Liste sein
         
-        label = f"Weekday {window.weekdays}"  # z. B. "Weekday Monday, Friday"
+        
+        label = f"Weekday {window.weekdays}"  
         if getattr(window, "week_in_month", None):
-            label += f" ({window.get_week_in_month_display()})"  # z. B. "(First)"
+            label += f" ({window.get_week_in_month_display()})"  
         return label
-
 
     if window.recurrence_type == "monthly":
         if getattr(window, "day_of_month", None):
-            # Verwende das aktuelle Monat, wenn kein month-Feld gesetzt ist
             current_month = date.today().month
             return f"Monthday {window.day_of_month} Month {current_month}"
         elif getattr(window, "monthdays", None):
@@ -126,7 +123,7 @@ def is_task_due_today(task):
     today_month = today.month
 
     key = get_task_date(task)
-    # logger.warning(f"Logger Key:{key}")
+    
     if not key:
         return False
     
@@ -154,13 +151,11 @@ def is_task_due_today(task):
             return False
         
     elif key.startswith("Date"):
-        # Erwartetes Format: "Date 2025-11-14"
         try:
             date_str = key.replace("Date ", "").strip()
             key_date = datetime.fromisoformat(date_str).date()
             return key_date == today
         except ValueError:
-            # logger.warning(f"Ungültiges Datumsformat im Key: {key}")
             return False
 
     return False
@@ -173,13 +168,11 @@ def is_task_due_in_future(task):
 
     if not key:
         return False
-
-    # Normales Datumsformat
+    
     if key.startswith("date_"):
         key_date = datetime.strptime(key.replace("date_", ""), "%Y%m%d").date()
         return key_date > today
 
-    # Wochentag-Tasks → nächster Wochentag ermitteln
     elif key.startswith("Weekday"):
         target_weekday = next((WEEKDAY_MAP[day_name] for day_name in WEEKDAY_MAP if day_name in key), None)
         if target_weekday is None:
@@ -187,32 +180,27 @@ def is_task_due_in_future(task):
          
         week_in_month: Optional[int] = task.maintenance_windows.week_in_month 
         if week_in_month:
-            # 6 = Every → jeden Wochentag berücksichtigen
+            
             if week_in_month == 6:
-                # Nächster Wochentag im Monat
+                
                 next_date = today + timedelta((target_weekday - today.weekday() + 7) % 7)
             else:
-                # Bestimmte Woche im Monat: 1,2,3,4,5 (Last)
                 year = today.year
                 month = today.month
-                if week_in_month == 5:  # "Last"
-                    # Letzten target_weekday des Monats finden
+                if week_in_month == 5:  
                     last_day = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year, 12, 31)
                     day_diff = (last_day.weekday() - target_weekday) % 7
                     next_date = last_day - timedelta(days=day_diff)
                 else:
-                    # N-ten Wochentag des Monats
                     first_day = date(year, month, 1)
                     first_target = first_day + timedelta((target_weekday - first_day.weekday() + 7) % 7)
                     next_date = first_target + timedelta(weeks=week_in_month-1)
 
             return next_date > today
         else:
-            # Kein week_in_month angegeben → nächster Wochentag
             next_date = today + timedelta((target_weekday - today.weekday() + 7) % 7)
             return next_date > today
 
-    # Monatstag mit Monat
     elif key.startswith("Monthday"):
         parts = key.split()
         day_num = int(parts[1])
@@ -220,7 +208,6 @@ def is_task_due_in_future(task):
         key_date = date(today.year, month_num, day_num)
         return key_date > today
 
-    # Cron Expression → nächstes Datum prüfen
     elif key.startswith("cron"):
         cron_expr = task.maintenance_windows.special_ordinal
         try:
@@ -232,7 +219,6 @@ def is_task_due_in_future(task):
     elif key.startswith("Daily"):
         return True
 
-    # Single-Date Task
     elif key.startswith("Date"):
         try:
             date_str = key.replace("Date ", "").strip()
@@ -243,7 +229,7 @@ def is_task_due_in_future(task):
 
     return False
 
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+@system_job(interval=600)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
@@ -259,7 +245,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
         for plan in MaintenancePlannedActions.objects.filter(grouping_key="Today"):
             plan.maintenance_tasks.clear()
 
-        # Alle Wartungsaufgaben inkl. zugehörigem Zeitfenster laden
         tasks = MaintenanceTasks.objects.select_related("maintenance_windows").all()
         
         logger.error(f"Job wurde ausgeführt")
@@ -267,7 +252,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             window = task.maintenance_windows
             if not window:
                 continue
-            # Gruppierungskey oder Datum bestimmen
             task_date_or_key = get_task_date(task)
             
             
@@ -280,20 +264,16 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             if due_today == True:
                 dictionary_key = "Today"
                 
-            # Aufgaben nach Key gruppieren
             grouped_tasks.setdefault(dictionary_key, []).append(task)
 
-        # Jetzt für jede Gruppe einen Maintenance Plan anlegen oder aktualisieren
         for key, tasks in grouped_tasks.items():
             
             all_archived = all(task.status == TaskStatusChoices.STATUS_ARCHIVED for task in tasks)
 
             if all_archived:
-                continue  # → Nichts erstellen
+                continue  
             
             plan_name = f"Plan for Tasks {key}"
-
-            # Wartungsplan anhand des Gruppierungsschlüssels erstellen oder abrufen
             plan, created = MaintenancePlannedActions.objects.get_or_create(
                 grouping_key=key,
                 defaults={"name": plan_name},
@@ -301,7 +281,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             
             plan.maintenance_tasks.set(tasks)
 
-            # ManyToMany: assign related objects
             plan.virtual_machine.set(
                 VirtualMachine.objects.filter(id__in=[vm.id for task in tasks for vm in task.virtual_machine.all()])
             )

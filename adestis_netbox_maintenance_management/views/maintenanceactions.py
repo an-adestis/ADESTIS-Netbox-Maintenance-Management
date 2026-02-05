@@ -33,7 +33,6 @@ __all__ = (
     'DeviceAffectedMaintenanceActionsView',
     'DeviceAffectedMaintenanceActionsView',
     'MaintenanceActionsAssignDevice',
-    # 'MaintenanceActionsRemoveDeviceView',
     
     'VirtualMachineAffectedMaintenanceActionsView',
     'MaintenanceActionsAffectVirtualMachineView',
@@ -58,8 +57,6 @@ class MaintenanceActionsListView(generic.ObjectListView):
 class MaintenanceActionsEditView(generic.ObjectEditView):
     queryset = MaintenanceActions.objects.all()
     form = MaintenanceActionsForm
-    # template_name = "adestis_netbox_maintenance_management/maintenanceactionsadd.html"
-
 
 class MaintenanceActionsDeleteView(generic.ObjectDeleteView):
     queryset = MaintenanceActions.objects.all() 
@@ -111,8 +108,6 @@ class DeviceAffectedMaintenanceActionsView(generic.ObjectChildrenView):
     actions = {
         'add': {'add'},
         'export': {'view'},
-        # 'bulk_import': {'add'},
-        # 'bulk_edit': {'change'},
         'bulk_remove_maintenance_actions': {'change'},
     }
 
@@ -325,8 +320,6 @@ class VirtualMachineAffectedMaintenanceActionsView(generic.ObjectChildrenView):
     actions = {
         'add': {'add'},
         'export': {'view'},
-        # 'bulk_import': {'add'},
-        # 'bulk_edit': {'change'},
         'bulk_remove_maintenance_actions': {'change'},
     }
 

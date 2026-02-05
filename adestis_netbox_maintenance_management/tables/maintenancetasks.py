@@ -30,7 +30,7 @@ class MaintenanceTasksTable(NetBoxTable):
     virtual_machine = columns.ManyToManyColumn(
         linkify = True,
         verbose_name="Virtual Machines",
-        transform=lambda vm: vm.name,  # oder was du anzeigen willst
+        transform=lambda vm: vm.name,  
         orderable=False
     )
     
@@ -40,10 +40,6 @@ class MaintenanceTasksTable(NetBoxTable):
         html_parts = ['<ul style="list-style:none; padding-left:2px; width:500px;">']
 
         for i, vm in enumerate(vms):
-            # if i == max_visible:
-            #     remaining = len(vms) - max_visible
-            #     html_parts.append(f'<li><a href="#" onclick="document.getElementById(\'extra_vms_{record.id}\').style.display=\'block\'; this.style.display=\'none\'; return false;">+{remaining} more</a></li>')
-            #     html_parts.append(f'<div id="extra_vms_{record.id}" style="display:none;">')
 
             checkbox_id = f"checkbox_{record.id}_{vm.id}"
             checkbox_html = f'<input type="checkbox" id="{checkbox_id}" onclick="saveCheckboxState(\'{checkbox_id}\')">'
@@ -67,10 +63,6 @@ class MaintenanceTasksTable(NetBoxTable):
             </li>
             ''')
 
-
-
-        # JavaScript nur EINMAL anhängen
-        # → prüft, ob Script schon existiert (damit es nur einmal eingefügt wird)
         js_script = """
         <script>
             if (!window.__vmCheckboxScriptLoaded) {
@@ -91,7 +83,6 @@ class MaintenanceTasksTable(NetBoxTable):
         </script>
         """
 
-        # HTML + Script zusammen zurückgeben
         return mark_safe("".join(html_parts) + js_script)
     
     device = columns.ManyToManyColumn(
@@ -106,8 +97,7 @@ class MaintenanceTasksTable(NetBoxTable):
     maintenance_windows = tables.Column(
         linkify= True
     )
-    
-        # 👉 Hier die neuen Felder aus dem verknüpften Modell:
+
     start_time = tables.TimeColumn(
         accessor="maintenance_windows.start_time",
         verbose_name="Start Time",

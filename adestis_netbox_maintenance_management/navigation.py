@@ -3,9 +3,6 @@ from netbox.choices import ButtonColorChoices
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-#
-# Menu Items
-#
 
 maintenance_windows_item = PluginMenuItem(
     link='plugins:adestis_netbox_maintenance_management:maintenancewindows_list',
@@ -58,8 +55,6 @@ maintenance_plans_item = PluginMenuItem(
     )
 )
 
-
-
 maintenance_tasks_item = PluginMenuItem(
     link='plugins:adestis_netbox_maintenance_management:maintenancetasks_list',
     link_text=_('Maintenance Tasks'),
@@ -89,10 +84,6 @@ maintenance_reports_item = PluginMenuItem(
         ),
     )
 )
-
-#
-# MENU WITH GROUPS (THIS IS VALID FOR YOUR NETBOX VERSION)
-#
 
 plugin_settings = settings.PLUGINS_CONFIG.get('adestis_netbox_maintenance_management', {})
 

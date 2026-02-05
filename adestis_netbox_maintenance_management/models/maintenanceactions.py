@@ -11,13 +11,13 @@ from django.contrib.postgres.fields import ArrayField
 from datetime import timedelta
 from adestis_netbox_maintenance_management.models import MaintenanceWindows
 from core.choices import JobIntervalChoices
-
+from netbox.models.features import JobsMixin
 
 __all__ = (
     'MaintenanceActions',
 )
 
-class MaintenanceActions(NetBoxModel):
+class MaintenanceActions(NetBoxModel, JobsMixin):
 
     comments = django_models.TextField(
         blank=True
@@ -67,9 +67,9 @@ class MaintenanceActions(NetBoxModel):
     
     def save(self, *args, **kwargs):
         from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
-        AutoCreateMaintenanceTasks.enqueue(interval=JobIntervalChoices.INTERVAL_MINUTELY)        
+        AutoCreateMaintenanceTasks.enqueue(instance=self, interval=JobIntervalChoices.INTERVAL_MINUTELY)        
         return super().save(*args, **kwargs)
 
     def sync(self):
         from adestis_netbox_maintenance_management.jobs import AutoCreateMaintenanceTasks
-        AutoCreateMaintenanceTasks.enqueue()
+        AutoCreateMaintenanceTasks.enqueue(instance=self)

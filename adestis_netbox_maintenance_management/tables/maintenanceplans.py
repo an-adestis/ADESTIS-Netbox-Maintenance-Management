@@ -24,31 +24,15 @@ class MaintenancePlansTable(NetBoxTable):
         linkify=True
     )
     
-    refrence_number = tables.Column()
+    reference_number = tables.Column()
     
-    # pdf = tables.TemplateColumn(
-    #     template_code="""
-    #     <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf' record.pk %}"
-    #        class="btn btn-sm btn-primary">
-    #        PDF
-    #     </a>
-    #     """,
-    #     orderable=False
-    # )
-
     class Meta(NetBoxTable.Meta):
 
         model = MaintenancePlans
         
-        fields = ['name',  'tenant', 'refrence_number', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'refrence_number' ]
+        fields = ['name',  'tenant', 'reference_number', 'description', 'tags', 'comments']
+        default_columns = [ 'name', 'tenant', 'reference_number' ]
         
-    # def render_pdf(self, record):
-    #     url = reverse(
-    #         "plugins:adestis_netbox_maintenance_management:export_pdf",
-    #         args=[record.pk],
-    #     )
-    #     return mark_safe(f'<a class="btn btn-sm btn-primary" href="{url}">PDF</a>')
 
 
         

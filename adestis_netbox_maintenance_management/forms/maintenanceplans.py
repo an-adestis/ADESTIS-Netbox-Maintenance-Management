@@ -36,14 +36,14 @@ class MaintenancePlansForm(NetBoxModelForm):
     )
     
     fieldsets = (
-        FieldSet('name', 'refrence_number', 'description', 'tags',  name=_('Maintenance Plans')),
+        FieldSet('name', 'reference_number', 'description', 'tags',  name=_('Maintenance Plans')),
         FieldSet('tenant', name=_("Tenant")),
     )
     
     class Meta:
         model = MaintenancePlans
         
-        fields = ['name', 'refrence_number', 'tenant', 'description', 'tags']
+        fields = ['name', 'reference_number', 'tenant', 'description', 'tags']
         
 class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
@@ -57,7 +57,7 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
         label=_("Name"),
     )
     
-    refrence_number = forms.IntegerField(
+    reference_number = forms.IntegerField(
         required=False,
         label=_("Refrence Number")
     )
@@ -77,7 +77,7 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
     model = MaintenancePlans
 
     fieldsets = (
-        FieldSet('name', 'refrence_number', 'description', 'tags', name=_('Maintenance Plans')),
+        FieldSet('name', 'reference_number', 'description', 'tags', name=_('Maintenance Plans')),
         FieldSet('tenant', name=_("Tenant")),
         
     )
@@ -98,7 +98,7 @@ class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
 
     fieldsets = (
         FieldSet('q', 'index',),
-        FieldSet('name', 'tag', 'refrence_number', name=_('Maintenance Plans')),
+        FieldSet('name', 'tag', 'reference_number', name=_('Maintenance Plans')),
         FieldSet('tenant_id', name=_("Tenant")),
         
     )
@@ -122,7 +122,7 @@ class MaintenancePlansCSVForm(NetBoxModelImportForm):
     
     class Meta:
         model = MaintenancePlans
-        fields = ['name', 'tenant', 'refrence_number', 'description', 'tags']
+        fields = ['name', 'tenant', 'reference_number', 'description', 'tags']
         default_return_url = 'plugins:adestis_netbox_maintenance_management:maintenanceplans_list'
 
 

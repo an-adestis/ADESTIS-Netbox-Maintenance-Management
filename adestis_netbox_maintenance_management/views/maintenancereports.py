@@ -7,9 +7,6 @@ from netbox.views import generic
 from django.utils.translation import gettext as _
 from django.shortcuts import render, redirect
 
-# import weasyprint  # falls du PDF erzeugst
-
-
 from django.views.generic import TemplateView
 
 

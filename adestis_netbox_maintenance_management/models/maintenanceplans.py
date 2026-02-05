@@ -22,7 +22,7 @@ class MaintenancePlans(NetBoxModel):
         max_length=150
     )
     
-    refrence_number = django_models.IntegerField(
+    reference_number = django_models.IntegerField(
         verbose_name='Refrence Number',
         blank=True,
         null = True

@@ -28,10 +28,9 @@ class MaintenancePlansPDF(FPDF, HTMLMixin):
 
 
 def get_line_count(pdf, text, col_width):
-    # Alles in String umwandeln – None, int, bool etc. safe
+
     text = "" if text is None else str(text)
 
-    # Lines berechnen – wir splitten einfach an Leerzeichen
     words = text.split(" ")
     lines = 1
     line_width = 0
@@ -70,12 +69,9 @@ class MaintenancePlanPDFView(View):
         pdf.ln()
         pdf.set_font("Helvetica", "", 10)
 
-        # ---------------------------------------------
-        # ÜBER ALLE PLÄNE ITERIEREN
-        # ---------------------------------------------
         for plan in plans:
 
-            ref_number = plan.refrence_number or ""
+            ref_number = plan.reference_number or ""
             done = "X"
             name = plan.name or ""
             description = plan.description or ""
@@ -144,17 +140,14 @@ class MaintenanceActionPlanPDFView(View):
         if relation is None:
             return
 
-        # ManyToMany / QuerySet
         if hasattr(relation, "all"):
             for obj in relation.all():
                 pdf.multi_cell(width, self.LINE_HEIGHT, str(obj), border=0, align='C')
 
-                # <-- hier darf nur get_num_lines genutzt werden
                 y += self.LINE_HEIGHT * self.get_num_lines_for_relation(pdf, str(obj), width)
                 pdf.set_xy(x, y)
             return
 
-        # ForeignKey / einzelnes Objekt
         pdf.multi_cell(width, self.LINE_HEIGHT, str(relation), border=0, align='C')
 
     def get_relation_text(self, relation):
@@ -207,19 +200,14 @@ class MaintenanceActionPlanPDFView(View):
             x_start = pdf.get_x()
             y_start = pdf.get_y()
 
-            # === Dynamische Zeilenhöhe berechnen ===
             lines = []
 
-            # Maintenance Windows
             lines.append(self.get_num_lines_for_relation(pdf, action.maintenance_windows, col_widths[0]))
 
-            # Maintenance Actions
             lines.append(self.get_num_lines_for_relation(pdf, action.maintenance_action, col_widths[1]))
 
-            # Virtual Machines
             lines.append(self.get_num_lines_for_relation(pdf, action.virtual_machine, col_widths[2]))
 
-            # Comments
             comments = "\n".join(
                 " ".join(line.split())
                 for vm in action.virtual_machine.all()
@@ -228,27 +216,22 @@ class MaintenanceActionPlanPDFView(View):
             )
             lines.append(self.get_num_lines_for_relation(pdf, comments, col_widths[3]))
 
-            # Devices
             lines.append(self.get_num_lines_for_relation(pdf, action.device, col_widths[4]))
 
             row_height = max(lines) * self.LINE_HEIGHT
 
-            # === Rahmen zeichnen ===
             x = x_start
             for width in col_widths:
                 pdf.rect(x, y_start, width, row_height)
                 x += width
 
-            # === Inhalte ===
             self.render_m2m_cell(pdf, x_start, y_start, col_widths[0], action.maintenance_windows)
             self.render_m2m_cell(pdf, x_start + col_widths[0], y_start, col_widths[1], action.maintenance_action)
             self.render_m2m_cell(pdf, x_start + col_widths[0] + col_widths[1], y_start, col_widths[2], action.virtual_machine)
 
-            # Comments
             pdf.set_xy(x_start + col_widths[0] + col_widths[1] + col_widths[2], y_start)
             pdf.multi_cell(col_widths[3], self.LINE_HEIGHT, comments, border=0, align="L")
 
-            # Device
             self.render_m2m_cell(
                 pdf,
                 x_start + col_widths[0] + col_widths[1] + col_widths[2] + col_widths[3],
@@ -257,12 +240,12 @@ class MaintenanceActionPlanPDFView(View):
                 action.device
             )
 
-            # Cursor für nächste Zeile setzen
             pdf.set_xy(x_start, y_start + row_height)
 
         response = HttpResponse(
             pdf.output(dest="S").encode("latin-1"),
             content_type="application/pdf",
         )
+        
         response["Content-Disposition"] = f'attachment; filename=\"planned_actions_{datetime.today()}.pdf\"'
         return response
