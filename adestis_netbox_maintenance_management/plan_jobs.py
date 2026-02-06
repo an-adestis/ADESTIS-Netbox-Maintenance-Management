@@ -65,7 +65,6 @@ def get_task_date(task):
             
             desc = get_description(window.special_ordinal)  
             
-            
             for day in WEEKDAY_MAP:
                 if day.lower() in desc.lower():
                     return f"Weekday {day}"  
@@ -76,7 +75,6 @@ def get_task_date(task):
                 month_name = month_match.group(2)
                 month_num = MONTH_MAP.get(month_name, date.today().month)
                 return f"Monthday {day_num} Month {month_num}"
-
             
             simple_month_match = re.search(r"day\s+(\d+)\s+of\s+the\s+month", desc)
             if simple_month_match:
@@ -88,13 +86,11 @@ def get_task_date(task):
         except Exception:
             return f"cron {desc}"
 
-
     if window.recurrence_type == "daily":
         return "Daily"
 
     if window.recurrence_type == "weekly" and window.weekdays:
-        
-        
+                
         label = f"Weekday {window.weekdays}"  
         if getattr(window, "week_in_month", None):
             label += f" ({window.get_week_in_month_display()})"  
@@ -107,8 +103,7 @@ def get_task_date(task):
         elif getattr(window, "monthdays", None):
             day_num = getattr(window.monthdays, "day", None)
             month_num = getattr(window.monthdays, "month", date.today().month)
-            return f"Monthday {day_num} Month {month_num}"
-            
+            return f"Monthday {day_num} Month {month_num}"    
 
     if getattr(window, "start_day", None):
         return f"Date {window.start_day.isoformat()}"
@@ -229,7 +224,7 @@ def is_task_due_in_future(task):
 
     return False
 
-@system_job(interval=600)
+@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
@@ -253,7 +248,6 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
             if not window:
                 continue
             task_date_or_key = get_task_date(task)
-            
             
             due_today = is_task_due_today(task)
             

@@ -29,25 +29,27 @@ __all__ = (
 class MaintenanceTasksView(generic.ObjectView):
     queryset = MaintenanceTasks.objects.all()
     
-
 class MaintenanceTasksListView(generic.ObjectListView):
     queryset = MaintenanceTasks.objects.all()
     table = MaintenanceTasksTable
     filterset = MaintenanceTasksFilterSet
     filterset_form = MaintenanceTasksFilterForm
     
-
 class MaintenanceTasksEditView(generic.ObjectEditView):
     queryset = MaintenanceTasks.objects.all()
     form = MaintenanceTasksForm
 
-class MaintenanceTasksDeleteView(generic.ObjectDeleteView):
-    queryset = MaintenanceTasks.objects.all() 
+class MaintenanceTasksDeleteView(generic.ObjectEditView):
+    queryset = MaintenanceTasks.objects.all()
 
+    def post(self, request, *args, **kwargs):
+        task = self.get_object()
+        task.status = TaskStatusChoices.STATUS_ARCHIVED
+        task.save(update_fields=["status"])
+        return redirect(self.get_success_url())
 class MaintenanceTasksBulkDeleteView(generic.BulkDeleteView):
     queryset = MaintenanceTasks.objects.all()
     table = MaintenanceTasksTable
-    
     
 class MaintenanceTasksBulkEditView(generic.BulkEditView):
     queryset = MaintenanceTasks.objects.all()
@@ -55,12 +57,10 @@ class MaintenanceTasksBulkEditView(generic.BulkEditView):
     table = MaintenanceTasksTable
     form =  MaintenanceTasksBulkEditForm
     
-
 class MaintenanceTasksBulkImportView(generic.BulkImportView):
     queryset = MaintenanceTasks.objects.all()
     model_form = MaintenanceTasksCSVForm
     table = MaintenanceTasksTable
-    
     
 @register_model_view(MaintenanceTasks, name='device')
 class DeviceAffectedMaintenanceTasksView(generic.ObjectChildrenView):
