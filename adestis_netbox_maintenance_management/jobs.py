@@ -35,30 +35,24 @@ class AutoCreateMaintenanceTasks(JobRunner):
             )
 
             for action in actions:
+                cutoff = timezone.now() - timedelta(minutes=1)
+                if hasattr(action, "created") and action.created < cutoff:
 
-                # Wenn Action bereits ARCHIVED Tasks hat -> Action sofort löschen
-                # (so wird verhindert, dass sie wieder einen Task erzeugt)
-                archived_tasks_for_action = MaintenanceTasks.objects.filter(
-                    maintenance_action=action,
-                    status=TaskStatusChoices.STATUS_ARCHIVED
-                )
+                    tasks = MaintenanceTasks.objects.filter(maintenance_action=action)
 
-                if archived_tasks_for_action.exists():
-                    logger.error(f"Action {action.id} hat ARCHIVED Tasks -> lösche Action + Tasks")
-                    archived_tasks_for_action.delete()
-                    action.delete()
-                    continue
+                    if tasks.filter(status=TaskStatusChoices.STATUS_ARCHIVED).exists():
+                        tasks.delete()
+                        action.delete()
 
-                # Task für diese Action holen (wenn vorhanden)
+                        continue
+
                 task = MaintenanceTasks.objects.filter(
                     maintenance_action=action
                 ).order_by("-id").first()
 
-                # Wenn Task existiert und nicht ARCHIVED ist -> nix tun
-                if task and task.status != TaskStatusChoices.STATUS_ARCHIVED:
+                if task and task.status == TaskStatusChoices.STATUS_ARCHIVED:
                     continue
 
-                # Wenn kein Task existiert -> erstellen
                 if not task:
                     task = MaintenanceTasks.objects.create(
                         name=f"{window.name}",
@@ -69,9 +63,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
                     )
                     task.virtual_machine.set(action.virtual_machine.all())
                     task.device.set(action.device.all())
-                    logger.error(f"Action {action.id} -> Task {task.id} erstellt")
 
-                # Status Update
                 if is_task_due_today(task):
                     new_status = TaskStatusChoices.STATUS_ACTIVE
                 elif is_task_due_in_future(task):
@@ -82,19 +74,6 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 if task.status != new_status:
                     task.status = new_status
                     task.save()
-                    logger.error(f"Task {task.id} status updated to {new_status}")
 
-                # Wenn ARCHIVED -> Task + Action löschen
-                if task.status == TaskStatusChoices.STATUS_ARCHIVED:
-                    logger.error(f"Task {task.id} ist ARCHIVED -> lösche Task + Action")
-                    action.delete()
-                    task.delete()
 
-        # Cleanup: ARCHIVED Tasks löschen, wenn älter als 7 Tage
-        # ACHTUNG: Du hast kein Datumfeld -> geht nur, wenn du ein Feld hast.
-        # Wenn nicht vorhanden, wird das hier NICHT funktionieren.
-        #
-        # Wenn du kein Datumfeld willst, kommentiere den Cleanup aus.
-
-        logger.error("Job erfolgreich beendet")
 
