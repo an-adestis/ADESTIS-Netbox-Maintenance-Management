@@ -84,6 +84,13 @@ class MaintenanceTasks(NetBoxModel, JobsMixin):
         related_name='tasks_device',
         blank = True
     )
+    
+    created_at = django_models.DateField(
+        auto_now_add=True,
+        verbose_name="Created At",
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name_plural = "Maintenance Tasks"

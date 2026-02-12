@@ -224,7 +224,7 @@ def is_task_due_in_future(task):
 
     return False
 
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+@system_job(interval=100)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
@@ -242,7 +242,7 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
 
         tasks = MaintenanceTasks.objects.select_related("maintenance_windows").all()
         
-        logger.error(f"Job wurde ausgeführt")
+        logger.error("Job wurde ausgeführt")
         for task in tasks:
             window = task.maintenance_windows
             if not window:
