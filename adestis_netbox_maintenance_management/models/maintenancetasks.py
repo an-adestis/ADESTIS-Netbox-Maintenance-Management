@@ -104,11 +104,11 @@ class MaintenanceTasks(NetBoxModel, JobsMixin):
         return TaskStatusChoices.colors.get(self.status)
 
     def __str__(self):
-        return self.name 
+        return self.name
     
     def save(self, *args, **kwargs):
         from adestis_netbox_maintenance_management.plan_jobs import AutoCreateMaintenancePlannedActions
-        AutoCreateMaintenancePlannedActions.enqueue(instance=self, interval=JobIntervalChoices.INTERVAL_MINUTELY)
+        AutoCreateMaintenancePlannedActions.enqueue(instance=self)
         return super().save(*args, **kwargs)
     
     def sync(self):

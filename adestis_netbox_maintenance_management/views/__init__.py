@@ -208,12 +208,17 @@ class MaintenanceActionPlanPDFView(View):
 
             lines.append(self.get_num_lines_for_relation(pdf, action.virtual_machine, col_widths[2]))
 
-            comments = "\n".join(
-                " ".join(line.split())
-                for vm in action.virtual_machine.all()
-                if vm.comments
-                for line in vm.comments.splitlines()
-            )
+            comments_list = []
+
+            for vm in action.virtual_machine.all():
+                if vm.comments:
+                    cleaned = "\n".join(
+                        " ".join(line.split())
+                        for line in vm.comments.splitlines()
+                    )
+                    comments_list.append(cleaned)
+
+            comments = "\n---VM-SEPARATOR---\n".join(comments_list)
             lines.append(self.get_num_lines_for_relation(pdf, comments, col_widths[3]))
 
             lines.append(self.get_num_lines_for_relation(pdf, action.device, col_widths[4]))
@@ -227,10 +232,62 @@ class MaintenanceActionPlanPDFView(View):
 
             self.render_m2m_cell(pdf, x_start, y_start, col_widths[0], action.maintenance_windows)
             self.render_m2m_cell(pdf, x_start + col_widths[0], y_start, col_widths[1], action.maintenance_action)
-            self.render_m2m_cell(pdf, x_start + col_widths[0] + col_widths[1], y_start, col_widths[2], action.virtual_machine)
+            x_vm = x_start + col_widths[0] + col_widths[1]
+            x_comment = x_vm + col_widths[2]
 
-            pdf.set_xy(x_start + col_widths[0] + col_widths[1] + col_widths[2], y_start)
-            pdf.multi_cell(col_widths[3], self.LINE_HEIGHT, comments, border=0, align="L")
+            current_y = y_start
+
+            vms = list(action.virtual_machine.all())
+
+            for index, vm in enumerate(vms):
+
+                vm_text = str(vm)
+                comment_text = vm.comments or ""
+
+                # Zeilen berechnen
+                vm_lines = pdf.multi_cell(
+                    col_widths[2],
+                    self.LINE_HEIGHT,
+                    vm_text,
+                    split_only=True
+                )
+
+                comment_lines = pdf.multi_cell(
+                    col_widths[3],
+                    self.LINE_HEIGHT,
+                    comment_text,
+                    split_only=True
+                )
+
+                needed_lines = max(len(vm_lines), len(comment_lines))
+                block_height = needed_lines * self.LINE_HEIGHT
+
+                # VM schreiben
+                pdf.set_xy(x_vm, current_y)
+                pdf.multi_cell(
+                    col_widths[2],
+                    self.LINE_HEIGHT,
+                    vm_text,
+                    border=0,
+                    align="C"
+                )
+
+                # Comment schreiben (selbe Y Position!)
+                pdf.set_xy(x_comment, current_y)
+                pdf.multi_cell(
+                    col_widths[3],
+                    self.LINE_HEIGHT,
+                    comment_text,
+                    border=0,
+                    align="L"
+                )
+
+                current_y += block_height
+
+                # 🔹 Linie zwischen mehreren VMs
+                if index < len(vms) - 1:
+                    pdf.line(x_vm, current_y, x_comment + col_widths[3], current_y)
+
 
             self.render_m2m_cell(
                 pdf,

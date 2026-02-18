@@ -14,7 +14,7 @@ from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today, i
 logger = logging.getLogger(__name__)
 
 
-@system_job(interval=3)
+@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
 class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"
@@ -36,15 +36,15 @@ class AutoCreateMaintenanceTasks(JobRunner):
 
             for action in actions:
                 cutoff = timezone.now() - timedelta(minutes=1)
-                if hasattr(action, "created") and action.created < cutoff:
+                # if hasattr(action, "created") and action.created < cutoff:
 
-                    tasks = MaintenanceTasks.objects.filter(maintenance_action=action)
+                #     tasks = MaintenanceTasks.objects.filter(maintenance_action=action)
 
-                    if tasks.filter(status=TaskStatusChoices.STATUS_ARCHIVED).exists():
-                        tasks.delete()
-                        action.delete()
+                    # if tasks.filter(status=TaskStatusChoices.STATUS_ARCHIVED).exists():
+                    #     tasks.delete()
+                    #     action.delete()
 
-                        continue
+                    #     continue
 
                 task = MaintenanceTasks.objects.filter(
                     maintenance_action=action
