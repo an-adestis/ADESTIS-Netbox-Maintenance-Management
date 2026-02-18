@@ -14,7 +14,7 @@ from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today, i
 logger = logging.getLogger(__name__)
 
 
-@system_job(interval=100)
+@system_job(interval=3)
 class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"

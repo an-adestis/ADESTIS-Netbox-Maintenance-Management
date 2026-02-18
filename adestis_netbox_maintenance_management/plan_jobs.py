@@ -224,7 +224,7 @@ def is_task_due_in_future(task):
 
     return False
 
-@system_job(interval=100)
+@system_job(interval=3)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt
@@ -289,6 +289,7 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
         plans = MaintenancePlannedActions.objects.prefetch_related("maintenance_tasks")
 
         for plan in plans:
+            
             archived_tasks = plan.maintenance_tasks.filter(
                 status=TaskStatusChoices.STATUS_ARCHIVED
             )
