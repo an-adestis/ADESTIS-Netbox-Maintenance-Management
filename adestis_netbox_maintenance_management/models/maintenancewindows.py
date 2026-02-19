@@ -170,20 +170,13 @@ class MaintenanceWindows(NetBoxModel):
     start_time = django_models.TimeField(
         blank=True, 
         null = True,
+        verbose_name="Start Time (Local Time)"
     )
     
     end_time = django_models.TimeField(
         blank= True, 
         null=True,
-    )
-    
-    tenant = django_models.ForeignKey(
-         to = 'tenancy.Tenant',
-         on_delete = django_models.PROTECT,
-         related_name = 'windows_tenant',
-         null = True,
-         verbose_name='Tenant',
-         blank = True
+        verbose_name="End Time (Local Time)"
     )
     
     class Meta:

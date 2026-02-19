@@ -14,7 +14,7 @@ from adestis_netbox_maintenance_management.plan_jobs import is_task_due_today, i
 logger = logging.getLogger(__name__)
 
 
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+@system_job(interval=3)
 class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"
@@ -60,9 +60,11 @@ class AutoCreateMaintenanceTasks(JobRunner):
                         maintenance_action=action,
                         maintenance_windows=window,
                         comments=action.comments,
+                        
                     )
                     task.virtual_machine.set(action.virtual_machine.all())
                     task.device.set(action.device.all())
+                    task.tenant.set(action.tenant.all())
 
                 if is_task_due_today(task):
                     new_status = TaskStatusChoices.STATUS_ACTIVE

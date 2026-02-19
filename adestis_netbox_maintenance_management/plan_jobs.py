@@ -224,7 +224,7 @@ def is_task_due_in_future(task):
 
     return False
 
-@system_job(interval=JobIntervalChoices.INTERVAL_MINUTELY)
+@system_job(interval=3)
 class AutoCreateMaintenancePlannedActions(JobRunner):
     """
     JobRunner-Klasse, die automatisch Wartungspläne erstellt

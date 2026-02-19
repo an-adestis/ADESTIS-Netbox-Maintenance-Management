@@ -70,20 +70,6 @@ maintenance_tasks_item = PluginMenuItem(
     )
 )
 
-maintenance_reports_item = PluginMenuItem(
-    link='plugins:adestis_netbox_maintenance_management:maintenancereport_list',
-    link_text=_('Maintenance Reports'),
-    permissions=["adestis_netbox_maintenance_management.view_maintenancereport"],
-    buttons=(
-        PluginMenuButton(
-            link='plugins:adestis_netbox_maintenance_management:maintenancereport_add',
-            title=_('Add'),
-            icon_class='mdi mdi-plus-thick',
-            color=ButtonColorChoices.GREEN,
-            permissions=["adestis_netbox_maintenance_management.add_maintenancereport"]
-        ),
-    )
-)
 
 plugin_settings = settings.PLUGINS_CONFIG.get('adestis_netbox_maintenance_management', {})
 

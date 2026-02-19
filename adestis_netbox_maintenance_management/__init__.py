@@ -20,6 +20,18 @@ class AdestisMaintenanceConfig(PluginConfig):
         from .models import MaintenanceActions
         from .models import MaintenanceTasks
         
+        # for obj in MaintenanceActions.objects.all():
+        #     AutoCreateMaintenanceTasks.enqueue_once(
+        #         instance=obj,
+        #         interval=JobIntervalChoices.INTERVAL_MINUTELY
+        #     )
+            
+        # for obj in MaintenanceTasks.objects.all():
+        #     AutoCreateMaintenancePlannedActions.enqueue_once(
+        #         instance=obj,
+        #         interval=JobIntervalChoices.INTERVAL_MINUTELY
+        #     )
+        
 config = AdestisMaintenanceConfig
 default_app_config = "adestis_netbox_maintenance_management.apps.AdestisMaintenanceManagementAppConfig"
 

@@ -43,9 +43,22 @@ class MaintenanceActionsFilterSet(NetBoxModelFilterSet):
         label=_('Maintenance Window (name)'),
     )
     
+    tenant_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=Tenant.objects.all(),
+        label=_('Tenant (ID)'),
+    )
+    
+    tenant = django_filters.ModelMultipleChoiceFilter(
+        queryset=Tenant.objects.all(),
+        required=False,
+        field_name='tenant__name',
+        to_field_name='tenant',
+        label=_('Tenant (name)'),
+    )
+    
     class Meta:
         model = MaintenanceActions
-        fields = ['id', 'name', 'maintenance_window', 'device', 'virtual_machine']
+        fields = ['id', 'name', 'tenant', 'maintenance_window', 'device', 'virtual_machine']
     
 
     def search(self, queryset, name, value):

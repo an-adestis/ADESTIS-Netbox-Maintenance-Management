@@ -21,7 +21,7 @@ class MaintenancePlannedActionsTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    tenant = tables.Column(
+    tenant = columns.ManyToManyColumn(
         linkify=True
     )
         
@@ -50,7 +50,7 @@ class MaintenancePlannedActionsTable(NetBoxTable):
         model = MaintenancePlannedActions
         
         fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'tenant', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device']
+        default_columns = [ 'name', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device']
         
     def render_pdf(self, record):
         url = reverse(

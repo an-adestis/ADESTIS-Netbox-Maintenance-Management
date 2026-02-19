@@ -114,14 +114,14 @@ urlpatterns = (
     # Maintenance Planned Actions
     path('maintenanceplannedactions/', MaintenancePlannedActionsListView.as_view(),
          name='maintenanceplannedactions_list'),
-    path('maintenanceplannedactions/', MaintenancePlannedActionsEditView.as_view(),
-         name='maintenanceplannedactions_add'),
-    path('maintenanceplannedactions/delete/', MaintenancePlannedActionsBulkDeleteView.as_view(),
-         name='maintenanceplannedactions_bulk_delete'),
-    path('maintenanceplannedactions/edit/', MaintenancePlannedActionsBulkEditView.as_view(),
-         name='maintenanceplannedactions_bulk_edit'),
-    path('maintenanceplannedactions/import/', MaintenancePlannedActionsBulkImportView.as_view(),
-         name='maintenanceplannedactions_bulk_import'),
+#     path('maintenanceplannedactions/', MaintenancePlannedActionsEditView.as_view(),
+#          name='maintenanceplannedactions_add'),
+#     path('maintenanceplannedactions/delete/', MaintenancePlannedActionsBulkDeleteView.as_view(),
+#          name='maintenanceplannedactions_bulk_delete'),
+#     path('maintenanceplannedactions/edit/', MaintenancePlannedActionsBulkEditView.as_view(),
+#          name='maintenanceplannedactions_bulk_edit'),
+#     path('maintenanceplannedactions/import/', MaintenancePlannedActionsBulkImportView.as_view(),
+#          name='maintenanceplannedactions_bulk_import'),
     path('maintenanceplannedactions/<int:pk>/',
          MaintenancePlannedActionsView.as_view(), name='maintenanceplannedactions'),
     path('maintenanceplannedactions/<int:pk>/',
@@ -130,9 +130,9 @@ urlpatterns = (
          MaintenancePlannedActionsEditView.as_view(), name='maintenanceplannedactions_edit'),
     path('maintenanceplannedactions/<int:pk>/delete/',
          MaintenancePlannedActionsDeleteView.as_view(), name='maintenanceplannedactions_delete'),
-    path('maintenanceplannedactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplannedactions_changelog', kwargs={
-        'model': MaintenancePlannedActions
-    }),
+#     path('maintenanceplannedactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplannedactions_changelog', kwargs={
+#         'model': MaintenancePlannedActions
+#     }),
     
     path(
           'maintenanceplannedactions/pdf/<int:pk>/',
@@ -140,23 +140,4 @@ urlpatterns = (
           name='export_planned_action_pdf'
      ),
 
-    # Maintenance Reports
-    path('maintenancereports/', MaintenanceReportsListView.as_view(),
-         name='maintenancereport_list'),
-    path('maintenancereports/add/', MaintenanceReportsEditView.as_view(),
-         name='maintenancereport_add'),
-    path('maintenancereports/<int:pk>/edit/',
-         MaintenanceReportsEditView.as_view(), name='maintenancereport_edit'),
-    path('maintenancereports/delete/', MaintenanceReportsBulkDeleteView.as_view(),
-         name='maintenancereport_bulk_delete'),
-    path('maintenancereports/edit/', MaintenanceReportsBulkEditView.as_view(),
-         name='maintenancereport_bulk_edit'),
-    path('maintenancereports/import/', MaintenanceReportsBulkImportView.as_view(),
-         name='maintenancereport_bulk_import'),
-    path('maintenancereports/<int:pk>/',
-         MaintenanceReportsView.as_view(), name='maintenancereports'),
-    path('maintenancereports/<int:pk>/delete/',
-         MaintenanceReportsDeleteView.as_view(), name='maintenancereport_delete'),
-    path('maintenancereports/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenancereport_changelog', kwargs={
-        'model': MaintenanceReport}), 
 )

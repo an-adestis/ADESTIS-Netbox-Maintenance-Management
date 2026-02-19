@@ -27,6 +27,15 @@ class MaintenanceActions(NetBoxModel, JobsMixin):
         max_length=150
     )
     
+    tenant = django_models.ForeignKey(
+         to = 'tenancy.Tenant',
+         on_delete = django_models.PROTECT,
+         related_name = 'action_tenant',
+         null = True,
+         verbose_name='Tenant',
+         blank = True
+    )
+    
     description = django_models.CharField(
         max_length=500,
         blank = True

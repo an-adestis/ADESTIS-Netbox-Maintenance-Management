@@ -40,7 +40,40 @@ class MaintenancePlans(NetBoxModel):
          null = True,
          verbose_name='Tenant',
          blank = True
-     )
+    )
+    
+    maintenance_windows = django_models.ManyToManyField(
+        to='adestis_netbox_maintenance_management.MaintenanceWindows',
+        blank=False,
+        related_name='maintenance_windows_plans',
+        verbose_name='Maintenance Windows',
+    )
+    
+    maintenance_action = django_models.ManyToManyField(
+        to='adestis_netbox_maintenance_management.MaintenanceActions',
+        verbose_name='Maintenance Actions',
+        related_name='maintenance_action_plans',
+        blank=False,
+    )
+    
+    virtual_machine = django_models.ManyToManyField(
+        to='virtualization.VirtualMachine',
+        verbose_name='Virtual Machines',
+        related_name='vm_plans',
+        blank = True
+    )
+    
+    device = django_models.ManyToManyField(
+        to='dcim.Device',
+        verbose_name='Devices',
+        related_name='device_plans',
+        blank = True
+    )
+    
+    version = django_models.CharField(
+        blank = True, 
+        null = True
+    )
 
     class Meta:
         verbose_name_plural = "Maintenance Plans"
@@ -52,3 +85,7 @@ class MaintenancePlans(NetBoxModel):
 
     def __str__(self):
         return self.name 
+    
+    
+    # bei maintenance plans action mit rein nehmen inklsuive tab, verion feld, auch alles anzeigen wie vm's und co 
+    

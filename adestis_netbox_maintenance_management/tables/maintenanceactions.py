@@ -29,13 +29,17 @@ class MaintenanceActionsTable(NetBoxTable):
     maintenance_window = tables.Column(
         linkify= True
     )
+    
+    tenant = tables.Column(
+        linkify=True
+    )
 
     class Meta(NetBoxTable.Meta):
 
         model = MaintenanceActions
         
-        fields = ['name', 'maintenance_window', 'virtual_machine', 'device', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'maintenance_window', 'device', 'virtual_machine']
+        fields = ['name', 'tenant', 'maintenance_window', 'virtual_machine', 'device', 'description', 'tags', 'comments']
+        default_columns = [ 'name', 'tenant', 'maintenance_window', 'device', 'virtual_machine']
 
 class MaintenanceActionsTableTab(MaintenanceActionsTable):
     
@@ -51,9 +55,13 @@ class MaintenanceActionsTableTab(MaintenanceActionsTable):
         linkify=True
     )
     
+    tenant = tables.Column(
+        linkify=True
+    )
+    
     class Meta(MaintenanceActionsTable.Meta):
-        fields = ['name', 'maintenance_window', 'virtual_machine', 'device', 'description', 'tags', 'comments', 'actions']
-        default_columns = [ 'name', 'maintenance_window', 'device', 'virtual_machine']
+        fields = ['name', 'tenant', 'maintenance_window', 'virtual_machine', 'device', 'description', 'tags', 'comments', 'actions']
+        default_columns = [ 'name', 'tenant', 'maintenance_window', 'device', 'virtual_machine']
        
 class DeviceTableMaintenanceActions(DeviceTable):
     actions = columns.ActionsColumn(

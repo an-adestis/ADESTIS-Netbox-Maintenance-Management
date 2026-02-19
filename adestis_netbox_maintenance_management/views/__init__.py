@@ -1,7 +1,7 @@
 from .maintenancewindows import *
 from .maintenanceactions import *
 from .maintenanceplannedactions import *
-from .maintenancereports import *
+
 from .maintenancetasks import *
 from .maintenanceplans import *
 from datetime import datetime, date, timedelta
@@ -306,3 +306,8 @@ class MaintenanceActionPlanPDFView(View):
         
         response["Content-Disposition"] = f'attachment; filename=\"planned_actions_{datetime.today()}.pdf\"'
         return response
+    
+    
+    # maintenance window als überpunkt haben und dann den wichtigen feld wie virtual machine und so weiter mehr platz lassen, 
+    # in den plan den button pdf erstellen und als select mit den checkboxen 
+    # bei planned action ansicht, den generate pdf button auch mit nehmen 

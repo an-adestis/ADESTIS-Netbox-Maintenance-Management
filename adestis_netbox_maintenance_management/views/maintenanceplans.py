@@ -11,7 +11,6 @@ from utilities.views import ViewTab, register_model_view
 from .maintenancewindows import *
 from .maintenanceactions import *
 from .maintenanceplannedactions import *
-from .maintenancereports import *
 from .maintenancetasks import *
 from .maintenanceplans import *
 from datetime import datetime, date, timedelta

@@ -94,20 +94,44 @@ class MaintenanceTasksTable(NetBoxTable):
         linkify= True
     )
     
+    def render_maintenance_action(self, value, record):
+        if not value:
+            return "-"
+
+        maintenanceaction = value
+
+        maintenanceaction_link = (
+            f'<a href="{maintenanceaction.get_absolute_url()}" '
+            f'style="margin-right:6px;">{maintenanceaction.name}</a>'
+        )
+
+        html = f'''
+        <div style="width:500px; word-break:break-word;">
+            {maintenanceaction_link}
+            <br>
+            <small style="color:#ccc;">
+                {getattr(maintenanceaction, "comments", "-")}
+            </small>
+        </div>
+        '''
+
+        return mark_safe(html)
+
+    
     maintenance_windows = tables.Column(
         linkify= True
     )
 
     start_time = tables.TimeColumn(
         accessor="maintenance_windows.start_time",
-        verbose_name="Start Time",
+        verbose_name="Start Time (Local Time)",
         format="H:i",
         order_by = ('start_time',)
     )
 
     end_time = tables.TimeColumn(
         accessor="maintenance_windows.end_time",
-        verbose_name="End Time",
+        verbose_name="End Time (Local Time)",
         format="H:i",
     )
     
@@ -116,9 +140,4 @@ class MaintenanceTasksTable(NetBoxTable):
         model = MaintenanceTasks
         
         fields = ['virtual_machine', 'device', 'status', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
-        default_columns = [ 'virtual_machine', 'device', 'name', 'status', 'start_time', 'end_time', 'maintenance_windows', 'maintenance_action', 'comments']
-    
-
-
-
-        
+        default_columns = ['maintenance_action', 'virtual_machine', 'device', 'name', 'status', 'start_time', 'end_time', 'maintenance_windows']        
