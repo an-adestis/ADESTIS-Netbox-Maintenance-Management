@@ -114,10 +114,10 @@ urlpatterns = (
     # Maintenance Planned Actions
     path('maintenanceplannedactions/', MaintenancePlannedActionsListView.as_view(),
          name='maintenanceplannedactions_list'),
-#     path('maintenanceplannedactions/', MaintenancePlannedActionsEditView.as_view(),
-#          name='maintenanceplannedactions_add'),
-#     path('maintenanceplannedactions/delete/', MaintenancePlannedActionsBulkDeleteView.as_view(),
-#          name='maintenanceplannedactions_bulk_delete'),
+    path('maintenanceplannedactions/', MaintenancePlannedActionsEditView.as_view(),
+         name='maintenanceplannedactions_add'),
+    path('maintenanceplannedactions/delete/', MaintenancePlannedActionsBulkDeleteView.as_view(),
+         name='maintenanceplannedactions_bulk_delete'),
 #     path('maintenanceplannedactions/edit/', MaintenancePlannedActionsBulkEditView.as_view(),
 #          name='maintenanceplannedactions_bulk_edit'),
 #     path('maintenanceplannedactions/import/', MaintenancePlannedActionsBulkImportView.as_view(),
@@ -130,10 +130,9 @@ urlpatterns = (
          MaintenancePlannedActionsEditView.as_view(), name='maintenanceplannedactions_edit'),
     path('maintenanceplannedactions/<int:pk>/delete/',
          MaintenancePlannedActionsDeleteView.as_view(), name='maintenanceplannedactions_delete'),
-#     path('maintenanceplannedactions/<int:pk>/changelog/', ObjectChangeLogView.as_view(), name='maintenanceplannedactions_changelog', kwargs={
-#         'model': MaintenancePlannedActions
-#     }),
     
+    path("maintenanceplannedactions/run/", views.run_myjob, name="run_myjob"),
+
     path(
           'maintenanceplannedactions/pdf/<int:pk>/',
           MaintenanceActionPlanPDFView.as_view(),

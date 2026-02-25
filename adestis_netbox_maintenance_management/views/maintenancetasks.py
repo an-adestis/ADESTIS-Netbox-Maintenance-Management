@@ -14,6 +14,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from utilities.views import ViewTab, register_model_view
 from django.db.models import Min
+from django.views import View
 
 
 __all__ = (
@@ -39,14 +40,21 @@ class MaintenanceTasksEditView(generic.ObjectEditView):
     queryset = MaintenanceTasks.objects.all()
     form = MaintenanceTasksForm
 
-class MaintenanceTasksDeleteView(generic.ObjectEditView):
-    queryset = MaintenanceTasks.objects.all()
-
+class MaintenanceTasksDeleteView(View):  # direkt von View, kein Form nötig
     def post(self, request, *args, **kwargs):
-        task = self.get_object()
+        task_pk = kwargs.get("pk")
+        # eindeutiges Filter
+        task = MaintenanceTasks.objects.filter(pk=task_pk).first()
+        if not task:
+            # Objekt nicht gefunden
+            return redirect(request.GET.get('return_url', '/'))
         task.status = TaskStatusChoices.STATUS_ARCHIVED
         task.save(update_fields=["status"])
-        return redirect(self.get_success_url())
+        return redirect(request.GET.get('return_url', '/'))
+
+    def get(self, request, *args, **kwargs):
+        # GET einfach an POST weiterleiten
+        return self.post(request, *args, **kwargs)
 class MaintenanceTasksBulkDeleteView(generic.BulkDeleteView):
     queryset = MaintenanceTasks.objects.all()
     table = MaintenanceTasksTable

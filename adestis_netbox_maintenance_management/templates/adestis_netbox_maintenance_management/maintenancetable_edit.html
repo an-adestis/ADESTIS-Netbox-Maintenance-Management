@@ -7,7 +7,7 @@
 
 {% block content %}
   {{ block.super }}
-    <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
+    {% comment %} <script src="https://unpkg.com/cronstrue@1.48.0/dist/cronstrue.min.js"></script>
     <script>
     function renderCronDescriptions() {
         document.querySelectorAll(".cron-expression").forEach(function (el) {
@@ -26,7 +26,7 @@
 
     document.addEventListener("DOMContentLoaded", renderCronDescriptions);
     document.body.addEventListener("htmx:afterSettle", renderCronDescriptions);  // wichtig für sort/paginate
-    </script>
+    </script> {% endcomment %}
 
 
 {% endblock content %}

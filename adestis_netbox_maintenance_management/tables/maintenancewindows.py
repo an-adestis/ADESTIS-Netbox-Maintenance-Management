@@ -6,11 +6,25 @@ from virtualization.forms import *
 from virtualization.tables import *
 import django_tables2 as tables
 from django.utils.safestring import mark_safe
-from django.utils.safestring import mark_safe
+from cron_descriptor import get_description
+
 
 def render_cron_value(obj):
-    cron_value = obj.schedule_type.strip()
-    return mark_safe(f'<span class="cron-expression">{cron_value}</span>')
+    special = (getattr(obj, "special_ordinal", "") or "").strip()
+    schedule = (getattr(obj, "schedule_type", "") or "").strip()
+
+    if special:
+        try:
+            description = get_description(special)
+            value = f"cron {description}"
+        except Exception:
+            value = f"cron {special}"
+    else:
+        value = schedule
+
+    return mark_safe(
+        f'<span class="cron-expression" title="{value}">{value}</span>'
+    )
 
 class MaintenanceWindowsTable(NetBoxTable):
     comments = columns.MarkdownColumn()
@@ -27,12 +41,23 @@ class MaintenanceWindowsTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    special_ordinal = columns.TemplateColumn(
-         template_code="""
-            <span class="cron-expression" title="{{ record.special_ordinal }}">{{ record.special_ordinal }}</span>
-        """,
-        verbose_name="Special Ordinal"
-    )
+    special_ordinal = tables.Column(verbose_name="Special Ordinal")
+
+    def render_special_ordinal(self, record):
+        special = (record.special_ordinal or "").strip()
+
+        if special:
+            try:
+                description = get_description(special)
+                value = f"cron {description}"
+            except Exception:
+                value = f"cron {special}"
+        else:
+            value = "—"
+
+        return mark_safe(
+            f'<span class="cron-expression" title="{value}">{value}</span>'
+        )
 
     class Meta(NetBoxTable.Meta):
         model = MaintenanceWindows
