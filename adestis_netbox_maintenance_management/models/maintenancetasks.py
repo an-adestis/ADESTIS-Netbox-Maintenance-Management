@@ -98,6 +98,8 @@ class MaintenanceTasks(NetBoxModel, JobsMixin):
         null=True,
         blank=True
     )
+    
+    next_due_date = django_models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Maintenance Tasks"

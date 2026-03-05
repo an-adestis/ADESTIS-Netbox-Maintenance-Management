@@ -50,7 +50,7 @@ class MaintenancePlannedActionsTable(NetBoxTable):
         model = MaintenancePlannedActions
         
         fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
-        default_columns = [ 'name', 'maintenance_tasks', 'maintenance_windows', 'maintenance_action', 'virtual_machine', 'device']
+        default_columns = [ 'name']
         
     def render_pdf(self, record):
         url = reverse(
@@ -58,3 +58,5 @@ class MaintenancePlannedActionsTable(NetBoxTable):
             args=[record.pk],
         )
         return mark_safe(f'<a class="btn btn-sm btn-primary" href="{url}">PDF</a>')
+    
+    actions = None

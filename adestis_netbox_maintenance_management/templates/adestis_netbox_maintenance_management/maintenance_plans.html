@@ -5,9 +5,13 @@
 {% load plugins %}
 {% load static %}
 
-{% block extra_controls %}
-  <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf' %}"
-     class="btn btn-primary">
-    Alle als PDF
-  </a>
+{% block bulk_buttons %}
+  {{ block.super }}
+
+  <button type="submit"
+          name="_export_pdf"
+          formaction="{% url 'plugins:adestis_netbox_maintenance_management:export_pdf' %}"
+          class="btn btn-primary">
+      Ausgewählte als PDF
+  </button>
 {% endblock %}

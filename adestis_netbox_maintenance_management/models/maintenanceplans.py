@@ -23,7 +23,7 @@ class MaintenancePlans(NetBoxModel):
     )
     
     reference_number = django_models.IntegerField(
-        verbose_name='Refrence Number',
+        verbose_name='Reference Number',
         blank=True,
         null = True
     )
@@ -86,6 +86,5 @@ class MaintenancePlans(NetBoxModel):
     def __str__(self):
         return self.name 
     
-    
-    # bei maintenance plans action mit rein nehmen inklsuive tab, verion feld, auch alles anzeigen wie vm's und co 
+    # bei maintenance plans action mit rein nehmen inklsuive tab, version feld, auch alles anzeigen wie vm's und co 
     

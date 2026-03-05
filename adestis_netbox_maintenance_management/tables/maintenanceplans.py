@@ -9,6 +9,9 @@ from virtualization.tables import *
 import django_tables2 as tables
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+
+from django.utils.html import format_html_join
+from django.urls import reverse
 class MaintenancePlansTable(NetBoxTable):
     comments = columns.MarkdownColumn()
 
@@ -18,23 +21,17 @@ class MaintenancePlansTable(NetBoxTable):
         linkify=True
     )
     
-    maintenance_action = tables.Column(
+    maintenance_action = columns.ManyToManyColumn(
         linkify=True
     )
 
     description = columns.MarkdownColumn()
     
-    device = columns.ManyToManyColumn(
-        linkify=True
-    )
-    
-    virtual_machine = columns.ManyToManyColumn(
-        linkify=True
-    )
-    
-    tenant = tables.Column(
-        linkify=True
-    )
+    tenants = tables.Column(empty_values=())
+    devices = tables.Column(empty_values=())
+    virtual_machines = tables.Column(empty_values=())
+
+    # ---------- TENANTS ----------
     
     reference_number = tables.Column()
     
@@ -42,9 +39,39 @@ class MaintenancePlansTable(NetBoxTable):
 
         model = MaintenancePlans
         
-        fields = ['name',  'tenant', 'maintenance_actions', 'virtual_machine', 'device', 'reference_number', 'description', 'tags', 'comments', 'version']
-        default_columns = [ 'name', 'maintenance_actions', 'tenant', 'virtual_machine', 'device', 'reference_number', 'version' ]
-        
+        fields = ['name',  'tenant', 'maintenance_action', 'virtual_machine', 'device', 'reference_number', 'description', 'tags', 'comments', 'version']
+        default_columns = [ 'name', 'maintenance_action', 'tenant', 'virtual_machine', 'device', 'reference_number', 'version' ]
 
+    def render_tenants(self, record):
 
-        
+        tenants = set()
+
+        for action in record.maintenance_action.all():
+            if action.tenant:
+                tenants.add(action.tenant.name)
+
+        return ", ".join(tenants)
+
+    def render_devices(self, record):
+
+        devices = []
+
+        for action in record.maintenance_action.all():
+            for device in action.device.all():
+                devices.append(
+                    f'<a href="{device.get_absolute_url()}">{device.name}</a>'
+                )
+
+        return tables.utils.mark_safe(", ".join(devices))
+
+    def render_virtual_machines(self, record):
+
+        vms = []
+
+        for action in record.maintenance_action.all():
+            for vm in action.virtual_machine.all():
+                vms.append(
+                    f'<a href="{vm.get_absolute_url()}">{vm.name}</a>'
+                )
+
+        return tables.utils.mark_safe(", ".join(vms))

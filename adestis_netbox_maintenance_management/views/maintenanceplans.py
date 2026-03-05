@@ -33,13 +33,18 @@ __all__ = (
     'MaintenancePlansBulkDeleteView',
     'MaintenancePlansBulkEditView',
     'MaintenancePlansBulkImportView',
+    'ActionsAffectedMaintenancePlansView'
 )
 
 class MaintenancePlansView(generic.ObjectView):
     queryset = MaintenancePlans.objects.all()
     
 class MaintenancePlansListView(generic.ObjectListView):
-    queryset = MaintenancePlans.objects.all()
+    queryset = MaintenancePlans.objects.prefetch_related(
+        "maintenance_action__tenant",
+        "maintenance_action__device",
+        "maintenance_action__virtual_machine",
+    )
     table = MaintenancePlansTable
     filterset = MaintenancePlansFilterSet
     filterset_form = MaintenancePlansFilterForm
@@ -56,7 +61,6 @@ class MaintenancePlansBulkDeleteView(generic.BulkDeleteView):
     queryset = MaintenancePlans.objects.all()
     table = MaintenancePlansTable
     
-    
 class MaintenancePlansBulkEditView(generic.BulkEditView):
     queryset = MaintenancePlans.objects.all()
     filterset = MaintenancePlansFilterSet
@@ -67,3 +71,25 @@ class MaintenancePlansBulkImportView(generic.BulkImportView):
     queryset = MaintenancePlans.objects.all()
     model_form = MaintenancePlansCSVForm
     table = MaintenancePlansTable
+    
+@register_model_view(MaintenancePlans, name='maintenance_action_plans')
+class ActionsAffectedMaintenancePlansView(generic.ObjectChildrenView):
+    queryset = MaintenancePlans.objects.all()
+    child_model= MaintenanceActions
+    table = MaintenanceActionsTable
+    template_name = "adestis_netbox_maintenance_management/tasks_affect_plannedactions.html"
+    actions = ()
+
+    tab = ViewTab(
+        label=_('Maintenance Actions'),
+        badge=lambda obj: obj.maintenance_action.count(),
+        hide_if_empty=False
+    )
+
+    def get_children(self, request, parent):
+        return MaintenanceActions.objects.restrict(request.user, 'view').filter(maintenance_action_plans=parent)
+    
+    def get_extra_context(self, request, instance):
+        return {
+            "actions": None
+        }

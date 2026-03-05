@@ -139,5 +139,5 @@ class MaintenanceTasksTable(NetBoxTable):
 
         model = MaintenanceTasks
         
-        fields = ['virtual_machine', 'device', 'status', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments']
-        default_columns = ['maintenance_action', 'virtual_machine', 'device', 'name', 'status', 'start_time', 'end_time', 'maintenance_windows']        
+        fields = ['virtual_machine', 'device', 'status', 'start_time', 'end_time', 'maintenance_action', 'maintenance_windows', 'name', 'description', 'tags', 'comments', 'next_due_date']
+        default_columns = ['maintenance_action', 'virtual_machine', 'device', 'name', 'status', 'start_time', 'end_time', 'maintenance_windows', 'next_due_date']        

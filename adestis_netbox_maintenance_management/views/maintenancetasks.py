@@ -43,17 +43,15 @@ class MaintenanceTasksEditView(generic.ObjectEditView):
 class MaintenanceTasksDeleteView(View):  # direkt von View, kein Form nötig
     def post(self, request, *args, **kwargs):
         task_pk = kwargs.get("pk")
-        # eindeutiges Filter
+
         task = MaintenanceTasks.objects.filter(pk=task_pk).first()
         if not task:
-            # Objekt nicht gefunden
             return redirect(request.GET.get('return_url', '/'))
         task.status = TaskStatusChoices.STATUS_ARCHIVED
         task.save(update_fields=["status"])
         return redirect(request.GET.get('return_url', '/'))
 
     def get(self, request, *args, **kwargs):
-        # GET einfach an POST weiterleiten
         return self.post(request, *args, **kwargs)
 class MaintenanceTasksBulkDeleteView(generic.BulkDeleteView):
     queryset = MaintenanceTasks.objects.all()

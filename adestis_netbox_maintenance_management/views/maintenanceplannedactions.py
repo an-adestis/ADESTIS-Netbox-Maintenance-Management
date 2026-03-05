@@ -89,5 +89,5 @@ from netbox.jobs import JobRunner
         
 def run_myjob(request):
     job_instance = AutoCreateMaintenancePlannedActions(JobRunner)
-    job_instance.enqueue()  # Startet den Job im Hintergrund
+    job_instance.enqueue()  
     return redirect('home')

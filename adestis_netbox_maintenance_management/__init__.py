@@ -16,7 +16,7 @@ class AdestisMaintenanceConfig(PluginConfig):
     def ready(self):
         super().ready()
         from .jobs import AutoCreateMaintenanceTasks
-        from .plan_jobs import AutoCreateMaintenancePlannedActions
+        # from .plan_jobs import AutoCreateMaintenancePlannedActions
         from .models import MaintenanceActions
         from .models import MaintenanceTasks
         

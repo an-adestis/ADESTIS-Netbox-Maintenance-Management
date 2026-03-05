@@ -47,11 +47,30 @@ def get_line_count(pdf, text, col_width):
     
 from django.http import HttpResponse
 from django.views import View
+from django.contrib import messages
 
 class MaintenancePlanPDFView(View):
+    
+    def post(self, request):
+        # POST soll sich wie GET verhalten,
+        # aber mit ausgewählten IDs
+
+        selected_ids = request.POST.getlist("pk")
+
+        # Trick: wir speichern die IDs am Request,
+        # damit get() sie benutzen kann
+        request.selected_ids = selected_ids
+
+        return self.get(request)
 
     def get(self, request):
-        plans = MaintenancePlans.objects.all()
+        selected_ids = request.POST.getlist("pk")
+
+        if not selected_ids:
+            messages.warning(request, "No Maintenance Plans were selected.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        plans = MaintenancePlans.objects.filter(pk__in=selected_ids)
 
         pdf = MaintenancePlansPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
@@ -62,7 +81,6 @@ class MaintenancePlanPDFView(View):
         col_widths = [30, 12, 45, 73, 30]
         LINE_HEIGHT = 5
 
-        # Tabellenkopf
         pdf.set_font("Helvetica", "B", 10)
         for i, header in enumerate(headers):
             pdf.cell(col_widths[i], 8, header, border=1, align="C")
@@ -89,13 +107,11 @@ class MaintenancePlanPDFView(View):
             x_start = pdf.get_x()
             y_start = pdf.get_y()
 
-            # Rahmen
             x = x_start
             for width in col_widths:
                 pdf.rect(x, y_start, width, row_height)
                 x += width
 
-            # Inhalte
             pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(ref_number), align="C")
             pdf.set_xy(x_start + col_widths[0], y_start)
 
@@ -244,7 +260,6 @@ class MaintenanceActionPlanPDFView(View):
                 vm_text = str(vm)
                 comment_text = vm.comments or ""
 
-                # Zeilen berechnen
                 vm_lines = pdf.multi_cell(
                     col_widths[2],
                     self.LINE_HEIGHT,
@@ -262,7 +277,6 @@ class MaintenanceActionPlanPDFView(View):
                 needed_lines = max(len(vm_lines), len(comment_lines))
                 block_height = needed_lines * self.LINE_HEIGHT
 
-                # VM schreiben
                 pdf.set_xy(x_vm, current_y)
                 pdf.multi_cell(
                     col_widths[2],
@@ -272,7 +286,6 @@ class MaintenanceActionPlanPDFView(View):
                     align="C"
                 )
 
-                # Comment schreiben (selbe Y Position!)
                 pdf.set_xy(x_comment, current_y)
                 pdf.multi_cell(
                     col_widths[3],
@@ -284,7 +297,6 @@ class MaintenanceActionPlanPDFView(View):
 
                 current_y += block_height
 
-                # 🔹 Linie zwischen mehreren VMs
                 if index < len(vms) - 1:
                     pdf.line(x_vm, current_y, x_comment + col_widths[3], current_y)
 
@@ -310,4 +322,3 @@ class MaintenanceActionPlanPDFView(View):
     
     # maintenance window als überpunkt haben und dann den wichtigen feld wie virtual machine und so weiter mehr platz lassen, 
     # in den plan den button pdf erstellen und als select mit den checkboxen 
-    # bei planned action ansicht, den generate pdf button auch mit nehmen 

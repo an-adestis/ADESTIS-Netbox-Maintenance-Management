@@ -92,9 +92,7 @@ class MaintenancePlannedActions(NetBoxModel):
         verbose_name_plural = "Planned Actions"
         verbose_name = 'Planned Action'
         ordering = ('name',)
+        
 
     def __str__(self):
         return self.name 
-    
-    # einen button für manuelle ausführung von dem background job, add import, export button entfernen. 
-    # date field, wann die nächste window anhällt vor der start zeit (auch bei der planned actions)

@@ -24,9 +24,6 @@ __all__ = (
     'MaintenanceWindowsFilterForm',
     'MaintenanceWindowsBulkEditForm',
     'MaintenanceWindowsCSVForm',
-    
-    # 'VirtualMachineFormAssignMaintenanceWindows',
-    # 'VirtualMachineRemoveMaintenanceWindows',
 )
 
 
