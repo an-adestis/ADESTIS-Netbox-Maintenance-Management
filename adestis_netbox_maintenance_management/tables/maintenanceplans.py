@@ -27,11 +27,9 @@ class MaintenancePlansTable(NetBoxTable):
 
     description = columns.MarkdownColumn()
     
-    tenants = tables.Column(empty_values=())
-    devices = tables.Column(empty_values=())
-    virtual_machines = tables.Column(empty_values=())
-
-    # ---------- TENANTS ----------
+    tenant = tables.Column(empty_values=())
+    device = tables.Column(empty_values=())
+    virtual_machine = tables.Column(empty_values=())
     
     reference_number = tables.Column()
     
@@ -42,17 +40,21 @@ class MaintenancePlansTable(NetBoxTable):
         fields = ['name',  'tenant', 'maintenance_action', 'virtual_machine', 'device', 'reference_number', 'description', 'tags', 'comments', 'version']
         default_columns = [ 'name', 'maintenance_action', 'tenant', 'virtual_machine', 'device', 'reference_number', 'version' ]
 
-    def render_tenants(self, record):
+    def render_tenant(self, record):
 
-        tenants = set()
+        tenants = {}
 
         for action in record.maintenance_action.all():
             if action.tenant:
-                tenants.add(action.tenant.name)
+                tenants[action.tenant.name] = action.tenant.get_absolute_url()
 
-        return ", ".join(tenants)
-
-    def render_devices(self, record):
+        return format_html_join(
+            ", ",
+            '<a href="{}">{}</a>',
+            [(url, name) for name, url in tenants.items()]
+        )
+        
+    def render_device(self, record):
 
         devices = []
 
@@ -62,9 +64,10 @@ class MaintenancePlansTable(NetBoxTable):
                     f'<a href="{device.get_absolute_url()}">{device.name}</a>'
                 )
 
-        return tables.utils.mark_safe(", ".join(devices))
+        return mark_safe(", ".join(devices))
 
-    def render_virtual_machines(self, record):
+
+    def render_virtual_machine(self, record):
 
         vms = []
 
@@ -74,4 +77,4 @@ class MaintenancePlansTable(NetBoxTable):
                     f'<a href="{vm.get_absolute_url()}">{vm.name}</a>'
                 )
 
-        return tables.utils.mark_safe(", ".join(vms))
+        return mark_safe(", ".join(vms))

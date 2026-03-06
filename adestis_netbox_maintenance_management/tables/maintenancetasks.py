@@ -90,6 +90,33 @@ class MaintenanceTasksTable(NetBoxTable):
         verbose_name= "Device"
     )
     
+    def render_device(self, value, record):
+        devices = value.all()
+        
+        html_parts = ['<ul style="list-style:none; padding-left:2px; width:500px;">']
+
+        for i, device in enumerate(devices):
+            
+            device_link = f'<a href="{device.get_absolute_url()}" style="margin-right:6px;">{device.name}</a>'
+            
+
+            html_parts.append(f'''
+            <li style="padding:6px 0; border-bottom:1px solid #ccc;">
+                <div style="
+                    display:inline-block; 
+                    width:300px;           /* maximale Breite der VM-Spalte */
+                    white-space:normal;    /* Zeilenumbruch erlauben */
+                    word-break:break-word; /* sehr lange Worte umbrechen */
+                    vertical-align:top;
+                ">
+                     {device_link}
+                    <br>
+                    <small style="color:#ccc;">{getattr(device, "comments", "-")}</small>
+                </div>
+            ''')
+
+        return mark_safe("".join(html_parts))
+        
     maintenance_action = tables.Column(
         linkify= True
     )

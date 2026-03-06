@@ -11,7 +11,7 @@ from reportlab.pdfgen import canvas
 from netbox.views import generic
 
 from django.shortcuts import redirect, render
-from adestis_netbox_maintenance_management.models import MaintenancePlans, MaintenancePlannedActions, MaintenanceTasks
+from adestis_netbox_maintenance_management.models import MaintenancePlans, MaintenancePlannedActions, MaintenanceTasks, MaintenanceActions
 from io import BytesIO
 from django.http import HttpResponse
 from fpdf import FPDF, HTMLMixin
@@ -63,7 +63,8 @@ class MaintenancePlanPDFView(View):
 
         return self.get(request)
 
-    def get(self, request):
+    def get(self, request, **kwargs):
+        
         selected_ids = request.POST.getlist("pk")
 
         if not selected_ids:
@@ -93,7 +94,14 @@ class MaintenancePlanPDFView(View):
             done = "X"
             name = plan.name or ""
             description = plan.description or ""
-            tenant = str(plan.tenant) if plan.tenant else ""
+
+            tenants = []
+
+            for action in plan.maintenance_action.all():
+                if action.tenant:
+                    tenants.append(action.tenant.name)
+
+            tenant = ", ".join(set(tenants))
 
             line_counts = [
                 get_line_count(pdf, ref_number, col_widths[0]),
