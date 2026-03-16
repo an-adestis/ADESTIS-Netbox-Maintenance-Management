@@ -104,7 +104,7 @@ class MaintenanceTasksTable(NetBoxTable):
             <li style="padding:6px 0; border-bottom:1px solid #ccc;">
                 <div style="
                     display:inline-block; 
-                    width:300px;           /* maximale Breite der VM-Spalte */
+                    width:200px;           /* maximale Breite der VM-Spalte */
                     white-space:normal;    /* Zeilenumbruch erlauben */
                     word-break:break-word; /* sehr lange Worte umbrechen */
                     vertical-align:top;
@@ -120,7 +120,7 @@ class MaintenanceTasksTable(NetBoxTable):
     maintenance_action = tables.Column(
         linkify= True
     )
-    
+    #wegen der länge schauen
     def render_maintenance_action(self, value, record):
         if not value:
             return "-"
@@ -133,7 +133,7 @@ class MaintenanceTasksTable(NetBoxTable):
         )
 
         html = f'''
-        <div style="width:500px; word-break:break-word;">
+        <div style="width:300px; word-break:break-word;">
             {maintenanceaction_link}
             <br>
             <small style="color:#ccc;">

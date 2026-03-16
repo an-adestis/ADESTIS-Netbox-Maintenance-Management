@@ -52,11 +52,11 @@ class MaintenancePlannedActionsTable(NetBoxTable):
         fields = ['name', 'maintenance_action', 'maintenance_tasks', 'maintenance_windows', 'virtual_machine', 'device', 'tenant', 'description', 'tags', 'comments']
         default_columns = [ 'name']
         
-    def render_pdf(self, record):
-        url = reverse(
-            "plugins:adestis_netbox_maintenance_management:export_planned_action_pdf",
-            args=[record.pk],
-        )
-        return mark_safe(f'<a class="btn btn-sm btn-primary" href="{url}">PDF</a>')
+    # def render_pdf(self, record):
+    #     url = reverse(
+    #         "plugins:adestis_netbox_maintenance_management:export_planned_action_pdf",
+    #         args=[record.pk],
+    #     )
+    #     return mark_safe(f'<a class="btn btn-sm btn-primary" href="{url}">PDF</a>')
     
     actions = None

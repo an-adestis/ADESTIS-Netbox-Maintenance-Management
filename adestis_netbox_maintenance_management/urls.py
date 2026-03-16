@@ -130,11 +130,13 @@ urlpatterns = (
          MaintenancePlannedActionsDeleteView.as_view(), name='maintenanceplannedactions_delete'),
     
     path("maintenanceplannedactions/run/", views.run_myjob, name="run_myjob"),
+    
+    path("maintenanceplannedactions/pdf/", planned_actions_pdf, name="planned-actions-pdf"),
 
-    path(
-          'maintenanceplannedactions/pdf/<int:pk>/',
-          MaintenanceActionPlanPDFView.as_view(),
-          name='export_planned_action_pdf'
-     ),
+#     path(
+#           'maintenanceplannedactions/pdf/<int:pk>/',
+#           MaintenanceActionPlanPDFView.as_view(),
+#           name='export_planned_action_pdf'
+#      ),
 
 )

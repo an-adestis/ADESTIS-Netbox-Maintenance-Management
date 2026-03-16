@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block control-buttons %}
-  <a href="{% url 'plugins:adestis_netbox_maintenance_management:export_planned_action_pdf' pk=object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-primary">
+  <a href="{% url 'plugins:adestis_netbox_maintenance_management:planned-actions-pdf'%}?return_url={{ object.get_absolute_url }}" class="btn btn-primary">
     <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Generate PDF
   </a>
 {% endblock %}
