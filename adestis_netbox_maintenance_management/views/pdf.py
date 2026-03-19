@@ -1,127 +1,86 @@
 from io import BytesIO
 from django.http import FileResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import (
-    BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer, Table, TableStyle, Image
-)
-from reportlab.lib import colors
-from reportlab.lib.units import cm
 from adestis_netbox_maintenance_management.models import MaintenancePlannedActions
 from lxml import etree
-import os
-
-def header_footer(canvas, doc):
-    # Logo oben rechts
-    logo_path = os.path.abspath('path/to/logo.png')  # Pfad zu deinem Logo, absolut oder relativ zum Projekt
-    if os.path.exists(logo_path):
-        canvas.drawImage(logo_path, doc.width + doc.leftMargin - 3*cm, doc.height + doc.topMargin - 1*cm, width=2.5*cm, height=1*cm)
-
-    # Titel links oben
-    canvas.setFont("Helvetica-Bold", 16)
-    canvas.setFillColor(colors.HexColor("#3a72a8"))
-    canvas.drawString(doc.leftMargin, doc.height + doc.topMargin - 0.8*cm, "Planned Actions")
-
-    # Fußzeile: Seitenzahl rechts unten
-    canvas.setFont("Helvetica", 9)
-    canvas.setFillColor(colors.grey)
-    page_number_text = f"Seite {doc.page} / {{}}"
-    canvas.drawRightString(doc.width + doc.leftMargin, 1*cm, page_number_text)
-
-def planned_actions_pdf(request):
-    plans = MaintenancePlannedActions.objects.prefetch_related(
-        "maintenance_tasks", "maintenance_action", "virtual_machine", "device"
-    )
-
-    buffer = BytesIO()
-    doc = BaseDocTemplate(buffer, pagesize=A4,
-                          leftMargin=2*cm, rightMargin=2*cm,
-                          topMargin=3*cm, bottomMargin=2*cm)
-
-    frame = Frame(doc.leftMargin, doc.bottomMargin,
-                  doc.width, doc.height - 2*cm, id='normal')
-
-    template = PageTemplate(id='test', frames=frame, onPage=header_footer)
-    doc.addPageTemplates([template])
-
-    styles = getSampleStyleSheet()
-    normal_style = styles['Normal']
-    normal_style.spaceAfter = 6
-
-    story = []
+from django.http import HttpResponse
+import tempfile
+from django.conf import settings
+from django.template.loader import get_template
+import tempfile
+from weasyprint import HTML
+def generate_xml(plans):
+    """
+    Generiert XML aus MaintenancePlannedActions
+    """
+    root = etree.Element("planned-actions")
 
     for plan in plans:
-        for task in plan.maintenance_tasks.all().order_by("next_due_date"):
-            # Datum als Abschnittsüberschrift
-            story.append(Paragraph(f"Datum: {task.next_due_date}", styles['Heading3']))
-            story.append(Spacer(1, 6))
+        tasks = plan.maintenance_tasks.all().order_by("next_due_date")
+        for task in tasks:
+            group = etree.SubElement(root, "group")
+            group.set("date", str(task.next_due_date or ""))
 
-            # Startzeit und Endzeit aus dem Task, wenn leer -> ''
-            start_time = task.start_time if getattr(task, 'start_time', None) else ''
-            end_time = task.end_time if getattr(task, 'end_time', None) else ''
+            action = etree.SubElement(group, "action")
+            etree.SubElement(action, "name").text = plan.name
+            etree.SubElement(action, "comments").text = plan.comments or ""
 
-            # Tabellenkopf
-            data = [
-                ['Startzeit', 'Endzeit', 'Maintenance Action'],
-                [start_time, end_time, task.name or '']  # Task-Name statt Plan-Name
-            ]
+            ma = etree.SubElement(action, "maintenance-actions")
+            for a in plan.maintenance_action.all():
+                etree.SubElement(ma, "maintenance-action").text = a.name
 
-            # VMs als Untertabelle
-            vm_data = [['VM', 'Info']]
+            vms = etree.SubElement(action, "vms")
             for vm in plan.virtual_machine.all():
-                vm_data.append([vm.name or '', vm.comments or ''])
+                vmnode = etree.SubElement(vms, "vm")
+                etree.SubElement(vmnode, "name").text = vm.name
+                etree.SubElement(vmnode, "comment").text = getattr(vm, "comments", "")
 
-            vm_table = Table(vm_data, colWidths=[6*cm, 10*cm])
-            vm_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (1, 0), colors.lightgrey),
-                ('GRID', (0, 0), (1, 1), 0.5, colors.black),
-                ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
-            ]))
+            devices = etree.SubElement(action, "devices")
+            for d in plan.device.all():
+                dev = etree.SubElement(devices, "device")
+                etree.SubElement(dev, "name").text = d.name
+                etree.SubElement(dev, "comment").text = ""
 
-            # Devices als Untertabelle
-            device_data = [['Device', 'Info']]
-            for device in plan.device.all():
-                device_data.append([device.name or '', device.comments or ''])
+    return etree.tostring(
+        root,
+        pretty_print=True,
+        xml_declaration=True,
+        encoding="UTF-8"
+    )
 
-            device_table = Table(device_data, colWidths=[6*cm, 10*cm])
-            device_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ]))
 
-            # Verschachtelte Tabelle für Kommentare + VMs + Devices
-            comments = plan.comments or ''
-            nested_table = Table([
-                [Paragraph(comments, normal_style)],
-                [vm_table],
-                [device_table]
-            ], colWidths=[16*cm])
+def planned_actions_pdf(request):
+    """
+    Generiert PDF aus XML/XSLT und liefert es direkt zum Download
+    """
+    plans = MaintenancePlannedActions.objects.prefetch_related(
+        "maintenance_tasks",
+        "maintenance_action",
+        "virtual_machine",
+        "device"
+    )
+    xml_data = generate_xml(plans)
+    xml_tree = etree.fromstring(xml_data)
 
-            nested_table.setStyle(TableStyle([
-                ('LEFTPADDING', (0,0), (-1,-1), 0),
-                ('RIGHTPADDING', (0,0), (-1,-1), 0),
-                ('TOPPADDING', (0,0), (-1,-1), 0),
-                ('BOTTOMPADDING', (0,0), (-1,-1), 0),
-            ]))
+    # XSLT für HTML laden
+    from django.template.loader import get_template
+    template = get_template(
+        "adestis_netbox_maintenance_management/planned_actions/planned_actions.xslt"
+    )
+    xslt_content = template.render({}).encode("utf-8")
+    xslt_tree = etree.XML(xslt_content)
+    transform = etree.XSLT(xslt_tree)
 
-            # Leere Zellen bei Startzeit/Endzeit und dann verschachtelte Tabelle in Maintenance Action Spalte
-            data.append(['', '', nested_table])
+    # XML → HTML transformieren
+    html_tree = transform(xml_tree)
+    html_string = etree.tostring(html_tree, encoding="unicode", method="html")
 
-            main_table = Table(data, colWidths=[3*cm, 3*cm, 10*cm], repeatRows=1)
-            main_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0a6c86')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                ('GRID', (0, 0), (-1, -1), 0.3, colors.black),
-                ('VALIGN', (0,0), (-1,-1), 'TOP'),
-                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-                ('BOTTOMPADDING', (0,0), (-1,0), 8),
-            ]))
+    # HTML → PDF mit WeasyPrint
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
+        HTML(string=html_string).write_pdf(pdf_file.name)
 
-            story.append(main_table)
-            story.append(Spacer(1, 24))
-
-    doc.build(story)
-
-    buffer.seek(0)
-    return FileResponse(buffer, content_type='application/pdf', filename='planned_actions.pdf')
+    # PDF direkt zum Download ausliefern
+    return FileResponse(
+        open(pdf_file.name, "rb"),
+        content_type="application/pdf",
+        filename="planned_actions.pdf"
+    )
