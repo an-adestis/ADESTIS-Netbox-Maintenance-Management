@@ -7,7 +7,7 @@ import tempfile
 from django.conf import settings
 from django.template.loader import get_template
 import tempfile
-from weasyprint import HTML
+# from weasyprint import HTML
 def generate_xml(plans):
     """
     Generiert XML aus MaintenancePlannedActions
@@ -75,12 +75,12 @@ def planned_actions_pdf(request):
     html_string = etree.tostring(html_tree, encoding="unicode", method="html")
 
     # HTML → PDF mit WeasyPrint
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
-        HTML(string=html_string).write_pdf(pdf_file.name)
+    # with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
+    #     HTML(string=html_string).write_pdf(pdf_file.name)
 
     # PDF direkt zum Download ausliefern
     return FileResponse(
-        open(pdf_file.name, "rb"),
+        # open(pdf_file.name, "rb"),
         content_type="application/pdf",
         filename="planned_actions.pdf"
     )
