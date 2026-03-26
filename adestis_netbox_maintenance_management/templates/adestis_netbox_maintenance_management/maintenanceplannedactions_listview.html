@@ -14,11 +14,13 @@
     <i class="mdi mdi-import" id="job-icon"></i> Job starten
 </a>
 
+
 <script>
 function getCSRFToken() {
     // CSRF Token aus Cookie holen
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
+
 
 function startJob(el) {
     const icon = document.getElementById('job-icon');

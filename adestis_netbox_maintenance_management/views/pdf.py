@@ -2,12 +2,10 @@ from io import BytesIO
 from django.http import FileResponse
 from adestis_netbox_maintenance_management.models import MaintenancePlannedActions
 from lxml import etree
-from django.http import HttpResponse
 import tempfile
-from django.conf import settings
+import subprocess
 from django.template.loader import get_template
-import tempfile
-# from weasyprint import HTML
+
 def generate_xml(plans):
     """
     Generiert XML aus MaintenancePlannedActions
@@ -47,40 +45,51 @@ def generate_xml(plans):
         encoding="UTF-8"
     )
 
+from lxml import etree
+from importlib import resources
+import subprocess
+import tempfile
+from django.http import FileResponse
+
 
 def planned_actions_pdf(request):
-    """
-    Generiert PDF aus XML/XSLT und liefert es direkt zum Download
-    """
     plans = MaintenancePlannedActions.objects.prefetch_related(
-        "maintenance_tasks",
-        "maintenance_action",
-        "virtual_machine",
-        "device"
+        "maintenance_tasks", "maintenance_action", "virtual_machine", "device"
     )
+
     xml_data = generate_xml(plans)
     xml_tree = etree.fromstring(xml_data)
 
-    # XSLT für HTML laden
-    from django.template.loader import get_template
-    template = get_template(
-        "adestis_netbox_maintenance_management/planned_actions/planned_actions.xslt"
-    )
-    xslt_content = template.render({}).encode("utf-8")
+    # XSLT laden ohne feste Pfade
+    with resources.open_binary(
+        "adestis_netbox_maintenance_management.planned_actions", 
+        "planned_actions.xslt"
+    ) as f:
+        xslt_content = f.read()
+
     xslt_tree = etree.XML(xslt_content)
     transform = etree.XSLT(xslt_tree)
+    fo_tree = transform(xml_tree)  # XML → XSL-FO
+    fo_bytes = etree.tostring(fo_tree, encoding="utf-8", xml_declaration=True)
 
-    # XML → HTML transformieren
-    html_tree = transform(xml_tree)
-    html_string = etree.tostring(html_tree, encoding="unicode", method="html")
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".fo") as fo_file, \
+         tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
 
-    # HTML → PDF mit WeasyPrint
-    # with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
-    #     HTML(string=html_string).write_pdf(pdf_file.name)
+        fo_file.write(fo_bytes)
+        fo_file.flush()
 
-    # PDF direkt zum Download ausliefern
-    return FileResponse(
-        # open(pdf_file.name, "rb"),
-        content_type="application/pdf",
-        filename="planned_actions.pdf"
-    )
+        result = subprocess.run(
+            ["fop", "-fo", fo_file.name, "-pdf", pdf_file.name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
+        if result.returncode != 0:
+            raise Exception("FOP ERROR:\n" + result.stderr)
+
+        return FileResponse(
+            open(pdf_file.name, "rb"),
+            content_type="application/pdf",
+            filename="planned_actions.pdf"
+        )

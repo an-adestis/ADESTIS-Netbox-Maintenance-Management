@@ -4,8 +4,8 @@ services:
     image: docker.io/netboxcommunity/netbox:${VERSION-v4.0-2.9.1}
     depends_on:
     # postgres
-    - redis
-    - redis-cache
+      - redis
+      - redis-cache
     env_file: env/netbox.env
     user: 'unit:root'
     ports:
@@ -90,6 +90,14 @@ services:
     env_file: env/redis-cache.env
     volumes:
     - netbox-redis-cache-data:/data
+  
+  fop:
+    build:
+      context: /home/an/repos/netbox-projects/maintenance-management/
+      dockerfile: Dockerfile.fop
+    volumes:
+      - fop-data:/data
+    entrypoint: ["sleep", "infinity"]
 
 volumes:
   netbox-media-files:
@@ -107,4 +115,6 @@ volumes:
   netbox-reports-files:
     driver: local
   netbox-scripts-files:
+    driver: local
+  fop-data:
     driver: local

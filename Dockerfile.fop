@@ -1,0 +1,12 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && \
+    apt-get install -y \
+        openjdk-17-jdk \
+        fop \
+        libxalan2-java \
+        libxerces2-java \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /data
+ENTRYPOINT ["fop"]

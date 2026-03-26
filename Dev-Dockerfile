@@ -7,6 +7,8 @@ ENV VIRTUAL_ENV=/opt/netbox/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Plugin-Dateien kopieren
+# NetBox Dockerfile
+COPY ./adestis_netbox_maintenance_management /opt/netbox/adestis_netbox_maintenance_management
 COPY ./adestis_netbox_maintenance_management /source/adestis-netbox-maintenance/adestis_netbox_maintenance_management/
 COPY ./setup.py /source/adestis-netbox-maintenance/
 COPY ./MANIFEST.in /source/adestis-netbox-maintenance/
@@ -27,4 +29,3 @@ RUN /usr/local/bin/uv pip install -r /source/adestis-netbox-maintenance/requirem
 #     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # WeasyPrint installieren
-RUN /usr/local/bin/uv pip install weasyprint
