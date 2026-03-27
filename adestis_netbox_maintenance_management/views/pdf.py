@@ -44,13 +44,14 @@ def generate_xml(plans):
         xml_declaration=True,
         encoding="UTF-8"
     )
-
+import os
 from lxml import etree
 from importlib import resources
 import subprocess
 import tempfile
 from django.http import FileResponse
-
+from django.contrib.staticfiles import finders
+from django.conf import settings
 
 def planned_actions_pdf(request):
     plans = MaintenancePlannedActions.objects.prefetch_related(
@@ -60,29 +61,33 @@ def planned_actions_pdf(request):
     xml_data = generate_xml(plans)
     xml_tree = etree.fromstring(xml_data)
 
-    # XSLT laden ohne feste Pfade
-    with resources.open_binary(
-        "adestis_netbox_maintenance_management.planned_actions", 
-        "planned_actions.xslt"
-    ) as f:
-        xslt_content = f.read()
+    # ✅ XSLT über Django Template laden
+    template = get_template(
+        "adestis_netbox_maintenance_management/planned_actions.xslt"
+    )
+    xslt_content = template.template.source.encode("utf-8")
 
     xslt_tree = etree.XML(xslt_content)
     transform = etree.XSLT(xslt_tree)
-    fo_tree = transform(xml_tree)  # XML → XSL-FO
+
+    fo_tree = transform(xml_tree)
     fo_bytes = etree.tostring(fo_tree, encoding="utf-8", xml_declaration=True)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".fo") as fo_file, \
-         tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
+        tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
 
         fo_file.write(fo_bytes)
         fo_file.flush()
 
+        env = os.environ.copy()
+        env["JAVA_HOME"] = "/usr/lib/jvm/default-java"  # hier setzen
+
         result = subprocess.run(
-            ["fop", "-fo", fo_file.name, "-pdf", pdf_file.name],
+            ["/usr/bin/fop", "-fo", fo_file.name, "-pdf", pdf_file.name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            env=env  # ENV an den subprocess übergeben
         )
 
         if result.returncode != 0:

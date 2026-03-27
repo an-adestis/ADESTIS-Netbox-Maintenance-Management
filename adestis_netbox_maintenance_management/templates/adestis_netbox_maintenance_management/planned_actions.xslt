@@ -18,9 +18,7 @@
       <body>
         <!-- Logo -->
         <img src="/static/adestis_netbox_maintenance_management/planned_actions/logo.png" class="logo" alt="Logo"/>
-
         <h1>Planned Actions</h1>
-
         <table>
           <tr>
             <th>Date</th>

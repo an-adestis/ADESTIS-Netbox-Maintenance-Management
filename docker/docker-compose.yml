@@ -92,11 +92,12 @@ services:
     - netbox-redis-cache-data:/data
   
   fop:
-    build:
-      context: /home/an/repos/netbox-projects/maintenance-management/
-      dockerfile: Dockerfile.fop
+    # build:
+    #   context: /home/an/repos/netbox-projects/maintenance-management/
+    #   dockerfile: Dev-Dockerfile
     volumes:
       - fop-data:/data
+    env_file: env/netbox.env
     entrypoint: ["sleep", "infinity"]
 
 volumes:
