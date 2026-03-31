@@ -59,14 +59,7 @@ def get_grouping_key_for_date(day) -> str:
     return f"date_{day.strftime('%Y%m%d')}"
 
 def get_task_date(task):
-    """
-    Liefert den Scheduling-Key für eine Task zurück:
-    - cron
-    - Weekday
-    - Monthday
-    - Daily
-    - Date
-    """
+
     window = task.maintenance_windows
     if not window:
         return None
@@ -141,7 +134,6 @@ def is_task_due_today(task):
 
         except Exception:
             return False
-
         
     elif key.startswith("Date"):
         try:
@@ -153,15 +145,12 @@ def is_task_due_today(task):
 
     return False
 
-
 def is_task_due_in_future(task, return_date=False):
     """Prüft, ob ein Task in der Zukunft fällig ist oder gibt das nächste Datum zurück."""
     today = date.today()
     key = get_task_date(task)
     now = datetime.now()
     week_in_month = task.maintenance_windows.week_in_month
-    
-    
 
     if not key:
         return None if return_date else False

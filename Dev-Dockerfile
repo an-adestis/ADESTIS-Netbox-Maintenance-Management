@@ -20,15 +20,14 @@ COPY ./docker/configuration/configuration.py /etc/netbox/config/configuration.py
 RUN /usr/local/bin/uv pip install /source/adestis-netbox-maintenance/
 RUN /usr/local/bin/uv pip install -r /source/adestis-netbox-maintenance/requirements-container.txt
 
-
-
 USER root
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        fop \
-        default-jre-headless \
-        fonts-dejavu \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    fop \
+    libfop-java \
+    libxalan2-java \
+    libxerces2-java \
+    default-jre \
+ && rm -rf /var/lib/apt/lists/*
 
 USER netbox

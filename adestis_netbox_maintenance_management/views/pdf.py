@@ -1,15 +1,13 @@
-from io import BytesIO
 from django.http import FileResponse
-from adestis_netbox_maintenance_management.models import MaintenancePlannedActions
+from django.template.loader import get_template
 from lxml import etree
 import tempfile
 import subprocess
-from django.template.loader import get_template
+import os
+
+from adestis_netbox_maintenance_management.models import MaintenancePlannedActions
 
 def generate_xml(plans):
-    """
-    Generiert XML aus MaintenancePlannedActions
-    """
     root = etree.Element("planned-actions")
 
     for plan in plans:
@@ -18,40 +16,34 @@ def generate_xml(plans):
             group = etree.SubElement(root, "group")
             group.set("date", str(task.next_due_date or ""))
 
-            action = etree.SubElement(group, "action")
-            etree.SubElement(action, "name").text = plan.name
-            etree.SubElement(action, "comments").text = plan.comments or ""
+            actions = list(plan.maintenance_action.all())
+            if not actions:
+                # Wenn keine Actions existieren, Dummy-Action hinzufügen
+                actions = [None]
 
-            ma = etree.SubElement(action, "maintenance-actions")
-            for a in plan.maintenance_action.all():
-                etree.SubElement(ma, "maintenance-action").text = a.name
+            for action_data in actions:
+                action = etree.SubElement(group, "action")
+                etree.SubElement(action, "start-time").text = str(getattr(task, "start_time", ""))
+                etree.SubElement(action, "end-time").text = str(getattr(task, "end_time", ""))
+                etree.SubElement(action, "name").text = action_data.name if action_data else "—"
+                etree.SubElement(action, "comments").text = plan.comments or "—"
 
-            vms = etree.SubElement(action, "vms")
-            for vm in plan.virtual_machine.all():
-                vmnode = etree.SubElement(vms, "vm")
-                etree.SubElement(vmnode, "name").text = vm.name
-                etree.SubElement(vmnode, "comment").text = getattr(vm, "comments", "")
+                # VMs
+                vms_node = etree.SubElement(action, "vms")
+                for vm in plan.virtual_machine.all():
+                    vm_node = etree.SubElement(vms_node, "vm")
+                    etree.SubElement(vm_node, "name").text = vm.name
+                    etree.SubElement(vm_node, "comment").text = getattr(vm, "comments", "")
 
-            devices = etree.SubElement(action, "devices")
-            for d in plan.device.all():
-                dev = etree.SubElement(devices, "device")
-                etree.SubElement(dev, "name").text = d.name
-                etree.SubElement(dev, "comment").text = ""
+                # Devices
+                devices_node = etree.SubElement(action, "devices")
+                for device in plan.device.all():
+                    dev_node = etree.SubElement(devices_node, "device")
+                    etree.SubElement(dev_node, "name").text = device.name
+                    etree.SubElement(dev_node, "comment").text = ""
 
-    return etree.tostring(
-        root,
-        pretty_print=True,
-        xml_declaration=True,
-        encoding="UTF-8"
-    )
-import os
-from lxml import etree
-from importlib import resources
-import subprocess
-import tempfile
-from django.http import FileResponse
-from django.contrib.staticfiles import finders
-from django.conf import settings
+    return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding="UTF-8")
+
 
 def planned_actions_pdf(request):
     plans = MaintenancePlannedActions.objects.prefetch_related(
@@ -61,40 +53,61 @@ def planned_actions_pdf(request):
     xml_data = generate_xml(plans)
     xml_tree = etree.fromstring(xml_data)
 
-    # ✅ XSLT über Django Template laden
-    template = get_template(
-        "adestis_netbox_maintenance_management/planned_actions.xslt"
-    )
+    # XSLT laden
+    template = get_template("adestis_netbox_maintenance_management/planned_actions.xslt")
     xslt_content = template.template.source.encode("utf-8")
-
     xslt_tree = etree.XML(xslt_content)
     transform = etree.XSLT(xslt_tree)
 
-    fo_tree = transform(xml_tree)
+    # Transformation
+    try:
+        fo_tree = transform(xml_tree)
+    except etree.XSLTApplyError as e:
+        # XML debug output
+        print(xml_data.decode("utf-8"))
+        raise e
+
     fo_bytes = etree.tostring(fo_tree, encoding="utf-8", xml_declaration=True)
 
+    # FO → PDF
     with tempfile.NamedTemporaryFile(delete=False, suffix=".fo") as fo_file, \
-        tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
+         tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
 
         fo_file.write(fo_bytes)
         fo_file.flush()
 
         env = os.environ.copy()
-        env["JAVA_HOME"] = "/usr/lib/jvm/default-java"  # hier setzen
+        env["JAVA_HOME"] = "/usr/lib/jvm/default-java"  # ggf. anpassen
 
         result = subprocess.run(
-            ["/usr/bin/fop", "-fo", fo_file.name, "-pdf", pdf_file.name],
+            [
+                "java",
+                "-cp",
+                "/usr/share/java/*",
+                "org.apache.fop.cli.Main",
+                "-fo",
+                fo_file.name,
+                "-pdf",
+                pdf_file.name
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            env=env  # ENV an den subprocess übergeben
+            env=env
         )
 
-        if result.returncode != 0:
-            raise Exception("FOP ERROR:\n" + result.stderr)
+        if not os.path.exists(pdf_file.name) or os.path.getsize(pdf_file.name) == 0:
+            raise Exception(
+                f"FOP ERROR:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+            )
 
-        return FileResponse(
+        response = FileResponse(
             open(pdf_file.name, "rb"),
             content_type="application/pdf",
             filename="planned_actions.pdf"
         )
+
+    os.unlink(fo_file.name)
+    os.unlink(pdf_file.name)
+
+    return response

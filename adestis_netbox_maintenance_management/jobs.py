@@ -124,17 +124,6 @@ class AutoCreateMaintenanceTasks(JobRunner):
                 task = MaintenanceTasks.objects.filter(
                     maintenance_action=action
                 ).order_by("-id").first()
-                
-                
-                # if hasattr(action, "created") and action.created < cutoff:
-
-                #     tasks = MaintenanceTasks.objects.filter(maintenance_action=action)
-
-                    # if tasks.filter(status=TaskStatusChoices.STATUS_ARCHIVED).exists():
-                    #     tasks.delete()
-                    #     action.delete()
-
-                    #     continue
 
                 if task and task.status == TaskStatusChoices.STATUS_ARCHIVED:
                     continue
