@@ -76,6 +76,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
       unit-python3.11=1.32.0-1~mantic \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl --silent --fail --location \
+      https://dlcdn.apache.org/xmlgraphics/fop/binaries/fop-2.11-bin.tar.gz \
+    | tar -xz -C /opt/ \
+    && ln -s /opt/fop-2.11/fop/fop /usr/local/bin/fop
+
 COPY --from=builder /opt/netbox/venv /opt/netbox/venv
 
 ARG NETBOX_PATH

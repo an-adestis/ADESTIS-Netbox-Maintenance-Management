@@ -95,7 +95,7 @@ def planned_actions_pdf(request):
             text=True,
             env=env
         )
-
+        
         if not os.path.exists(pdf_file.name) or os.path.getsize(pdf_file.name) == 0:
             raise Exception(
                 f"FOP ERROR:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
@@ -104,7 +104,8 @@ def planned_actions_pdf(request):
         response = FileResponse(
             open(pdf_file.name, "rb"),
             content_type="application/pdf",
-            filename="planned_actions.pdf"
+            filename="planned_actions.pdf",
+            as_attachment=True
         )
 
     os.unlink(fo_file.name)
