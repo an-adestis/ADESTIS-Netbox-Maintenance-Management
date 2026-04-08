@@ -100,7 +100,7 @@ def get_next_due_date(task):
 
     return None
 
-@system_job(interval=3)
+@system_job(interval=2)
 class AutoCreateMaintenanceTasks(JobRunner):
     class Meta:
         name = "Automatically Generated Maintenance Tasks"

@@ -17,130 +17,129 @@
       </fo:layout-master-set>
 
       <fo:page-sequence master-reference="A4">
-        <fo:flow flow-name="xsl-region-body"
-                 font-family="Helvetica, Arial, sans-serif"
-                 font-size="10pt"
-                 color="#333333">
+        <fo:flow flow-name="xsl-region-body" font-family="Helvetica">
 
+          <!-- Marker für Seitenzahl -->
           <fo:block id="last-page-marker"/>
 
           <!-- Titel -->
-          <fo:block font-size="18pt"
-                    font-weight="bold"
-                    space-after="10pt"
-                    color="#36ddabff">
+          <fo:block font-size="16pt" font-weight="bold" space-after="10pt" color="#007b8a">
             Planned Actions
           </fo:block>
 
-          <!-- Datum -->
-          <fo:block font-size="12pt"
-                    space-after="15pt">
-            Datum: <xsl:value-of select="group/@date"/>
+          <!-- Datum / Due Date -->
+          <fo:block font-size="10pt" space-after="8pt" color="#333333">
+            Due Date: <xsl:value-of select="group/@due-date"/>
           </fo:block>
 
-          <!-- HAUPTTABELLE -->
-          <fo:table table-layout="fixed"
-                    width="100%"
-                    border="0.5pt solid #007b8a">
-
-            <fo:table-column column-width="3cm"/>
-            <fo:table-column column-width="3cm"/>
-            <fo:table-column column-width="14cm"/>
-
-            <!-- HEADER -->
+          <!-- Haupttabelle -->
+          <fo:table table-layout="fixed" width="100%" border="0.5pt solid #007b8a">
             <fo:table-header>
-              <fo:table-row background-color="#007b8a"
-                            color="white"
-                            font-weight="bold">
-                <fo:table-cell padding="5pt">
-                  <fo:block>Startzeit</fo:block>
-                </fo:table-cell>
-                <fo:table-cell padding="5pt">
-                  <fo:block>Endzeit</fo:block>
-                </fo:table-cell>
-                <fo:table-cell padding="5pt">
-                  <fo:block>Maintenance Action</fo:block>
-                </fo:table-cell>
+              <fo:table-row background-color="#007b8a" color="white" font-weight="bold">
+                <fo:table-cell padding="4pt"><fo:block>Startzeit</fo:block></fo:table-cell>
+                <fo:table-cell padding="4pt"><fo:block>Endzeit</fo:block></fo:table-cell>
+                <fo:table-cell padding="4pt"><fo:block>Maintenance Action</fo:block></fo:table-cell>
               </fo:table-row>
             </fo:table-header>
 
-            <!-- BODY -->
             <fo:table-body>
               <xsl:for-each select="group/action">
 
-  <!-- ZEILE -->
-  <fo:table-row background-color="#007b8a" color="white" font-weight="bold">
+                <!-- Hauptzeile -->
+                <fo:table-row background-color="#e6f3f5" font-weight="bold">
+                  <fo:table-cell padding="4pt" border="0.5pt solid #007b8a">
+                    <fo:block><xsl:value-of select="start-time"/></fo:block>
+                  </fo:table-cell>
 
-    <fo:table-cell padding="5pt">
-      <fo:block>
-        <xsl:value-of select="start_time"/>
-      </fo:block>
-    </fo:table-cell>
+                  <fo:table-cell padding="4pt" border="0.5pt solid #007b8a">
+                    <fo:block><xsl:value-of select="end-time"/></fo:block>
+                  </fo:table-cell>
 
-    <fo:table-cell padding="5pt">
-      <fo:block>
-        <xsl:value-of select="end_time"/>
-      </fo:block>
-    </fo:table-cell>
+                  <fo:table-cell padding="4pt" border="0.5pt solid #007b8a">
+                    <fo:block><xsl:value-of select="name"/></fo:block>
+                  </fo:table-cell>
+                </fo:table-row>
 
-    <fo:table-cell padding="5pt">
-      <fo:block>
-        <!-- ❗ ALLE Maintenance Actions -->
-        <xsl:for-each select="../maintenance_action">
-          <xsl:value-of select="name"/>
-          <xsl:if test="position() != last()">, </xsl:if>
-        </xsl:for-each>
-      </fo:block>
-    </fo:table-cell>
+                <!-- Details: VMs -->
+                <fo:table-row>
+                  <fo:table-cell number-columns-spanned="3"
+                                  padding="6pt"
+                                  border="0.5pt solid #007b8a"
+                                  background-color="#f9f9f9">
 
-  </fo:table-row>
+                    <!-- VMs -->
+                    <xsl:if test="vms/vm">
+                      <fo:block font-weight="bold" background-color="#eeeeee" padding="3pt" margin-bottom="2pt">VM</fo:block>
+                      <fo:table width="100%" border="0.5pt solid #999999">
+                        <fo:table-header>
+                          <fo:table-row background-color="#dddddd" font-weight="bold">
+                            <fo:table-cell padding="3pt"><fo:block>Name</fo:block></fo:table-cell>
+                            <fo:table-cell padding="3pt"><fo:block>Comment</fo:block></fo:table-cell>
+                          </fo:table-row>
+                        </fo:table-header>
+                        <fo:table-body>
+                          <xsl:for-each select="vms/vm">
+                            <fo:table-row>
+                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
+                                <fo:block>
+                                  <xsl:value-of select="name"/>
+                                  <xsl:if test="not(name)">-</xsl:if>
+                                </fo:block>
+                              </fo:table-cell>
+                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
+                                <fo:block>
+                                  <xsl:value-of select="comment"/>
+                                  <xsl:if test="not(comment)">-</xsl:if>
+                                </fo:block>
+                              </fo:table-cell>
+                            </fo:table-row>
+                          </xsl:for-each>
+                        </fo:table-body>
+                      </fo:table>
+                    </xsl:if>
 
-  <!-- DETAILS -->
-  <fo:table-row background-color="#1b1b1b" color="white" font-size="8pt">
-    <fo:table-cell number-columns-spanned="3" padding="5pt">
+                    <!-- Devices -->
+                    <xsl:if test="devices/device">
+                      <fo:block font-weight="bold" background-color="#eeeeee" padding="3pt" margin-top="6pt" margin-bottom="2pt">Device</fo:block>
+                      <fo:table width="100%" border="0.5pt solid #999999">
+                        <fo:table-header>
+                          <fo:table-row background-color="#dddddd" font-weight="bold">
+                            <fo:table-cell padding="3pt"><fo:block>Name</fo:block></fo:table-cell>
+                            <fo:table-cell padding="3pt"><fo:block>Comment</fo:block></fo:table-cell>
+                          </fo:table-row>
+                        </fo:table-header>
+                        <fo:table-body>
+                          <xsl:for-each select="devices/device">
+                            <fo:table-row>
+                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
+                                <fo:block>
+                                  <xsl:value-of select="name"/>
+                                  <xsl:if test="not(name)">-</xsl:if>
+                                </fo:block>
+                              </fo:table-cell>
+                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
+                                <fo:block>
+                                  <xsl:value-of select="comment"/>
+                                  <xsl:if test="not(comment)">-</xsl:if>
+                                </fo:block>
+                              </fo:table-cell>
+                            </fo:table-row>
+                          </xsl:for-each>
+                        </fo:table-body>
+                      </fo:table>
+                    </xsl:if>
 
-      <!-- VMs -->
-      <xsl:if test="../virtual_machine">
-        <fo:block font-weight="bold" space-after="4pt">VMs:</fo:block>
+                  </fo:table-cell>
+                </fo:table-row>
 
-        <xsl:for-each select="../virtual_machine">
-          <fo:block>
-            • <xsl:value-of select="name"/>
-          </fo:block>
-        </xsl:for-each>
-      </xsl:if>
-
-      <!-- Devices -->
-      <xsl:if test="../device">
-        <fo:block font-weight="bold" space-before="6pt" space-after="4pt">Devices:</fo:block>
-
-        <xsl:for-each select="../device">
-          <fo:block>
-            • <xsl:value-of select="name"/>
-          </fo:block>
-        </xsl:for-each>
-      </xsl:if>
-
-    </fo:table-cell>
-  </fo:table-row>
-
-</xsl:for-each>
+              </xsl:for-each>
             </fo:table-body>
-
           </fo:table>
 
           <!-- Footer -->
-          <fo:block font-size="8pt"
-                    color="#666666"
-                    margin-top="20pt"
-                    text-align="right">
-            Seite <fo:page-number/> /
+          <fo:block font-size="8pt" color="#666666" margin-top="20pt" text-align="right">
+            Seite <fo:page-number/> / 
             <fo:page-number-citation-last ref-id="last-page-marker"/>
-          </fo:block>
-
-          <fo:block font-size="8pt"
-                    margin-top="10pt">
-            <xsl:value-of select="/planned-actions/pdf-created-date"/>
           </fo:block>
 
         </fo:flow>
@@ -148,4 +147,5 @@
     </fo:root>
 
   </xsl:template>
+
 </xsl:stylesheet>
