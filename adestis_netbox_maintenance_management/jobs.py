@@ -106,9 +106,6 @@ class AutoCreateMaintenanceTasks(JobRunner):
         name = "Automatically Generated Maintenance Tasks"
 
     def run(self, *args, **kwargs):
-        now = datetime.now().time()
-        if not (time(8, 0) <= now <= time(18, 0)):
-            return
 
         logger = logging.getLogger(__name__)
         logger.error("Tasks Job gestartet")
@@ -151,8 +148,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
                     
                 today = date.today()
                 next_due = get_next_due_date(task)
-                
-                print("Nest Due", next_due)
+        
 
                 if is_task_due_today(task):
                     new_status = TaskStatusChoices.STATUS_ACTIVE

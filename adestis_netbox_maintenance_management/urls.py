@@ -131,12 +131,7 @@ urlpatterns = (
     
     path("maintenanceplannedactions/run/", views.run_myjob, name="run_myjob"),
     
-    path("maintenanceplannedactions/pdf/", planned_actions_pdf, name="planned-actions-pdf"),
+    path('maintenanceplannedactions/<int:pk>/pdf/', planned_actions_pdf, name='planned_actions_pdf'),
 
-#     path(
-#           'maintenanceplannedactions/pdf/<int:pk>/',
-#           MaintenanceActionPlanPDFView.as_view(),
-#           name='export_planned_action_pdf'
-#      ),
 
 )

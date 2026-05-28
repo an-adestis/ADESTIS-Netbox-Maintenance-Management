@@ -4,19 +4,11 @@
 
   <xsl:output method="xml" indent="yes"/>
 
-  <!-- ROOT MATCH (funktioniert für beide Varianten indirekt über apply-templates) -->
   <xsl:template match="/">
-
     <xsl:apply-templates select="planned-actions | planned_actions"/>
-
   </xsl:template>
 
-  <!-- HAUPT-TEMPLATE -->
   <xsl:template match="planned-actions | planned_actions">
-
-    <!-- Safe Next Due Date -->
-    <xsl:variable name="nextDueDate"
-      select="(group[1]/next_due_date | group[1]/@due-date)[1]"/>
 
     <fo:root>
       <fo:layout-master-set>
@@ -24,193 +16,241 @@
             page-height="29.7cm"
             page-width="21cm"
             margin="2cm">
-          <fo:region-body margin-top="3cm"/>
-          <fo:region-before extent="3cm"/>
+          <fo:region-body margin-top="3.5cm" margin-bottom="1.5cm"/>
+          <fo:region-before extent="3.5cm"/>
+          <fo:region-after extent="1.5cm"/>
         </fo:simple-page-master>
       </fo:layout-master-set>
 
       <fo:page-sequence master-reference="A4">
 
-        <!-- HEADER (jede Seite) -->
+        <!-- HEADER -->
         <fo:static-content flow-name="xsl-region-before">
-          <fo:block font-size="16pt" font-weight="bold" color="#007b8a">
+          <fo:block font-size="22pt" font-weight="bold" color="#E5133A"
+                    font-family="Helvetica" margin-bottom="4pt">
             Planned Actions
           </fo:block>
-
-          <fo:block font-size="10pt" color="#333333">
-            Datum:
-            <xsl:choose>
-              <xsl:when test="$nextDueDate">
-                <xsl:value-of select="$nextDueDate"/>
-              </xsl:when>
-              <xsl:otherwise>-</xsl:otherwise>
-            </xsl:choose>
+          <fo:block font-size="10pt" color="#333333" font-family="Helvetica" margin-bottom="6pt">
+            Datum: <xsl:value-of select="group[1]/next_due_date"/>
           </fo:block>
-
-          <fo:block border-bottom="1pt solid #007b8a" margin-top="4pt"/>
+          <fo:block border-bottom="2pt solid #E5133A"/>
         </fo:static-content>
 
-        <!-- CONTENT -->
-        <fo:flow flow-name="xsl-region-body" font-family="Helvetica">
+        <!-- FOOTER -->
+        <fo:static-content flow-name="xsl-region-after">
+          <fo:block border-top="1pt solid #cccccc" margin-bottom="4pt"/>
+          <fo:table table-layout="fixed" width="100%">
+            <fo:table-column column-width="proportional-column-width(1)"/>
+            <fo:table-column column-width="proportional-column-width(1)"/>
+            <fo:table-body>
+              <fo:table-row>
+                <fo:table-cell>
+                  <fo:block font-size="8pt" color="#666666" font-family="Helvetica">
+                    <xsl:value-of select="group[1]/next_due_date"/>
+                  </fo:block>
+                </fo:table-cell>
+                <fo:table-cell text-align="right">
+                  <fo:block font-size="8pt" color="#666666" font-family="Helvetica">
+                    Seite <fo:page-number/> / <fo:page-number-citation-last ref-id="last-block"/>
+                  </fo:block>
+                </fo:table-cell>
+              </fo:table-row>
+            </fo:table-body>
+          </fo:table>
+        </fo:static-content>
 
-          <fo:block id="last-page-marker"/>
+        <!-- HAUPTINHALT -->
+        <fo:flow flow-name="xsl-region-body" font-family="Helvetica" font-size="9pt"
+                 color="#333333">
 
-          <fo:table table-layout="fixed" width="100%" border="0.5pt solid #007b8a" margin-top="10pt">
+          <fo:block id="last-block"/>
 
-            <!-- HEADER -->
+          <fo:table table-layout="fixed" width="100%"
+                    border="0.5pt solid #cccccc">
+
+            <fo:table-column column-width="3cm"/>
+            <fo:table-column column-width="3cm"/>
+            <fo:table-column column-width="proportional-column-width(1)"/>
+
             <fo:table-header>
-              <fo:table-row background-color="#007b8a" color="white" font-weight="bold">
-                <fo:table-cell padding="4pt"><fo:block>Startzeit</fo:block></fo:table-cell>
-                <fo:table-cell padding="4pt"><fo:block>Endzeit</fo:block></fo:table-cell>
-                <fo:table-cell padding="4pt"><fo:block>Maintenance Action</fo:block></fo:table-cell>
+              <fo:table-row background-color="#E5133A" color="white" font-weight="bold">
+                <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                  <fo:block>Startzeit</fo:block>
+                </fo:table-cell>
+                <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                  <fo:block>Endzeit</fo:block>
+                </fo:table-cell>
+                <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                  <fo:block>Maintenance Action</fo:block>
+                </fo:table-cell>
               </fo:table-row>
             </fo:table-header>
 
             <fo:table-body>
+              <xsl:choose>
+                <xsl:when test="group/maintenance_action">
+                  <xsl:for-each select="group/maintenance_action">
 
-              <!-- ACTIONS -->
-              <xsl:for-each select="group/maintenance_action">
+                    <fo:table-row font-weight="bold"
+                                  background-color="#fde8ec"
+                                  keep-with-next.within-page="always">
+                      <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                        <fo:block color="#333333">
+                          <xsl:choose>
+                            <xsl:when test="normalize-space(start_time) != ''">
+                              <xsl:value-of select="start_time"/>
+                            </xsl:when>
+                            <xsl:otherwise>-</xsl:otherwise>
+                          </xsl:choose>
+                        </fo:block>
+                      </fo:table-cell>
+                      <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                        <fo:block color="#333333">
+                          <xsl:choose>
+                            <xsl:when test="normalize-space(end_time) != ''">
+                              <xsl:value-of select="end_time"/>
+                            </xsl:when>
+                            <xsl:otherwise>-</xsl:otherwise>
+                          </xsl:choose>
+                        </fo:block>
+                      </fo:table-cell>
+                      <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                        <fo:block color="#333333">
+                          <xsl:choose>
+                            <xsl:when test="normalize-space(name) != ''">
+                              <xsl:value-of select="name"/>
+                            </xsl:when>
+                            <xsl:otherwise>-</xsl:otherwise>
+                          </xsl:choose>
+                        </fo:block>
+                      </fo:table-cell>
+                    </fo:table-row>
 
-                <!-- MAIN ROW -->
-                <fo:table-row background-color="#e6f3f5" font-weight="bold">
+                    <!-- DETAILZEILE -->
+                    <fo:table-row>
+                      <fo:table-cell number-columns-spanned="3"
+                                     padding="8pt"
+                                     border="0.5pt solid #cccccc"
+                                     border-top="0pt">
+                        <fo:block/>
 
-                  <fo:table-cell padding="4pt" border="0.5pt solid #007b8a">
-                    <fo:block>
-                      <xsl:choose>
-                        <xsl:when test="start_time">
-                          <xsl:value-of select="start_time"/>
-                        </xsl:when>
-                        <xsl:otherwise>-</xsl:otherwise>
-                      </xsl:choose>
-                    </fo:block>
-                  </fo:table-cell>
+                        <!-- Comments -->
+                        <xsl:if test="normalize-space(comments) != ''">
+                          <fo:block font-style="italic" color="#666666" margin-bottom="8pt">
+                            <xsl:value-of select="comments"/>
+                          </fo:block>
+                        </xsl:if>
 
-                  <fo:table-cell padding="4pt" border="0.5pt solid #007b8a">
-                    <fo:block>
-                      <xsl:choose>
-                        <xsl:when test="end_time">
-                          <xsl:value-of select="end_time"/>
-                        </xsl:when>
-                        <xsl:otherwise>-</xsl:otherwise>
-                      </xsl:choose>
-                    </fo:block>
-                  </fo:table-cell>
+                        <!-- VMs -->
+                        <xsl:if test="vms/vm">
+                          <fo:block font-weight="bold" color="#333333"
+                                    border-bottom="1pt solid #cccccc"
+                                    padding-bottom="2pt" margin-bottom="4pt">
+                            VM
+                          </fo:block>
+                          <fo:table width="100%" border="0.5pt solid #cccccc">
+                            <fo:table-column column-width="proportional-column-width(1)"/>
+                            <fo:table-column column-width="proportional-column-width(2)"/>
+                            <fo:table-header>
+                              <fo:table-row background-color="#f5f5f5" font-weight="bold">
+                                <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                  <fo:block>Name</fo:block>
+                                </fo:table-cell>
+                                <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                  <fo:block>Info</fo:block>
+                                </fo:table-cell>
+                              </fo:table-row>
+                            </fo:table-header>
+                            <fo:table-body>
+                              <xsl:for-each select="vms/vm">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                    <fo:block><xsl:value-of select="name"/></fo:block>
+                                  </fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                    <fo:block>
+                                      <xsl:choose>
+                                        <xsl:when test="normalize-space(comment) != ''">
+                                          <xsl:value-of select="comment"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>-</xsl:otherwise>
+                                      </xsl:choose>
+                                    </fo:block>
+                                  </fo:table-cell>
+                                </fo:table-row>
+                              </xsl:for-each>
+                            </fo:table-body>
+                          </fo:table>
+                        </xsl:if>
 
-                  <fo:table-cell padding="4pt" border="0.5pt solid #007b8a">
-                    <fo:block>
-                      <xsl:choose>
-                        <xsl:when test="name">
-                          <xsl:value-of select="name"/>
-                        </xsl:when>
-                        <xsl:when test="maintenance_action_name">
-                          <xsl:value-of select="maintenance_action_name"/>
-                        </xsl:when>
-                        <xsl:otherwise>-</xsl:otherwise>
-                      </xsl:choose>
-                    </fo:block>
-                  </fo:table-cell>
+                        <!-- Devices -->
+                        <xsl:if test="devices/device">
+                          <fo:block font-weight="bold" color="#333333"
+                                    border-bottom="1pt solid #cccccc"
+                                    padding-bottom="2pt" margin-top="10pt" margin-bottom="4pt">
+                            Device
+                          </fo:block>
+                          <fo:table width="100%" border="0.5pt solid #cccccc">
+                            <fo:table-column column-width="proportional-column-width(1)"/>
+                            <fo:table-column column-width="proportional-column-width(2)"/>
+                            <fo:table-header>
+                              <fo:table-row background-color="#f5f5f5" font-weight="bold">
+                                <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                  <fo:block>Name</fo:block>
+                                </fo:table-cell>
+                                <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                  <fo:block>Info</fo:block>
+                                </fo:table-cell>
+                              </fo:table-row>
+                            </fo:table-header>
+                            <fo:table-body>
+                              <xsl:for-each select="devices/device">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                    <fo:block><xsl:value-of select="name"/></fo:block>
+                                  </fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc">
+                                    <fo:block>
+                                      <xsl:choose>
+                                        <xsl:when test="normalize-space(comment) != ''">
+                                          <xsl:value-of select="comment"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>-</xsl:otherwise>
+                                      </xsl:choose>
+                                    </fo:block>
+                                  </fo:table-cell>
+                                </fo:table-row>
+                              </xsl:for-each>
+                            </fo:table-body>
+                          </fo:table>
+                        </xsl:if>
 
-                </fo:table-row>
+                        <!-- Weder VMs noch Devices -->
+                        <xsl:if test="not(vms/vm) and not(devices/device)">
+                          <fo:block color="#999999" font-style="italic">
+                            Keine VMs oder Devices zugewiesen.
+                          </fo:block>
+                        </xsl:if>
 
-                <!-- DETAILS -->
-                <fo:table-row>
-                  <fo:table-cell number-columns-spanned="3"
-                                  padding="6pt"
-                                  border="0.5pt solid #007b8a"
-                                  background-color="#f9f9f9">
+                      </fo:table-cell>
+                    </fo:table-row>
 
-                    <!-- verhindert FOP Crash -->
-                    <fo:block/>
+                  </xsl:for-each>
+                </xsl:when>
 
-                    <!-- VMs -->
-                    <xsl:if test="vms/vm">
-                      <fo:block font-weight="bold" background-color="#eeeeee" padding="3pt" margin-bottom="2pt">
-                        VM
+                <xsl:otherwise>
+                  <fo:table-row>
+                    <fo:table-cell number-columns-spanned="3" padding="8pt">
+                      <fo:block color="#999999" font-style="italic" text-align="center">
+                        Keine geplanten Aktionen vorhanden.
                       </fo:block>
+                    </fo:table-cell>
+                  </fo:table-row>
+                </xsl:otherwise>
 
-                      <fo:table width="100%" border="0.5pt solid #999999">
-                        <fo:table-header>
-                          <fo:table-row background-color="#dddddd" font-weight="bold">
-                            <fo:table-cell padding="3pt"><fo:block>Name</fo:block></fo:table-cell>
-                            <fo:table-cell padding="3pt"><fo:block>Info</fo:block></fo:table-cell>
-                          </fo:table-row>
-                        </fo:table-header>
-
-                        <fo:table-body>
-                          <xsl:for-each select="vms/vm">
-                            <fo:table-row>
-
-                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
-                                <fo:block>
-                                  <xsl:value-of select="name"/>
-                                  <xsl:if test="not(name)">-</xsl:if>
-                                </fo:block>
-                              </fo:table-cell>
-
-                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
-                                <fo:block>
-                                  <xsl:value-of select="comment"/>
-                                  <xsl:if test="not(comment)">-</xsl:if>
-                                </fo:block>
-                              </fo:table-cell>
-
-                            </fo:table-row>
-                          </xsl:for-each>
-                        </fo:table-body>
-                      </fo:table>
-                    </xsl:if>
-
-                    <!-- DEVICES -->
-                    <xsl:if test="devices/device">
-                      <fo:block font-weight="bold" background-color="#eeeeee" padding="3pt" margin-top="6pt" margin-bottom="2pt">
-                        Device
-                      </fo:block>
-
-                      <fo:table width="100%" border="0.5pt solid #999999">
-                        <fo:table-header>
-                          <fo:table-row background-color="#dddddd" font-weight="bold">
-                            <fo:table-cell padding="3pt"><fo:block>Name</fo:block></fo:table-cell>
-                            <fo:table-cell padding="3pt"><fo:block>Info</fo:block></fo:table-cell>
-                          </fo:table-row>
-                        </fo:table-header>
-
-                        <fo:table-body>
-                          <xsl:for-each select="devices/device">
-                            <fo:table-row>
-
-                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
-                                <fo:block>
-                                  <xsl:value-of select="name"/>
-                                  <xsl:if test="not(name)">-</xsl:if>
-                                </fo:block>
-                              </fo:table-cell>
-
-                              <fo:table-cell padding="3pt" border="0.5pt solid #999999">
-                                <fo:block>
-                                  <xsl:value-of select="comment"/>
-                                  <xsl:if test="not(comment)">-</xsl:if>
-                                </fo:block>
-                              </fo:table-cell>
-
-                            </fo:table-row>
-                          </xsl:for-each>
-                        </fo:table-body>
-                      </fo:table>
-                    </xsl:if>
-
-                  </fo:table-cell>
-                </fo:table-row>
-
-              </xsl:for-each>
-
+              </xsl:choose>
             </fo:table-body>
           </fo:table>
-
-          <!-- FOOTER -->
-          <fo:block font-size="8pt" color="#666666" margin-top="20pt" text-align="right">
-            Seite <fo:page-number/> /
-            <fo:page-number-citation-last ref-id="last-page-marker"/>
-          </fo:block>
 
         </fo:flow>
       </fo:page-sequence>
