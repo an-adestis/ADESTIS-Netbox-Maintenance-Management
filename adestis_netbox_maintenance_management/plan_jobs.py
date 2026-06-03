@@ -249,6 +249,9 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
         name = "Automatically Generated Planned Actions"
 
     def run(self, *args, **kwargs):
+        from django.utils import timezone
+        from datetime import timedelta
+        
         assigned_count = 0
         grouped_tasks = {}
         
@@ -312,4 +315,4 @@ class AutoCreateMaintenancePlannedActions(JobRunner):
                 plan.maintenance_tasks.remove(*archived_tasks)
 
             if plan.maintenance_tasks.count() == 0:
-                plan.delete()
+                plan.delete()      

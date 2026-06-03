@@ -106,6 +106,11 @@ class AutoCreateMaintenanceTasks(JobRunner):
         name = "Automatically Generated Maintenance Tasks"
 
     def run(self, *args, **kwargs):
+        
+        from django.utils import timezone
+        from datetime import timedelta
+        from core.models import Job
+        from core.choices import JobStatusChoices
 
         logger = logging.getLogger(__name__)
         logger.error("Tasks Job gestartet")
@@ -144,7 +149,7 @@ class AutoCreateMaintenanceTasks(JobRunner):
                     
                     task.tenant = action.tenant if getattr(action, "tenant", None) else None
 
-                    task.save()
+                    task.save(_skip_job=True)
                     
                 today = date.today()
                 next_due = get_next_due_date(task)
@@ -161,3 +166,5 @@ class AutoCreateMaintenanceTasks(JobRunner):
                     task.status = new_status
                     task.next_due_date = next_due
                     task.save()
+                    
+        

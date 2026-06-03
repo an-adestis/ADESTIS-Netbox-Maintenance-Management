@@ -12,27 +12,14 @@ class AdestisMaintenanceConfig(PluginConfig):
     default_settings = {
         'top_level_menu' : True,
     }
-
+    
     def ready(self):
         super().ready()
-        from .jobs import AutoCreateMaintenanceTasks
-        # from .plan_jobs import AutoCreateMaintenancePlannedActions
-        from .models import MaintenanceActions
-        from .models import MaintenanceTasks
-        
-        # for obj in MaintenanceActions.objects.all():
-        #     AutoCreateMaintenanceTasks.enqueue_once(
-        #         instance=obj,
-        #         interval=JobIntervalChoices.INTERVAL_MINUTELY
-        #     )
-            
-        # for obj in MaintenanceTasks.objects.all():
-        #     AutoCreateMaintenancePlannedActions.enqueue_once(
-        #         instance=obj,
-        #         interval=JobIntervalChoices.INTERVAL_MINUTELY
-        #     )
+        from . import jobs
+        from . import plan_jobs
+
         
 config = AdestisMaintenanceConfig
-default_app_config = "adestis_netbox_maintenance_management.apps.AdestisMaintenanceManagementAppConfig"
+
 
 
