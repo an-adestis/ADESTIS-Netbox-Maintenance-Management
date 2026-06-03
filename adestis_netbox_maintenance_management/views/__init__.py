@@ -16,143 +16,143 @@ from io import BytesIO
 from django.http import HttpResponse
 from fpdf import FPDF, HTMLMixin
 
-class MaintenancePlansPDF(FPDF, HTMLMixin):
+# class MaintenancePlansPDF(FPDF, HTMLMixin):
 
-    def header(self):
-        self.set_font("Helvetica", "B", 14)
-        self.cell(0, 10, "Maintenance Plan by Time", 0, 1, "L")
+#     def header(self):
+#         self.set_font("Helvetica", "B", 14)
+#         self.cell(0, 10, "Maintenance Plan by Time", 0, 1, "L")
 
-        self.set_font("Helvetica", "", 11)
-        self.cell(0, 8, datetime.today().strftime('%d.%m.%Y'), 0, 1, "C")
-        self.ln(5)
+#         self.set_font("Helvetica", "", 11)
+#         self.cell(0, 8, datetime.today().strftime('%d.%m.%Y'), 0, 1, "C")
+#         self.ln(5)
 
 
-def get_line_count(pdf, text, col_width):
+# def get_line_count(pdf, text, col_width):
 
-    text = "" if text is None else str(text)
+#     text = "" if text is None else str(text)
 
-    words = text.split(" ")
-    lines = 1
-    line_width = 0
+#     words = text.split(" ")
+#     lines = 1
+#     line_width = 0
 
-    for word in words:
-        word_width = pdf.get_string_width(word + " ")
-        if line_width + word_width <= col_width:
-            line_width += word_width
-        else:
-            lines += 1
-            line_width = word_width
+#     for word in words:
+#         word_width = pdf.get_string_width(word + " ")
+#         if line_width + word_width <= col_width:
+#             line_width += word_width
+#         else:
+#             lines += 1
+#             line_width = word_width
 
-    return lines
+#     return lines
     
-from django.http import HttpResponse
-from django.views import View
-from django.contrib import messages
+# from django.http import HttpResponse
+# from django.views import View
+# from django.contrib import messages
 
-class MaintenancePlanPDFView(View):
+# class MaintenancePlanPDFView(View):
     
-    def post(self, request):
-        # POST soll sich wie GET verhalten,
-        # aber mit ausgewählten IDs
+#     def post(self, request):
+#         # POST soll sich wie GET verhalten,
+#         # aber mit ausgewählten IDs
 
-        selected_ids = request.POST.getlist("pk")
+#         selected_ids = request.POST.getlist("pk")
 
-        # Trick: wir speichern die IDs am Request,
-        # damit get() sie benutzen kann
-        request.selected_ids = selected_ids
+#         # Trick: wir speichern die IDs am Request,
+#         # damit get() sie benutzen kann
+#         request.selected_ids = selected_ids
 
-        return self.get(request)
+#         return self.get(request)
 
-    def get(self, request, **kwargs):
+#     def get(self, request, **kwargs):
         
-        selected_ids = request.POST.getlist("pk")
+#         selected_ids = request.POST.getlist("pk")
 
-        if not selected_ids:
-            messages.warning(request, "No Maintenance Plans were selected.")
-            return redirect(request.META.get("HTTP_REFERER"))
+#         if not selected_ids:
+#             messages.warning(request, "No Maintenance Plans were selected.")
+#             return redirect(request.META.get("HTTP_REFERER"))
 
-        plans = MaintenancePlans.objects.filter(pk__in=selected_ids)
+#         plans = MaintenancePlans.objects.filter(pk__in=selected_ids)
 
-        pdf = MaintenancePlansPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
-        pdf.set_font("Helvetica", size=10)
+#         pdf = MaintenancePlansPDF()
+#         pdf.set_auto_page_break(auto=True, margin=15)
+#         pdf.add_page()
+#         pdf.set_font("Helvetica", size=10)
 
-        headers = ["Ref Number", "Done", "Name", "Description", "Tenant"]
-        col_widths = [30, 12, 45, 73, 30]
-        LINE_HEIGHT = 5
+#         headers = ["Ref Number", "Done", "Name", "Description", "Tenant"]
+#         col_widths = [30, 12, 45, 73, 30]
+#         LINE_HEIGHT = 5
 
-        pdf.set_font("Helvetica", "B", 10)
-        for i, header in enumerate(headers):
-            pdf.cell(col_widths[i], 8, header, border=1, align="C")
-        pdf.ln()
-        pdf.set_font("Helvetica", "", 10)
+#         pdf.set_font("Helvetica", "B", 10)
+#         for i, header in enumerate(headers):
+#             pdf.cell(col_widths[i], 8, header, border=1, align="C")
+#         pdf.ln()
+#         pdf.set_font("Helvetica", "", 10)
 
-        for plan in plans:
+#         for plan in plans:
 
-            ref_number = plan.reference_number or ""
-            done = "X"
-            name = plan.name or ""
-            description = plan.description or ""
+#             ref_number = plan.reference_number or ""
+#             done = "X"
+#             name = plan.name or ""
+#             description = plan.description or ""
 
-            tenants = []
+#             tenants = []
 
-            for action in plan.maintenance_action.all():
-                if action.tenant:
-                    tenants.append(action.tenant.name)
+#             for action in plan.maintenance_action.all():
+#                 if action.tenant:
+#                     tenants.append(action.tenant.name)
 
-            tenant = ", ".join(set(tenants))
+#             tenant = ", ".join(set(tenants))
 
-            line_counts = [
-                get_line_count(pdf, ref_number, col_widths[0]),
-                get_line_count(pdf, done, col_widths[1]),
-                get_line_count(pdf, name, col_widths[2]),
-                get_line_count(pdf, description, col_widths[3]),
-                get_line_count(pdf, tenant, col_widths[4]),
-            ]
+#             line_counts = [
+#                 get_line_count(pdf, ref_number, col_widths[0]),
+#                 get_line_count(pdf, done, col_widths[1]),
+#                 get_line_count(pdf, name, col_widths[2]),
+#                 get_line_count(pdf, description, col_widths[3]),
+#                 get_line_count(pdf, tenant, col_widths[4]),
+#             ]
 
-            row_height = max(line_counts) * LINE_HEIGHT
-            x_start = pdf.get_x()
-            y_start = pdf.get_y()
+#             row_height = max(line_counts) * LINE_HEIGHT
+#             x_start = pdf.get_x()
+#             y_start = pdf.get_y()
 
-            x = x_start
-            for width in col_widths:
-                pdf.rect(x, y_start, width, row_height)
-                x += width
+#             x = x_start
+#             for width in col_widths:
+#                 pdf.rect(x, y_start, width, row_height)
+#                 x += width
 
-            pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(ref_number), align="C")
-            pdf.set_xy(x_start + col_widths[0], y_start)
+#             pdf.multi_cell(col_widths[0], LINE_HEIGHT, str(ref_number), align="C")
+#             pdf.set_xy(x_start + col_widths[0], y_start)
 
-            pdf.multi_cell(col_widths[1], LINE_HEIGHT, str(done), align="C")
-            pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
+#             pdf.multi_cell(col_widths[1], LINE_HEIGHT, str(done), align="C")
+#             pdf.set_xy(x_start + col_widths[0] + col_widths[1], y_start)
 
-            pdf.multi_cell(col_widths[2], LINE_HEIGHT, str(name), align="C")
-            pdf.set_xy(
-                x_start + col_widths[0] + col_widths[1] + col_widths[2],
-                y_start
-            )
+#             pdf.multi_cell(col_widths[2], LINE_HEIGHT, str(name), align="C")
+#             pdf.set_xy(
+#                 x_start + col_widths[0] + col_widths[1] + col_widths[2],
+#                 y_start
+#             )
 
-            pdf.multi_cell(col_widths[3], LINE_HEIGHT, str(description))
-            pdf.set_xy(
-                x_start
-                + col_widths[0]
-                + col_widths[1]
-                + col_widths[2]
-                + col_widths[3],
-                y_start
-            )
+#             pdf.multi_cell(col_widths[3], LINE_HEIGHT, str(description))
+#             pdf.set_xy(
+#                 x_start
+#                 + col_widths[0]
+#                 + col_widths[1]
+#                 + col_widths[2]
+#                 + col_widths[3],
+#                 y_start
+#             )
 
-            pdf.multi_cell(col_widths[4], LINE_HEIGHT, str(tenant))
+#             pdf.multi_cell(col_widths[4], LINE_HEIGHT, str(tenant))
 
-            pdf.set_xy(x_start, y_start + row_height)
+#             pdf.set_xy(x_start, y_start + row_height)
 
-        response = HttpResponse(
-            pdf.output(dest="S").encode("latin-1"),
-            content_type="application/pdf"
-        )
+#         response = HttpResponse(
+#             pdf.output(dest="S").encode("latin-1"),
+#             content_type="application/pdf"
+#         )
         
-        response["Content-Disposition"] = f'attachment; filename="maintenance_plans_{datetime.today()}.pdf"'
-        return response
+#         response["Content-Disposition"] = f'attachment; filename="maintenance_plans_{datetime.today()}.pdf"'
+#         return response
 
 # class MaintenanceActionPlanPDFView(View):
 
