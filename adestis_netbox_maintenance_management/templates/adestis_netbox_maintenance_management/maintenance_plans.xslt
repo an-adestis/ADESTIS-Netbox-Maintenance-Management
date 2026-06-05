@@ -33,15 +33,14 @@
         </fo:static-content>
 
         <fo:flow flow-name="xsl-region-body" font-family="Helvetica" font-size="9pt" color="#333333">
-          <fo:block id="last-block"/>
 
           <xsl:for-each select="planned-actions/plan">
 
-            <fo:block font-size="14pt" font-weight="bold" color="#333333" 
+            <!-- <fo:block font-size="14pt" font-weight="bold" color="#333333" 
                       margin-top="10pt" margin-bottom="4pt"
                       keep-with-next.within-page="always">
               <xsl:value-of select="@plan_name"/>
-            </fo:block>
+            </fo:block> -->
             <fo:block font-size="9pt" color="#666666" margin-bottom="2pt">
               <xsl:if test="@reference_number != ''">
                 Reference: <xsl:value-of select="@reference_number"/>
@@ -51,11 +50,6 @@
                 Version: <xsl:value-of select="@version"/>
               </xsl:if>
             </fo:block>
-            <xsl:if test="@tenant != ''">
-              <fo:block font-size="9pt" color="#666666" margin-bottom="8pt">
-                Tenant: <xsl:value-of select="@tenant"/>
-              </fo:block>
-            </xsl:if>
 
             <fo:table table-layout="fixed" width="100%" border="0.5pt solid #cccccc">
               <fo:table-column column-width="3cm"/>
@@ -118,13 +112,6 @@
                           <xsl:if test="normalize-space(comments) != ''">
                             <fo:block font-style="italic" color="#666666" margin-bottom="8pt">
                               <xsl:value-of select="comments"/>
-                            </fo:block>
-                          </xsl:if>
-
-                          <xsl:if test="normalize-space(tenant) != ''">
-                            <fo:block color="#666666" margin-bottom="4pt">
-                              <fo:inline font-weight="bold">Tenant: </fo:inline>
-                              <xsl:value-of select="tenant"/>
                             </fo:block>
                           </xsl:if>
 
@@ -221,6 +208,8 @@
             </xsl:if>
 
           </xsl:for-each>
+
+          <fo:block id="last-block"/>
 
         </fo:flow>
       </fo:page-sequence>

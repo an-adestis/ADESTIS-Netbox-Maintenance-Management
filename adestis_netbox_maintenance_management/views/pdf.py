@@ -103,7 +103,7 @@ def planned_actions_pdf(request, pk):
         response = FileResponse(
             open(pdf_file.name, "rb"),
             content_type="application/pdf",
-            filename=f"planned_actions_{plan.name}.pdf",
+            filename=f"planned_actions_{plan.pk}.pdf",
             as_attachment=True
         )
 
