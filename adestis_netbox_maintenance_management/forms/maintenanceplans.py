@@ -71,7 +71,27 @@ class MaintenancePlansForm(NetBoxModelForm):
         model = MaintenancePlans
         
         fields = ['name', 'reference_number', 'version', 'maintenance_action', 'tenant', 'description', 'tags', 'virtual_machine', 'device']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        action_ids = None
         
+        # Beim Submit: Actions aus POST-Daten
+        if self.data.get('maintenance_action'):
+            action_ids = self.data.getlist('maintenance_action')
+        # Beim Edit: Actions aus dem bestehenden Plan
+        elif self.instance.pk:
+            action_ids = list(self.instance.maintenance_action.values_list('id', flat=True))
+
+        if action_ids:
+            self.fields['virtual_machine'].queryset = VirtualMachine.objects.filter(
+                maintenance_actions__id__in=action_ids
+            ).distinct()
+            self.fields['device'].queryset = Device.objects.filter(
+                maintenance_actions__id__in=action_ids
+            ).distinct()
+    
 class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=MaintenancePlans.objects.all(),
@@ -147,6 +167,25 @@ class MaintenancePlansBulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = [
         'add_tags', 'remove_tags', 'description',
     ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        action_ids = None
+        
+        if self.data.get('maintenance_action'):
+            action_ids = self.data.getlist('maintenance_action')
+
+        elif self.instance.pk:
+            action_ids = list(self.instance.maintenance_action.values_list('id', flat=True))
+
+        if action_ids:
+            self.fields['virtual_machine'].queryset = VirtualMachine.objects.filter(
+                maintenance_actions__id__in=action_ids
+            ).distinct()
+            self.fields['device'].queryset = Device.objects.filter(
+                maintenance_actions__id__in=action_ids
+            ).distinct()
     
 class MaintenancePlansFilterForm(NetBoxModelFilterSetForm):
     

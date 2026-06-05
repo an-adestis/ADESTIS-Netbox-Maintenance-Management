@@ -17,6 +17,8 @@ class AdestisMaintenanceConfig(PluginConfig):
         super().ready()
         from . import jobs
         from . import plan_jobs
+        from .filtersets_extensions import register_filters
+        register_filters()
 
         
 config = AdestisMaintenanceConfig

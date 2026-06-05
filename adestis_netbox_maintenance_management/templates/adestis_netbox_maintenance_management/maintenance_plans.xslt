@@ -28,7 +28,7 @@
         <fo:static-content flow-name="xsl-region-after">
           <fo:block border-top="1pt solid #cccccc" margin-bottom="4pt"/>
           <fo:block font-size="8pt" color="#666666" text-align="right">
-            Seite <fo:page-number/> / <fo:page-number-citation-last ref-id="last-block"/>
+            Page <fo:page-number/> / <fo:page-number-citation-last ref-id="last-block"/>
           </fo:block>
         </fo:static-content>
 
@@ -42,12 +42,20 @@
                       keep-with-next.within-page="always">
               <xsl:value-of select="@plan_name"/>
             </fo:block>
-            <fo:block font-size="9pt" color="#666666" margin-bottom="8pt">
-              Referenz: <xsl:value-of select="@reference_number"/>
+            <fo:block font-size="9pt" color="#666666" margin-bottom="2pt">
+              <xsl:if test="@reference_number != ''">
+                Reference: <xsl:value-of select="@reference_number"/>
+              </xsl:if>
               <xsl:if test="@version != ''">
-                &#160;|&#160; Version: <xsl:value-of select="@version"/>
+                <xsl:if test="@reference_number != ''">&#160;|&#160;</xsl:if>
+                Version: <xsl:value-of select="@version"/>
               </xsl:if>
             </fo:block>
+            <xsl:if test="@tenant != ''">
+              <fo:block font-size="9pt" color="#666666" margin-bottom="8pt">
+                Tenant: <xsl:value-of select="@tenant"/>
+              </fo:block>
+            </xsl:if>
 
             <fo:table table-layout="fixed" width="100%" border="0.5pt solid #cccccc">
               <fo:table-column column-width="3cm"/>
@@ -56,8 +64,8 @@
 
               <fo:table-header>
                 <fo:table-row background-color="#E5133A" color="white" font-weight="bold">
-                  <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Startzeit</fo:block></fo:table-cell>
-                  <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Endzeit</fo:block></fo:table-cell>
+                  <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Start time</fo:block></fo:table-cell>
+                  <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>End time</fo:block></fo:table-cell>
                   <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Maintenance Action</fo:block></fo:table-cell>
                 </fo:table-row>
               </fo:table-header>
@@ -102,7 +110,7 @@
 
                           <xsl:if test="normalize-space(description) != ''">
                             <fo:block color="#666666" margin-bottom="4pt">
-                              <fo:inline font-weight="bold">Beschreibung: </fo:inline>
+                              <fo:inline font-weight="bold">Description: </fo:inline>
                               <xsl:value-of select="description"/>
                             </fo:block>
                           </xsl:if>
@@ -110,6 +118,13 @@
                           <xsl:if test="normalize-space(comments) != ''">
                             <fo:block font-style="italic" color="#666666" margin-bottom="8pt">
                               <xsl:value-of select="comments"/>
+                            </fo:block>
+                          </xsl:if>
+
+                          <xsl:if test="normalize-space(tenant) != ''">
+                            <fo:block color="#666666" margin-bottom="4pt">
+                              <fo:inline font-weight="bold">Tenant: </fo:inline>
+                              <xsl:value-of select="tenant"/>
                             </fo:block>
                           </xsl:if>
 
@@ -179,7 +194,7 @@
 
                           <xsl:if test="not(vms/vm) and not(devices/device)">
                             <fo:block color="#999999" font-style="italic">
-                              Keine VMs oder Devices zugewiesen.
+                              No VMs or Devices assigned.
                             </fo:block>
                           </xsl:if>
 
@@ -192,7 +207,7 @@
                     <fo:table-row>
                       <fo:table-cell number-columns-spanned="3" padding="8pt">
                         <fo:block color="#999999" font-style="italic" text-align="center">
-                          Keine Maintenance Actions vorhanden.
+                          No Maintenance Actions available.
                         </fo:block>
                       </fo:table-cell>
                     </fo:table-row>

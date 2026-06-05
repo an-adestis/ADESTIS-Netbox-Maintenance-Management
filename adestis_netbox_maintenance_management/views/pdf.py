@@ -4,7 +4,8 @@ from lxml import etree
 import tempfile
 import subprocess
 import os
-
+from django.contrib import messages
+from django.shortcuts import redirect
 from adestis_netbox_maintenance_management.models import MaintenanceTasks
 from django.http import FileResponse, Http404
 from django.template.loader import get_template
@@ -12,6 +13,9 @@ from lxml import etree
 import tempfile
 import subprocess
 import os
+
+import logging
+logger = logging.getLogger(__name__)
 
 from adestis_netbox_maintenance_management.models import MaintenancePlannedActions, MaintenancePlans
 
@@ -29,7 +33,7 @@ def generate_xml(plan):
         etree.SubElement(action_el, "end_time").text = str(getattr(task, "end_time", "") or "")
         etree.SubElement(action_el, "name").text = task.maintenance_action.name if task.maintenance_action else "—"
         etree.SubElement(action_el, "comments").text = task.comments or ""
-
+    
         vms_node = etree.SubElement(action_el, "vms")
         for vm in task.virtual_machine.all():
             vm_node = etree.SubElement(vms_node, "vm")
@@ -151,17 +155,20 @@ def generate_plans_xml(plan):
 
 def maintenance_plans_pdf(request):
     from adestis_netbox_maintenance_management.models import MaintenancePlans
+    from django.contrib import messages
+    from django.shortcuts import redirect
 
     pks = request.POST.getlist("pk")
     if not pks:
-        raise Http404("Keine Pläne ausgewählt")
+        messages.warning(request, "Please select at least one plan.")
+        return redirect("plugins:adestis_netbox_maintenance_management:maintenanceplans_list")
 
     plans = MaintenancePlans.objects.filter(pk__in=pks).prefetch_related(
         "maintenance_action",
         "maintenance_windows",
         "virtual_machine",
         "device",
-    )
+    ).select_related("tenant")
 
     root = etree.Element("planned-actions")
 
@@ -170,6 +177,7 @@ def maintenance_plans_pdf(request):
         plan_el.set("plan_name", plan.name or "")
         plan_el.set("reference_number", str(plan.reference_number or ""))
         plan_el.set("version", plan.version or "")
+        plan_el.set("tenant", plan.tenant.name if plan.tenant else "")
 
         actions = plan.maintenance_action.all().order_by("name")
 
@@ -179,25 +187,31 @@ def maintenance_plans_pdf(request):
             etree.SubElement(action_el, "name").text = action.name or "—"
             etree.SubElement(action_el, "description").text = getattr(action, "description", "") or ""
             etree.SubElement(action_el, "comments").text = getattr(action, "comments", "") or ""
+            etree.SubElement(action_el, "tenant").text = action.tenant.name if action.tenant else ""
 
             windows = plan.maintenance_windows.all()
             window = windows.first() if windows.exists() else None
             etree.SubElement(action_el, "start_time").text = str(getattr(window, "start_time", "") or "") if window else ""
             etree.SubElement(action_el, "end_time").text = str(getattr(window, "end_time", "") or "") if window else ""
 
+            # VMs aus der Action statt aus dem Plan
             vms_node = etree.SubElement(action_el, "vms")
-            for vm in plan.virtual_machine.all():
-                vm_node = etree.SubElement(vms_node, "vm")
-                etree.SubElement(vm_node, "name").text = vm.name
-                etree.SubElement(vm_node, "comment").text = getattr(vm, "comments", "") or ""
+            if hasattr(action, "virtual_machine"):
+                for vm in action.virtual_machine.all():
+                    vm_node = etree.SubElement(vms_node, "vm")
+                    etree.SubElement(vm_node, "name").text = vm.name
+                    etree.SubElement(vm_node, "comment").text = getattr(vm, "comments", "") or ""
 
+            # Devices aus der Action statt aus dem Plan
             devices_node = etree.SubElement(action_el, "devices")
-            for device in plan.device.all():
-                dev_node = etree.SubElement(devices_node, "device")
-                etree.SubElement(dev_node, "name").text = device.name
-                etree.SubElement(dev_node, "comment").text = getattr(device, "comments", "") or ""
+            if hasattr(action, "device"):
+                for device in action.device.all():
+                    dev_node = etree.SubElement(devices_node, "device")
+                    etree.SubElement(dev_node, "name").text = device.name
+                    etree.SubElement(dev_node, "comment").text = getattr(device, "comments", "") or ""
 
     xml_data = etree.tostring(root, pretty_print=True, xml_declaration=True, encoding="UTF-8")
+    logger.error(xml_data.decode("utf-8"))
     xml_tree = etree.fromstring(xml_data)
 
     template = get_template("adestis_netbox_maintenance_management/maintenance_plans.xslt")

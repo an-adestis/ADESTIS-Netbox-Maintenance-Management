@@ -1,8 +1,9 @@
-# from django.apps import AppConfig
+from django.apps import AppConfig
 
 
-# class AdestisMaintenanceManagementAppConfig(AppConfig):
-#     name = 'adestis_netbox_maintenance_management'
+class AdestisMaintenanceManagementAppConfig(AppConfig):
+    name = 'adestis_netbox_maintenance_management'
 
-#     def ready(self):
-#         pass
+    def ready(self):
+        from .filtersets_extensions import register_filters
+        register_filters()

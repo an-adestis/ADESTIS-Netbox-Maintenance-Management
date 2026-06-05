@@ -1,4 +1,4 @@
-from adestis_netbox_maintenance_management.models import MaintenancePlans
+from adestis_netbox_maintenance_management.models import MaintenancePlans, MaintenanceActions
 from netbox.filtersets import NetBoxModelFilterSet
 
 from django.db.models import Q
