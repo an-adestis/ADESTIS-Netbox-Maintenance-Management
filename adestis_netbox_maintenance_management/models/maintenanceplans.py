@@ -83,6 +83,3 @@ class MaintenancePlans(NetBoxModel):
 
     def __str__(self):
         return self.name 
-    
-    # bei maintenance plans action mit rein nehmen inklsuive tab, version feld, auch alles anzeigen wie vm's und co 
-    

@@ -40,7 +40,7 @@ class MaintenanceTasksEditView(generic.ObjectEditView):
     queryset = MaintenanceTasks.objects.all()
     form = MaintenanceTasksForm
 
-class MaintenanceTasksDeleteView(View):  # direkt von View, kein Form nötig
+class MaintenanceTasksDeleteView(View):
     def post(self, request, *args, **kwargs):
         task_pk = kwargs.get("pk")
 

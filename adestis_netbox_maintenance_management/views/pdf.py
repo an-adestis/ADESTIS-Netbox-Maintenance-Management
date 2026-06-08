@@ -28,9 +28,11 @@ def generate_xml(plan):
         group = etree.SubElement(root, "group")
         etree.SubElement(group, "next_due_date").text = str(task.next_due_date or "")
 
+        window = task.maintenance_windows  
+
         action_el = etree.SubElement(group, "maintenance_action")
-        etree.SubElement(action_el, "start_time").text = str(getattr(task, "start_time", "") or "")
-        etree.SubElement(action_el, "end_time").text = str(getattr(task, "end_time", "") or "")
+        etree.SubElement(action_el, "start_time").text = str(getattr(window, "start_time", "") or "") if window else ""
+        etree.SubElement(action_el, "end_time").text = str(getattr(window, "end_time", "") or "") if window else ""
         etree.SubElement(action_el, "name").text = task.maintenance_action.name if task.maintenance_action else "—"
         etree.SubElement(action_el, "comments").text = task.comments or ""
     
@@ -115,10 +117,11 @@ def planned_actions_pdf(request, pk):
 def generate_plans_xml(plan):
     root = etree.Element("planned-actions")
 
-    # Plan-Header Daten
     root.set("plan_name", plan.name or "")
     root.set("reference_number", str(plan.reference_number or ""))
     root.set("version", plan.version or "")
+    root.set("tenant", plan.tenant.name if plan.tenant else "")
+    
 
     actions = plan.maintenance_action.all().order_by("name")
 
@@ -130,20 +133,18 @@ def generate_plans_xml(plan):
         etree.SubElement(action_el, "description").text = getattr(action, "description", "") or ""
         etree.SubElement(action_el, "comments").text = getattr(action, "comments", "") or ""
 
-        # Zeiten vom zugehörigen Maintenance Window
-        windows = plan.maintenance_windows.all()
-        window = windows.first() if windows.exists() else None
+        window = getattr(action, "maintenance_window", None)
         etree.SubElement(action_el, "start_time").text = str(getattr(window, "start_time", "") or "") if window else ""
         etree.SubElement(action_el, "end_time").text = str(getattr(window, "end_time", "") or "") if window else ""
+        logger.warning(xml_data.decode("utf-8"))
 
-        # VMs aus dem Plan
         vms_node = etree.SubElement(action_el, "vms")
         for vm in plan.virtual_machine.all():
             vm_node = etree.SubElement(vms_node, "vm")
             etree.SubElement(vm_node, "name").text = vm.name
             etree.SubElement(vm_node, "comment").text = getattr(vm, "comments", "") or ""
 
-        # Devices aus dem Plan
+
         devices_node = etree.SubElement(action_el, "devices")
         for device in plan.device.all():
             dev_node = etree.SubElement(devices_node, "device")
@@ -175,7 +176,7 @@ def maintenance_plans_pdf(request):
     for plan in plans:
         plan_el = etree.SubElement(root, "plan")
         plan_el.set("plan_name", plan.name or "")
-        plan_el.set("reference_number", str(plan.reference_number or ""))
+        plan_el.set("reference_number", str(plan.reference_number) if plan.reference_number is not None else "")
         plan_el.set("version", plan.version or "")
         plan_el.set("tenant", plan.tenant.name if plan.tenant else "")
 
@@ -185,16 +186,22 @@ def maintenance_plans_pdf(request):
             group = etree.SubElement(plan_el, "group")
             action_el = etree.SubElement(group, "maintenance_action")
             etree.SubElement(action_el, "name").text = action.name or "—"
-            etree.SubElement(action_el, "description").text = getattr(action, "description", "") or ""
-            etree.SubElement(action_el, "comments").text = getattr(action, "comments", "") or ""
+            # etree.SubElement(action_el, "description").text = getattr(action, "description", "") or ""
+            # etree.SubElement(action_el, "comments").text = getattr(action, "comments", "") or ""
             etree.SubElement(action_el, "tenant").text = action.tenant.name if action.tenant else ""
 
             windows = plan.maintenance_windows.all()
-            window = windows.first() if windows.exists() else None
-            etree.SubElement(action_el, "start_time").text = str(getattr(window, "start_time", "") or "") if window else ""
-            etree.SubElement(action_el, "end_time").text = str(getattr(window, "end_time", "") or "") if window else ""
+            window = getattr(action, "maintenance_window", None)
+            if window:
+                start = str(window.start_time) if window.start_time else ""
+                end = str(window.end_time) if window.end_time else ""
+            else:
+                start = ""
+                end = ""
+                
+            etree.SubElement(action_el, "start_time").text = start
+            etree.SubElement(action_el, "end_time").text = end
 
-            # VMs aus der Action statt aus dem Plan
             vms_node = etree.SubElement(action_el, "vms")
             if hasattr(action, "virtual_machine"):
                 for vm in action.virtual_machine.all():
@@ -202,7 +209,6 @@ def maintenance_plans_pdf(request):
                     etree.SubElement(vm_node, "name").text = vm.name
                     etree.SubElement(vm_node, "comment").text = getattr(vm, "comments", "") or ""
 
-            # Devices aus der Action statt aus dem Plan
             devices_node = etree.SubElement(action_el, "devices")
             if hasattr(action, "device"):
                 for device in action.device.all():

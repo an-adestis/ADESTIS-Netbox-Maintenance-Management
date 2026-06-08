@@ -85,11 +85,13 @@ class MaintenanceTasks(NetBoxModel, JobsMixin):
         blank = True
     )
     
-    tenant = django_models.ManyToManyField(
+    tenant = django_models.ForeignKey(
         to='tenancy.Tenant',
+        on_delete= django_models.PROTECT,
         verbose_name='Tenant',
         related_name='tasks_tenant',
-        blank=True
+        blank=True,
+        null=True
     )
     
     created_at = django_models.DateField(

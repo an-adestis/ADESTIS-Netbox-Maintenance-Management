@@ -120,7 +120,7 @@ class MaintenanceTasksTable(NetBoxTable):
     maintenance_action = tables.Column(
         linkify= True
     )
-    #wegen der länge schauen
+    
     def render_maintenance_action(self, value, record):
         if not value:
             return "-"

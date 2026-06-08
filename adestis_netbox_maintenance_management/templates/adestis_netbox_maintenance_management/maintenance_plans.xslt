@@ -36,31 +36,33 @@
 
           <xsl:for-each select="planned-actions/plan">
 
-            <!-- <fo:block font-size="14pt" font-weight="bold" color="#333333" 
-                      margin-top="10pt" margin-bottom="4pt"
-                      keep-with-next.within-page="always">
+            <!-- Plan Header -->
+            <fo:block font-size="13pt" font-weight="bold" color="#E5133A" margin-bottom="4pt">
               <xsl:value-of select="@plan_name"/>
-            </fo:block> -->
-            <fo:block font-size="9pt" color="#666666" margin-bottom="2pt">
+            </fo:block>
+
+            <fo:block font-size="9pt" color="#666666" margin-bottom="6pt">
+              <xsl:if test="@tenant != ''">
+                <fo:block>Tenant: <xsl:value-of select="@tenant"/></fo:block>
+              </xsl:if>
               <xsl:if test="@reference_number != ''">
-                Reference: <xsl:value-of select="@reference_number"/>
+                <fo:block>Reference: <xsl:value-of select="@reference_number"/></fo:block>
               </xsl:if>
               <xsl:if test="@version != ''">
-                <xsl:if test="@reference_number != ''">&#160;|&#160;</xsl:if>
-                Version: <xsl:value-of select="@version"/>
+                <fo:block>Version: <xsl:value-of select="@version"/></fo:block>
               </xsl:if>
             </fo:block>
 
             <fo:table table-layout="fixed" width="100%" border="0.5pt solid #cccccc">
-              <fo:table-column column-width="3cm"/>
-              <fo:table-column column-width="3cm"/>
               <fo:table-column column-width="proportional-column-width(1)"/>
+              <fo:table-column column-width="3cm"/>
+              <fo:table-column column-width="3cm"/>
 
               <fo:table-header>
                 <fo:table-row background-color="#E5133A" color="white" font-weight="bold">
+                  <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Maintenance Action</fo:block></fo:table-cell>
                   <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Start time</fo:block></fo:table-cell>
                   <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>End time</fo:block></fo:table-cell>
-                  <fo:table-cell padding="5pt" border="0.5pt solid #cccccc"><fo:block>Maintenance Action</fo:block></fo:table-cell>
                 </fo:table-row>
               </fo:table-header>
 
@@ -71,6 +73,14 @@
 
                       <fo:table-row font-weight="bold" background-color="#fde8ec"
                                     keep-with-next.within-page="always">
+                        <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                          <fo:block>
+                            <xsl:choose>
+                              <xsl:when test="normalize-space(name) != ''"><xsl:value-of select="name"/></xsl:when>
+                              <xsl:otherwise>-</xsl:otherwise>
+                            </xsl:choose>
+                          </fo:block>
+                        </fo:table-cell>
                         <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
                           <fo:block>
                             <xsl:choose>
@@ -87,33 +97,12 @@
                             </xsl:choose>
                           </fo:block>
                         </fo:table-cell>
-                        <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
-                          <fo:block>
-                            <xsl:choose>
-                              <xsl:when test="normalize-space(name) != ''"><xsl:value-of select="name"/></xsl:when>
-                              <xsl:otherwise>-</xsl:otherwise>
-                            </xsl:choose>
-                          </fo:block>
-                        </fo:table-cell>
                       </fo:table-row>
 
                       <fo:table-row>
                         <fo:table-cell number-columns-spanned="3" padding="8pt"
                                        border="0.5pt solid #cccccc" border-top="0pt">
                           <fo:block/>
-
-                          <xsl:if test="normalize-space(description) != ''">
-                            <fo:block color="#666666" margin-bottom="4pt">
-                              <fo:inline font-weight="bold">Description: </fo:inline>
-                              <xsl:value-of select="description"/>
-                            </fo:block>
-                          </xsl:if>
-
-                          <xsl:if test="normalize-space(comments) != ''">
-                            <fo:block font-style="italic" color="#666666" margin-bottom="8pt">
-                              <xsl:value-of select="comments"/>
-                            </fo:block>
-                          </xsl:if>
 
                           <xsl:if test="vms/vm">
                             <fo:block font-weight="bold" color="#333333" border-bottom="1pt solid #cccccc"
@@ -214,7 +203,6 @@
         </fo:flow>
       </fo:page-sequence>
     </fo:root>
-
   </xsl:template>
 
 </xsl:stylesheet>

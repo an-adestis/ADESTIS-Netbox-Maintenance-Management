@@ -77,10 +77,8 @@ class MaintenancePlansForm(NetBoxModelForm):
 
         action_ids = None
         
-        # Beim Submit: Actions aus POST-Daten
         if self.data.get('maintenance_action'):
             action_ids = self.data.getlist('maintenance_action')
-        # Beim Edit: Actions aus dem bestehenden Plan
         elif self.instance.pk:
             action_ids = list(self.instance.maintenance_action.values_list('id', flat=True))
 

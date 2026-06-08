@@ -68,20 +68,21 @@
           <fo:table table-layout="fixed" width="100%"
                     border="0.5pt solid #cccccc">
 
-            <fo:table-column column-width="3cm"/>
-            <fo:table-column column-width="3cm"/>
             <fo:table-column column-width="proportional-column-width(1)"/>
+            <fo:table-column column-width="3cm"/>
+            <fo:table-column column-width="3cm"/>
+            
 
             <fo:table-header>
               <fo:table-row background-color="#E5133A" color="white" font-weight="bold">
+                <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                  <fo:block>Maintenance Action</fo:block>
+                </fo:table-cell>
                 <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
                   <fo:block>Startzeit</fo:block>
                 </fo:table-cell>
                 <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
                   <fo:block>Endzeit</fo:block>
-                </fo:table-cell>
-                <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
-                  <fo:block>Maintenance Action</fo:block>
                 </fo:table-cell>
               </fo:table-row>
             </fo:table-header>
