@@ -186,8 +186,6 @@ def maintenance_plans_pdf(request):
             group = etree.SubElement(plan_el, "group")
             action_el = etree.SubElement(group, "maintenance_action")
             etree.SubElement(action_el, "name").text = action.name or "—"
-            # etree.SubElement(action_el, "description").text = getattr(action, "description", "") or ""
-            # etree.SubElement(action_el, "comments").text = getattr(action, "comments", "") or ""
             etree.SubElement(action_el, "tenant").text = action.tenant.name if action.tenant else ""
 
             windows = plan.maintenance_windows.all()
