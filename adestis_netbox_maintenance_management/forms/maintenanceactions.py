@@ -227,12 +227,19 @@ class MaintenanceActionsAssignDeviceForm(forms.Form):
         queryset=Device.objects.all()
     )
 
+    maintenance_comment = forms.CharField(
+        label=_('Maintenance Comment'),
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3})
+    )
+
     class Meta:
         fields = [
             'device',
+            'maintenance_comment',
         ]
 
-    def __init__(self, maintenance_actions,*args, **kwargs):
+    def __init__(self, maintenance_actions, *args, **kwargs):
 
         self.maintenance_actions = maintenance_actions
 
@@ -244,7 +251,7 @@ class MaintenanceActionsAssignDeviceForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields['device'].choices = []
-        
+
 class MaintenanceActionsAssignVirtualMachineForm(forms.Form):
     
     virtual_machine = DynamicModelMultipleChoiceField(
@@ -252,12 +259,19 @@ class MaintenanceActionsAssignVirtualMachineForm(forms.Form):
         queryset=VirtualMachine.objects.all()
     )
 
+    maintenance_comment = forms.CharField(
+        label=_('Maintenance Comment'),
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3})
+    )
+
     class Meta:
         fields = [
             'virtual_machine',
+            'maintenance_comment',
         ]
 
-    def __init__(self, maintenance_actions,*args, **kwargs):
+    def __init__(self, maintenance_actions, *args, **kwargs):
 
         self.maintenance_actions = maintenance_actions
 

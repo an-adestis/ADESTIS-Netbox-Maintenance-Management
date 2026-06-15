@@ -29,8 +29,34 @@ def generate_xml(plan):
         etree.SubElement(group, "next_due_date").text = str(task.next_due_date or "")
 
         window = task.maintenance_windows  
-
         action_el = etree.SubElement(group, "maintenance_action")
+        window_node = etree.SubElement(action_el, "window")
+        
+        if window:
+            etree.SubElement(window_node, "name").text = window.name or ""
+            etree.SubElement(window_node, "start_time").text = str(window.start_time) if window.start_time else ""
+            etree.SubElement(window_node, "end_time").text = str(window.end_time) if window.end_time else ""
+            etree.SubElement(window_node, "description").text = window.description or ""
+            etree.SubElement(window_node, "comments").text = window.comments or ""
+            etree.SubElement(window_node, "schedule_type").text = window.schedule_type or ""
+            etree.SubElement(window_node, "start_day").text = str(window.start_day) if window.start_day else ""
+            etree.SubElement(window_node, "end_day").text = str(window.end_day) if window.end_day else ""
+            etree.SubElement(window_node, "weekdays").text = window.weekdays or ""
+            etree.SubElement(window_node, "day_of_month").text = str(window.day_of_month) if window.day_of_month else ""
+            etree.SubElement(window_node, "week_in_month").text = str(window.get_week_in_month_display()) if window.week_in_month else ""
+            etree.SubElement(window_node, "special_ordinal").text = window.special_ordinal or ""
+            
+            if window.special_ordinal:
+                try:
+                    from cron_descriptor import get_description
+                    cron_text = get_description(window.special_ordinal)
+                except Exception:
+                    cron_text = window.special_ordinal
+                etree.SubElement(window_node, "cron").text = cron_text
+            else:
+                etree.SubElement(window_node, "cron").text = ""
+
+        
         etree.SubElement(action_el, "start_time").text = str(getattr(window, "start_time", "") or "") if window else ""
         etree.SubElement(action_el, "end_time").text = str(getattr(window, "end_time", "") or "") if window else ""
         etree.SubElement(action_el, "name").text = task.maintenance_action.name if task.maintenance_action else "—"

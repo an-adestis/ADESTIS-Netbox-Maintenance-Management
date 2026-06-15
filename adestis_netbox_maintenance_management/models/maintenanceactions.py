@@ -62,6 +62,11 @@ class MaintenanceActions(NetBoxModel, JobsMixin):
         related_name='maintenance_actions',
         blank = True
     )
+    
+    maintenance_comment = django_models.TextField(
+        blank=True,
+        verbose_name='Maintenance Comment'
+    )
 
     class Meta:
         verbose_name_plural = "Maintenance Actions"

@@ -98,6 +98,16 @@
                       <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
                         <fo:block color="#333333">
                           <xsl:choose>
+                            <xsl:when test="normalize-space(name) != ''">
+                              <xsl:value-of select="name"/>
+                            </xsl:when>
+                            <xsl:otherwise>-</xsl:otherwise>
+                          </xsl:choose>
+                        </fo:block>
+                      </fo:table-cell>
+                      <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
+                        <fo:block color="#333333">
+                          <xsl:choose>
                             <xsl:when test="normalize-space(start_time) != ''">
                               <xsl:value-of select="start_time"/>
                             </xsl:when>
@@ -110,16 +120,6 @@
                           <xsl:choose>
                             <xsl:when test="normalize-space(end_time) != ''">
                               <xsl:value-of select="end_time"/>
-                            </xsl:when>
-                            <xsl:otherwise>-</xsl:otherwise>
-                          </xsl:choose>
-                        </fo:block>
-                      </fo:table-cell>
-                      <fo:table-cell padding="5pt" border="0.5pt solid #cccccc">
-                        <fo:block color="#333333">
-                          <xsl:choose>
-                            <xsl:when test="normalize-space(name) != ''">
-                              <xsl:value-of select="name"/>
                             </xsl:when>
                             <xsl:otherwise>-</xsl:otherwise>
                           </xsl:choose>
@@ -140,6 +140,99 @@
                           <fo:block font-style="italic" color="#666666" margin-bottom="8pt">
                             <xsl:value-of select="comments"/>
                           </fo:block>
+                        </xsl:if>
+
+                        <!-- Maintenance Window -->
+                        <xsl:if test="window/name">
+                          <fo:block font-weight="bold" color="#333333"
+                                    border-bottom="1pt solid #cccccc"
+                                    padding-bottom="2pt" margin-bottom="4pt">
+                            Maintenance Window
+                          </fo:block>
+                          <fo:table width="100%" border="0.5pt solid #cccccc" margin-bottom="8pt">
+                            <fo:table-column column-width="proportional-column-width(1)"/>
+                            <fo:table-column column-width="proportional-column-width(2)"/>
+                            <fo:table-body>
+                              <xsl:if test="normalize-space(window/name) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Name</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/name"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/start_time) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Startzeit</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/start_time"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/end_time) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Endzeit</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/end_time"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/description) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Beschreibung</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/description"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/comments) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Kommentar</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/comments"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/schedule_type) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Schedule Type</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/schedule_type"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/start_day) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Start Day</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/start_day"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/end_day) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">End Day</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/end_day"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/recurrence_type) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Recurrence</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/recurrence_type"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/weekdays) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Wochentag</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/weekdays"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/day_of_month) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Tag im Monat</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/day_of_month"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/week_in_month) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Woche im Monat</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/week_in_month"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                              <xsl:if test="normalize-space(window/special_ordinal) != ''">
+                                <fo:table-row>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc" background-color="#f5f5f5"><fo:block font-weight="bold">Cron</fo:block></fo:table-cell>
+                                  <fo:table-cell padding="3pt" border="0.5pt solid #cccccc"><fo:block><xsl:value-of select="window/special_ordinal"/></fo:block></fo:table-cell>
+                                </fo:table-row>
+                              </xsl:if>
+                            </fo:table-body>
+                          </fo:table>
                         </xsl:if>
 
                         <!-- VMs -->

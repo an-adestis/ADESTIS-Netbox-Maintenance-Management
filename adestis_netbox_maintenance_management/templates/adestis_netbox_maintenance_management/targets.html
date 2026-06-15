@@ -1,0 +1,60 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+{% load i18n %}
+
+{% block extra_controls %}
+  <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceactions_assign_virtual_machine' pk=object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-primary">
+    <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Assign Virtual Machine
+  </a>
+  <a href="{% url 'plugins:adestis_netbox_maintenance_management:maintenanceactions_assign_device' pk=object.pk %}?return_url={{ object.get_absolute_url }}" class="btn btn-primary">
+    <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Assign Device
+  </a>
+{% endblock %}
+
+{% block content %}
+{% if object.maintenance_comment %}
+<div class="card mb-3">
+  <h5 class="card-header">{% trans "Maintenance Comment" %}</h5>
+  <div class="card-body">
+    {{ object.maintenance_comment|linebreaks }}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <h5 class="card-header">{% trans "Targets" %}</h5>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>{% trans "Type" %}</th>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Maintenance Comment" %}</th>
+        <th>{% trans "Comment" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for vm in object.virtual_machine.all %}
+        <tr>
+          <td><span class="badge text-bg-blue">VM</span></td>
+          <td><a href="{{ vm.get_absolute_url }}">{{ vm.name }}</a></td>
+          <td>{{ vm.comments|default:"—" }}</td>
+          <td>{{ object.maintenance_comment|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      {% for device in object.device.all %}
+        <tr>
+          <td><span class="badge text-bg-green">Device</span></td>
+          <td><a href="{{ device.get_absolute_url }}">{{ device.name }}</a></td>
+          <td>{{ device.comments|default:"—" }}</td>
+          <td>{{ object.maintenance_comment|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      {% if not object.virtual_machine.all and not object.device.all %}
+        <tr>
+          <td colspan="4" class="text-muted text-center">{% trans "No targets assigned" %}</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

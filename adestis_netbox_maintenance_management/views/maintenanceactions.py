@@ -41,6 +41,8 @@ __all__ = (
     
     'MaintenanceActionsAssignVirtualMachine',
     
+    'MaintenanceActionTargetsView',
+    
 )
 
 class MaintenanceActionsView(generic.ObjectView):
@@ -77,6 +79,17 @@ class MaintenanceActionsBulkImportView(generic.BulkImportView):
     queryset = MaintenanceActions.objects.all()
     model_form = MaintenanceActionsCSVForm
     table = MaintenanceActionsTable
+    
+@register_model_view(MaintenanceActions, name='targets')
+class MaintenanceActionTargetsView(generic.ObjectView):
+    queryset = MaintenanceActions.objects.all()
+    template_name = "adestis_netbox_maintenance_management/targets.html"
+
+    tab = ViewTab(
+        label=_('Targets'),
+        badge=lambda obj: obj.virtual_machine.count() + obj.device.count(),
+        weight=700
+    )
     
 @register_model_view(MaintenanceActions, name='device')
 class DeviceAffectedMaintenanceActionsView(generic.ObjectChildrenView):
